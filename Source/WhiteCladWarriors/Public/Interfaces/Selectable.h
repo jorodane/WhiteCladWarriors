@@ -27,4 +27,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void Select(class AOperator* Operator, bool bIsSingleSelection);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void Deselect();
 };
