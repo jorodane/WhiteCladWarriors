@@ -1,15 +1,17 @@
 //// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Objects/Players/Operator.h"
+#include "Settings/MapSetting.h"
 
 // Sets default values
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
 	Multiplier *= CameraLength / DefaultCameraLength;
+	FVector2D Limit = AMapSetting::GetCurrentMapHalfSize();
 	FVector Result = GetActorLocation();
 	Direction.Normalize();
-	Result.X += Direction.Y * Multiplier;
-	Result.Y += Direction.X * Multiplier;
+	Result.X = FMath::Clamp(Result.X + (Direction.Y * Multiplier), -Limit.X, Limit.X);
+	Result.Y = FMath::Clamp(Result.Y + (Direction.X * Multiplier), -Limit.Y, Limit.Y);
 	SetActorLocation(Result);
 };
 
