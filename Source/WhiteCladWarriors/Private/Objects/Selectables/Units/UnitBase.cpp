@@ -13,6 +13,11 @@ void AUnitBase::Select_Implementation(class AOperator* Operator, bool bIsSingleS
 
 }
 
+void AUnitBase::Deselect_Implementation()
+{
+
+}
+
 //// Sets default values
 //AUnitBase::AUnitBase()
 //{

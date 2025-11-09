@@ -15,6 +15,7 @@ class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
 public:
 	bool IsSelectable_Implementation(class AOperator* Operator);
 	void Select_Implementation(class AOperator* Operator, bool bIsSingleSelection);
+	void Deselect_Implementation();
 
 //public:
 //	// Sets default values for this character's properties
