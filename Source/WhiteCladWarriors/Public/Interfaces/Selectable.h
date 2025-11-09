@@ -30,4 +30,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void Deselect();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void MouseHoverBegin();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void MouseHoverEnd();
 };
