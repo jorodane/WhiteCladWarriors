@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "Operator.generated.h"
 
+#define DEFAULT_CAMERALENGTH 2000.0f
+
 UCLASS()
 class WHITECLADWARRIORS_API AOperator : public APawn
 {
@@ -15,9 +17,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess=true))
 	float CameraMovePaddingSize = 10.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess=true))
-	float CameraLength = 1000.0f;
-
-	const float DefaultCameraLength = 1000.0f;
+	float CameraLength = DEFAULT_CAMERALENGTH;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")

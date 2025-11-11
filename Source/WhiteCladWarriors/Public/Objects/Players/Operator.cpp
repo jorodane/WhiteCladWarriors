@@ -6,7 +6,7 @@
 // Sets default values
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
-	Multiplier *= CameraLength / DefaultCameraLength;
+	Multiplier *= CameraLength / DEFAULT_CAMERALENGTH;
 	FVector2D Limit = AMapSetting::GetCurrentMapHalfSize();
 	FVector Result = GetActorLocation();
 	Direction.Normalize();

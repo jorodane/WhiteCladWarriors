@@ -7,8 +7,10 @@
 #include "MapSetting.generated.h"
 
 #define DEFAULT_MAP_NAME TEXT("UNNAMED")
-#define DEFAULT_MAP_SIZE FVector2D::UnitVector * 50400.0f
-#define DEFAULT_MAP_HALFSIZE FVector2D::UnitVector * 25200.0f
+#define DEFAULT_MAP_LENGTH 50400.0f
+#define DEFAULT_MAP_SIZE FVector2D(DEFAULT_MAP_LENGTH, DEFAULT_MAP_LENGTH);
+#define DEFAULT_MAP_HALFLENGTH 25200.0f
+#define DEFAULT_MAP_HALFSIZE FVector2D(DEFAULT_MAP_HALFLENGTH, DEFAULT_MAP_HALFLENGTH);
 
 USTRUCT(BlueprintType)
 struct FMapInfo
@@ -29,6 +31,11 @@ class WHITECLADWARRIORS_API AMapSetting : public AActor
 private:
 	static AMapSetting* CurrentSetting;
 
+public:
+	static const FVector2D DefaultMapHalfSize;
+	static const FVector2D DefaultMapSize;
+	static const FString DefaultMapName;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MapSetting")
 	FMapInfo Info;
@@ -42,11 +49,16 @@ public:
 	static AMapSetting* GetCurrentMapSetting() { return CurrentSetting; }
 
 	UFUNCTION(BlueprintPure, Category = "MapSetting")
-	static FString GetCurrentMapName() { return CurrentSetting ? CurrentSetting->Info.MapName : DEFAULT_MAP_NAME; }
+	static FString GetCurrentMapName();
 
 	UFUNCTION(BlueprintPure, Category = "MapSetting")
-	static FVector2D GetCurrentMapHalfSize() { return CurrentSetting ? CurrentSetting->Info.MapHalfSize : DEFAULT_MAP_HALFSIZE; }
+	static FVector2D GetCurrentMapHalfSize();
 
 	UFUNCTION(BlueprintPure, Category = "MapSetting")
-	static FVector2D GetCurrentMapSize() { return CurrentSetting ? CurrentSetting->Info.MapHalfSize * 2 : DEFAULT_MAP_SIZE; }
+	static FVector2D GetCurrentMapSize();
+
+	UFUNCTION(BlueprintPure, Category = "MapSetting")
+	static FVector MapOffsetToPosition(FVector2D Offset, bool Clamped01 = false, bool InvertX = true, bool InvertY = false);
+	UFUNCTION(BlueprintPure, Category = "MapSetting")
+	static FVector2D PositionToMapOffset(FVector Position, bool Clamped01 = false, bool InvertX = true, bool InvertY = false);
 };
