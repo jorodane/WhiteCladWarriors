@@ -1,6 +1,7 @@
 //// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Objects/Players/Operator.h"
+#include "Interfaces/Selectable.h"
 #include "Settings/MapSetting.h"
 
 // Sets default values
@@ -37,4 +38,83 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 
 	CameraMove(Result, Multiplier);
 };
+
+TArray<AActor*> AOperator::GetObjectsInArea_Implementation()
+{
+	return SelectedActors;
+}
+TArray<AActor*> AOperator::GetVisibleSameObjects_Implementation(AActor* Template)
+{
+	return SelectedActors;
+}
+void AOperator::DrawDragArea_Implementation(FVector Begin, FVector End)
+{
+	if (IsValid(DragAreaActor))
+	{
+		FVector Center = (Begin + End) * 0.5f;
+		FVector Half = (End - Begin).GetAbs() * 0.5f;
+
+		DragAreaActor->SetActorLocation(Center);
+		DragAreaActor->SetActorScale3D(FVector(10000.0f, Half.X, Half.Y));
+		DragAreaActor->SetActorHiddenInGame(false);
+	}
+}
+void AOperator::SelectToggle_Implementation(AActor* Target)
+{
+	if (Target == nullptr) return;
+	if (SelectedActors.Contains(Target))
+	{
+		DeselectObject(Target);
+	}
+	else
+	{
+		SelectObject(Target, true);
+	}
+}
+void AOperator::SelectObjectWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection)
+{
+	if (Target == nullptr) return;
+	if (ISelectable::Execute_IsSelectable(Target, this))
+	{
+		SelectedActors.AddUnique(Target);
+		ISelectable::Execute_Select(Target, this, bIsSingleSelection);
+	}
+}
+void AOperator::SelectObject(AActor* Target, bool bIsSingleSelection)
+{ 
+	SelectObjectWithoutNotify(Target, bIsSingleSelection);
+	OnSelectedChanged.Broadcast(SelectedActors); 
+}
+
+void AOperator::SelectObjects_Implementation(const TArray<AActor*> Targets, bool bIsSingleSelection)
+{
+	for (AActor* CurrentTarget : Targets)
+	{
+		SelectObjectWithoutNotify(CurrentTarget, bIsSingleSelection);
+	};
+	OnSelectedChanged.Broadcast(SelectedActors);
+}
+void AOperator::DeselectObjectWithoutNotify_Implementation(AActor* Target)
+{
+	if (Target == nullptr) return;
+	if (SelectedActors.Remove(Target) > 0)
+	{
+		ISelectable::Execute_Deselect(Target);
+	}
+}
+void AOperator::DeselectObject(AActor* Target) 
+{ 
+	DeselectObjectWithoutNotify(Target); 
+	OnSelectedChanged.Broadcast(SelectedActors); 
+}
+
+void AOperator::DeselectObjects_Implementation()
+{
+	for (AActor* CurrentTarget : SelectedActors)
+	{
+		DeselectObjectWithoutNotify(CurrentTarget);
+	};
+	OnSelectedChanged.Broadcast(SelectedActors);
+}
+
 

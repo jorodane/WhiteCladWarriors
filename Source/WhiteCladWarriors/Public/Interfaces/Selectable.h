@@ -36,4 +36,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void MouseHoverEnd();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	struct FSlateBrush GetSelectedIcon();
 };
