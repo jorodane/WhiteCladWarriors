@@ -18,17 +18,25 @@ class WHITECLADWARRIORS_API AOperator : public APawn
 public:
 	FOnSelectedChanged OnSelectedChanged;
 
+public:
+	const static FVector2D CameraVisibleRange;
+
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess=true))
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess=true))
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraLength = DEFAULT_CAMERALENGTH;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
-	TArray<AActor*> SelectedActors;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
+	class UCameraComponent* SelectorCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	AActor* DragAreaActor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
+	TArray<AActor*> SelectedActors;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
 	AActor* MouseHitActor;
@@ -41,6 +49,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
 	FVector DragStartPosition;
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Camera")
+	static bool IsVisibleOnCamera(FMatrix Matrix, AActor* Target);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")
@@ -57,13 +69,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	TArray<AActor*> GetObjectsInArea();
-	virtual TArray<AActor*> GetObjectsInArea_Implementation();
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	TArray<AActor*> GetActorsInArea();
+	virtual TArray<AActor*> GetActorsInArea_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	TArray<AActor*> GetVisibleSameObjects(AActor* Template);
-	virtual TArray<AActor*> GetVisibleSameObjects_Implementation(AActor* Template);
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	TArray<AActor*> GetVisibleSameClasses(TSubclassOf<AActor> Template);
+	virtual TArray<AActor*> GetVisibleSameClasses_Implementation(TSubclassOf<AActor> Template);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	TArray<AActor*> GetVisibleSameActors(AActor* Template);
+	virtual TArray<AActor*> GetVisibleSameActors_Implementation(AActor* Template) { if (IsValid(Template)) return  GetVisibleSameClasses(Template->GetClass()); else return TArray<AActor*>(); }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	TArray<AActor*> GetOwnActors();
+	virtual TArray<AActor*> GetOwnActors_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	TArray<AActor*> GetOwnActorsOfClass(TSubclassOf<AActor> Template);
+	virtual TArray<AActor*> GetOwnActorsOfClass_Implementation(TSubclassOf<AActor> Template);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DrawDragArea(FVector Begin, FVector End);
@@ -75,24 +99,24 @@ public:
 
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void SelectObjectWithoutNotify(AActor* Target, bool bIsSingleSelection);
-	virtual void SelectObjectWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection);
+	void SelectActorWithoutNotify(AActor* Target, bool bIsSingleSelection);
+	virtual void SelectActorWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection);
 
 	UFUNCTION(BlueprintCallable, Category = "Select")
-	void SelectObject(AActor* Target, bool bIsSingleSelection);
+	void SelectActor(AActor* Target, bool bIsSingleSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void SelectObjects(const TArray<AActor*> Targets, bool bIsSingleSelection);
-	virtual void SelectObjects_Implementation(const TArray<AActor*> Targets, bool bIsSingleSelection);
+	void SelectActors(const TArray<AActor*>& Targets, bool bIsSingleSelection);
+	virtual void SelectActors_Implementation(const TArray<AActor*>& Targets, bool bIsSingleSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void DeselectObjectWithoutNotify(AActor* Target);
-	virtual void DeselectObjectWithoutNotify_Implementation(AActor* Target);
+	void DeselectActorWithoutNotify(AActor* Target);
+	virtual void DeselectActorWithoutNotify_Implementation(AActor* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Select")
-	void DeselectObject(AActor* Target);
+	void DeselectActor(AActor* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void DeselectObjects();
-	virtual void DeselectObjects_Implementation();
+	void DeselectActors();
+	virtual void DeselectActors_Implementation();
 };
