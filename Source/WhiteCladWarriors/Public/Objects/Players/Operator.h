@@ -10,6 +10,9 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, TArray<AActor*>, NewActors);
 
+class AAreaSelector;
+class UCameraComponent;
+
 UCLASS()
 class WHITECLADWARRIORS_API AOperator : public APawn
 {
@@ -17,9 +20,6 @@ class WHITECLADWARRIORS_API AOperator : public APawn
 
 public:
 	FOnSelectedChanged OnSelectedChanged;
-
-public:
-	const static FVector2D CameraVisibleRange;
 
 protected:
 
@@ -30,13 +30,13 @@ protected:
 	float CameraLength = DEFAULT_CAMERALENGTH;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
-	class UCameraComponent* SelectorCamera;
+	UCameraComponent* SelectorCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
-	AActor* DragAreaActor;
+	AAreaSelector* DragAreaActor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
-	TArray<AActor*> SelectedActors;
+	TArray<AActor*> SelectedActors = TArray<AActor*>();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
 	AActor* MouseHitActor;
@@ -47,12 +47,23 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
 	FVector MouseTerrainPosition;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
+	UPROPERTY(BlueprintReadWrite, Category = "Select", meta = (AllowPrivateAccess=true))
 	FVector DragStartPosition;
+
+	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
+	TEnumAsByte<ETraceTypeQuery> ClickAreaChannel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
+	TEnumAsByte<ETraceTypeQuery> SelectChannel;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
 	static bool IsVisibleOnCamera(FMatrix Matrix, AActor* Target);
+
+public:
+	void Tick(float DeltaSeconds) override;
+	void PossessedBy(AController* NewController) override;
+	void UnPossessed() override;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")
@@ -70,8 +81,9 @@ public:
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
-	TArray<AActor*> GetActorsInArea();
-	virtual TArray<AActor*> GetActorsInArea_Implementation();
+	TArray<AActor*> GetActorsInArea(bool& bIsAllSame, bool& bIsSingleSelected);
+	virtual TArray<AActor*> GetActorsInArea_Implementation(bool& bIsAllSame, bool& bIsSingleSelected);
+
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetVisibleSameClasses(TSubclassOf<AActor> Template);
