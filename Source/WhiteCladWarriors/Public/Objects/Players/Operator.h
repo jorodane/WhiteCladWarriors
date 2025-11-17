@@ -8,7 +8,7 @@
 
 #define DEFAULT_CAMERALENGTH 2000.0f
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, TArray<AActor*>, NewActors);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
 
 class AAreaSelector;
 class UCameraComponent;
@@ -19,6 +19,7 @@ class WHITECLADWARRIORS_API AOperator : public APawn
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintAssignable, Category = "Select")
 	FOnSelectedChanged OnSelectedChanged;
 
 protected:
