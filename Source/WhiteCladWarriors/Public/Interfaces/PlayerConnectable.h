@@ -24,12 +24,12 @@ class WHITECLADWARRIORS_API IPlayerConnectable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnPlayerConnected(AIngameController* NewPlayer);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnPlayerDisconnected(AIngameController* OldPlayer);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	AIngameController* GetConnectedPlayerController();
 };

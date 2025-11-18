@@ -4,17 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Interfaces/PlayerConnectable.h"
 #include "Operator.generated.h"
 
 #define DEFAULT_CAMERALENGTH 2000.0f
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
 
+class AIngameController;
 class AAreaSelector;
 class UCameraComponent;
 
 UCLASS()
-class WHITECLADWARRIORS_API AOperator : public APawn
+class WHITECLADWARRIORS_API AOperator : public APawn, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -24,26 +26,20 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
-	float CameraMovePaddingSize = 10.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
-	float CameraLength = DEFAULT_CAMERALENGTH;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
+	TObjectPtr<UCameraComponent> SelectorCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
-	UCameraComponent* SelectorCamera;
+	TObjectPtr<AAreaSelector> DragAreaActor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
-	AAreaSelector* DragAreaActor;
+	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
+	TObjectPtr<AIngameController> PlayerController;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
-	TArray<AActor*> SelectedActors = TArray<AActor*>();
+	TObjectPtr<AActor> MouseHitActor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
-	AActor* MouseHitActor;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
-	AActor* MouseClickActor;
+	TObjectPtr<AActor> MouseClickActor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
 	FVector MouseTerrainPosition;
@@ -56,6 +52,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
 	TEnumAsByte<ETraceTypeQuery> SelectChannel;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
+	TArray<AActor*> SelectedActors = TArray<AActor*>();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
+	float CameraMovePaddingSize = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
+	float CameraLength = DEFAULT_CAMERALENGTH;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -132,4 +137,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActors();
 	virtual void DeselectActors_Implementation();
+
+public:
+	void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
+	void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
+	AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
+
 };

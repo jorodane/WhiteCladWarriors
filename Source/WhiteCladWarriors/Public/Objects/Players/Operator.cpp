@@ -186,3 +186,15 @@ void AOperator::DeselectActors_Implementation()
 }
 
 
+void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
+{
+	if (PlayerController) OnPlayerDisconnected(PlayerController);
+	
+	PlayerController = NewPlayer;
+}
+
+void AOperator::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer)
+{
+	PlayerController = nullptr;
+}
+
