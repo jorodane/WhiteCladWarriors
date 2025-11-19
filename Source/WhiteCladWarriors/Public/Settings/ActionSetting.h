@@ -4,17 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "UnitComponentBase.generated.h"
+#include "ActionSetting.generated.h"
 
-
-UCLASS( Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class WHITECLADWARRIORS_API UActionSetting : public UActorComponent
 {
 	GENERATED_BODY()
-//
+
 //public:	
 //	// Sets default values for this component's properties
-//	UUnitComponentBase();
+//	UActionSetting();
 //
 //protected:
 //	// Called when the game starts
@@ -23,6 +22,6 @@ class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent
 //public:	
 //	// Called every frame
 //	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-//
-//		
+
+		
 };
