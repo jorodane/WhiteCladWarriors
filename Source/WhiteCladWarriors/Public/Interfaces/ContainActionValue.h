@@ -6,6 +6,8 @@
 #include "UObject/Interface.h"
 #include "ContainActionValue.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE(FActionDelegate);
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UContainActionValue : public UInterface
@@ -22,4 +24,7 @@ class WHITECLADWARRIORS_API IContainActionValue
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
+	void SetAction(const FActionDelegate& Action);
 };

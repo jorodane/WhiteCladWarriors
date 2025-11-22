@@ -6,6 +6,8 @@
 #include "UObject/Interface.h"
 #include "ContainToggleValue.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_OneParam(FToggleDelegate, bool, Value);
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UContainToggleValue : public UInterface
@@ -22,4 +24,7 @@ class WHITECLADWARRIORS_API IContainToggleValue
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
+	void SetToggle(bool InitialValue, const FToggleDelegate& OnToggled);
+
 };
