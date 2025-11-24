@@ -3,6 +3,18 @@
 
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 
+void UUnitComponentBase::ConnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag)
+{
+	IInfoConnectable::Execute_OnConnectInfoWidget(this, TargetWidget, ClaimedTag);
+};
+
+void UUnitComponentBase::DisconnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag)
+{
+	IInfoConnectable::Execute_OnDisconnectInfoWidget(this, TargetWidget, ClaimedTag);
+};
+
+
+
 //// Sets default values for this component's properties
 //UUnitComponentBase::UUnitComponentBase()
 //{

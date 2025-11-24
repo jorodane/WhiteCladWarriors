@@ -4,27 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interfaces/InfoConnectable.h"
 #include "UnitComponentBase.generated.h"
 
 class UWidget;
 
-USTRUCT(BlueprintType)
-struct FGenericWidgetClaimer
-{
-	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	int UIOrder;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	FName ClaimWidgetType;
-
- 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	FName ClaimWidgetTag;
-};
 
 UCLASS( Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent
+class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent, public IInfoConnectable
 {
 	GENERATED_BODY()
 
@@ -36,21 +24,10 @@ public:
 	TArray<FGenericWidgetClaimer> PortraitWidgets;
 
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
-	void ConnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
-	virtual void ConnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag) {}
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
-	void DisconnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
-	virtual void DisconnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag) {}
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
-	void ConnectPortraitWidget(UWidget* TargetWidget, FName ClaimedTag);
-	virtual void ConnectPortraitWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag) {}
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Widget")
-	void DisconnectPortraitWidget(UWidget* TargetWidget, FName ClaimedTag);
-	virtual void DisconnectPortraitWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag) {}
+	TArray<FGenericWidgetClaimer> GetInfoWidgets_Implementation() const { return InfoWidgets; }
+	TArray<FGenericWidgetClaimer> GetPortraitWidgets_Implementation() const { return PortraitWidgets; }
+	void ConnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag);
+	void DisconnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag);
 //
 //public:	
 //	// Sets default values for this component's properties
