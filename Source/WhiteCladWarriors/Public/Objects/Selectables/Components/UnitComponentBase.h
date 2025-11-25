@@ -9,7 +9,15 @@
 
 class UWidget;
 
+USTRUCT(BlueprintType)
+struct FWidgetArray
+{
+	GENERATED_BODY()
 
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "Widget")
+	TArray<UWidget*> WidgetArray;
+};
 
 UCLASS( Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent, public IInfoConnectable
@@ -22,6 +30,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
 	TArray<FGenericWidgetClaimer> PortraitWidgets;
+
+	UPROPERTY(BlueprintReadOnly, Category = "GenericWidget")
+	TMap<FName, FWidgetArray> ConnectedWidgets;
+
+public:
+	UFUNCTION(BlueprintPure, Category = "GenericWidget")
+	TArray<UWidget*> GetConnectedWidgetsWithTag(FName WantTag);
 
 public:
 	TArray<FGenericWidgetClaimer> GetInfoWidgets_Implementation() const { return InfoWidgets; }
