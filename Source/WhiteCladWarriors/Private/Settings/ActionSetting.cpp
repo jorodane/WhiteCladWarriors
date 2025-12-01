@@ -3,6 +3,34 @@
 
 #include "Settings/ActionSetting.h"
 
+TObjectPtr<UActionSetting> UActionSetting::CurrentSetting = nullptr;
+
+void UActionSetting::OnAttached(AMapSetting* Owner)
+{
+	if (CurrentSetting == nullptr)
+	{
+		CurrentSetting = this;
+	}
+}
+void UActionSetting::OnDetached(AMapSetting* Owner)
+{
+	if (CurrentSetting == this)
+	{
+		CurrentSetting = nullptr;
+	}
+}
+
+AActionBase* UActionSetting::GetAction(FName WantName)
+{
+	if (CurrentSetting)
+	{
+		if (AActionBase** Result = CurrentSetting->ActionList.Find(WantName))
+		{
+			return *Result;
+		}
+	}
+	return nullptr;
+}
 //// Sets default values for this component's properties
 //UActionSetting::UActionSetting()
 //{

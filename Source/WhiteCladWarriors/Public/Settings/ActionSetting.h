@@ -2,15 +2,31 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Settings/MapComponentBase.h"
 #include "ActionSetting.generated.h"
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class WHITECLADWARRIORS_API UActionSetting : public UActorComponent
+class AActionBase;
+
+UCLASS( Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class WHITECLADWARRIORS_API UActionSetting : public UMapComponentBase
 {
 	GENERATED_BODY()
 
+protected:
+	static TObjectPtr<UActionSetting> CurrentSetting;
+
+protected:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TMap<FName, AActionBase*> ActionList;
+
+protected:
+	void OnAttached(AMapSetting* Owner) override;
+	void OnDetached(AMapSetting* Owner) override;
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static AActionBase* GetAction(FName WantName);
 //public:	
 //	// Sets default values for this component's properties
 //	UActionSetting();

@@ -2,8 +2,10 @@
 
 
 #include "Settings/MapSetting.h"
+#include "Settings/ActionSetting.h"
 
-AMapSetting* AMapSetting::CurrentSetting = nullptr;
+TObjectPtr<AMapSetting> AMapSetting::CurrentSetting = nullptr;
+
 const FVector2D AMapSetting::DefaultMapHalfSize = DEFAULT_MAP_HALFSIZE;
 const FVector2D AMapSetting::DefaultMapSize = DEFAULT_MAP_SIZE;
 const FString AMapSetting::DefaultMapName = DEFAULT_MAP_NAME;
@@ -23,6 +25,7 @@ void AMapSetting::PreInitializeComponents()
 	else
 	{
 		CurrentSetting = this;
+		GetComponentByClass<>
 	}
 }
 

@@ -29,7 +29,7 @@ class WHITECLADWARRIORS_API AMapSetting : public AActor
 	GENERATED_BODY()
 	
 private:
-	static AMapSetting* CurrentSetting;
+	static TObjectPtr<AMapSetting> CurrentSetting;
 
 public:
 	static const FVector2D DefaultMapHalfSize;
