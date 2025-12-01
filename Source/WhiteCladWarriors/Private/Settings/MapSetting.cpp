@@ -2,13 +2,13 @@
 
 
 #include "Settings/MapSetting.h"
-#include "Settings/ActionSetting.h"
+#include "Interfaces/MapSettingConnectable.h"
 
 TObjectPtr<AMapSetting> AMapSetting::CurrentSetting = nullptr;
 
 const FVector2D AMapSetting::DefaultMapHalfSize = DEFAULT_MAP_HALFSIZE;
 const FVector2D AMapSetting::DefaultMapSize = DEFAULT_MAP_SIZE;
-const FString AMapSetting::DefaultMapName = DEFAULT_MAP_NAME;
+const FString AMapSetting::DefaultMapName = DEFAULT_MISSING_NAME;
 
 FString AMapSetting::GetCurrentMapName() { return CurrentSetting ? CurrentSetting->Info.MapName : DefaultMapName; }
 FVector2D AMapSetting::GetCurrentMapHalfSize() { return CurrentSetting ? CurrentSetting->Info.MapHalfSize : DefaultMapHalfSize; }
@@ -25,14 +25,18 @@ void AMapSetting::PreInitializeComponents()
 	else
 	{
 		CurrentSetting = this;
-		GetComponentByClass<>
+		
+		for (UActorComponent* CurrentComponent : GetComponentsByInterface(UMapSettingConnectable::StaticClass()))
+		{
+			IMapSettingConnectable::Execute_OnAttached(CurrentComponent, this);
+		}
 	}
 }
 
 void AMapSetting::BeginDestroy()
 {
-	Super::BeginDestroy();
 	if (CurrentSetting == this) CurrentSetting = nullptr;
+	Super::BeginDestroy();
 }
 
 FVector AMapSetting::MapOffsetToPosition(FVector2D Offset, bool Clamped01, bool InvertX, bool InvertY)

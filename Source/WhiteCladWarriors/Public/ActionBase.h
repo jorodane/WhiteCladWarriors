@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ActionBase.generated.h"
 
-UCLASS()
+UCLASS( Blueprintable, BlueprintType )
 class WHITECLADWARRIORS_API AActionBase : public AActor
 {
 	GENERATED_BODY()

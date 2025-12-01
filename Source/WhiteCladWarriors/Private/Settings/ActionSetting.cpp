@@ -5,19 +5,32 @@
 
 TObjectPtr<UActionSetting> UActionSetting::CurrentSetting = nullptr;
 
-void UActionSetting::OnAttached(AMapSetting* Owner)
+void UActionSetting::DestroyComponent(bool bPromoteChildren)
 {
+	if (Owner) IMapSettingConnectable::Execute_OnDetached(this, Owner);
+	Super::DestroyComponent(bPromoteChildren);
+}
+
+void UActionSetting::OnAttached_Implementation(AMapSetting* NewOwner)
+{
+	Owner = NewOwner;
 	if (CurrentSetting == nullptr)
 	{
 		CurrentSetting = this;
 	}
 }
-void UActionSetting::OnDetached(AMapSetting* Owner)
+void UActionSetting::OnDetached_Implementation(AMapSetting* OldOwner)
 {
+	if (OldOwner == Owner) Owner = nullptr;
 	if (CurrentSetting == this)
 	{
 		CurrentSetting = nullptr;
 	}
+}
+
+void UActionSetting::InitiateActions_Implementation(const FMapInfo& WantInfo)
+{
+
 }
 
 AActionBase* UActionSetting::GetAction(FName WantName)
