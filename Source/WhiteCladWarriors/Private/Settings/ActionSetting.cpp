@@ -2,6 +2,7 @@
 
 
 #include "Settings/ActionSetting.h"
+#include "Settings/MapSetting.h"
 
 TObjectPtr<UActionSetting> UActionSetting::CurrentSetting = nullptr;
 
@@ -14,10 +15,7 @@ void UActionSetting::DestroyComponent(bool bPromoteChildren)
 void UActionSetting::OnAttached_Implementation(AMapSetting* NewOwner)
 {
 	Owner = NewOwner;
-	if (CurrentSetting == nullptr)
-	{
-		CurrentSetting = this;
-	}
+	CurrentSetting = this;
 }
 void UActionSetting::OnDetached_Implementation(AMapSetting* OldOwner)
 {

@@ -18,7 +18,7 @@ FVector2D AMapSetting::GetCurrentMapSize() { return CurrentSetting ? CurrentSett
 void AMapSetting::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
-	if (CurrentSetting)
+	if (CurrentSetting != nullptr && CurrentSetting != this)
 	{
 		Destroy();
 	}
