@@ -15,6 +15,12 @@ class AIngameController;
 class AAreaSelector;
 class UCameraComponent;
 
+UENUM(BlueprintType)
+enum class EInputType : uint8
+{
+	Position, Direction, SingleTarget, MultiTarget,
+};
+
 UCLASS()
 class WHITECLADWARRIORS_API AOperator : public APawn, public IPlayerConnectable
 {

@@ -11,7 +11,7 @@ class UActionExecutor;
 /**
  * 
  */
-UCLASS()
+UCLASS( Blueprintable, BlueprintType )
 class WHITECLADWARRIORS_API UActionNode : public UObject
 {
 	GENERATED_BODY()
