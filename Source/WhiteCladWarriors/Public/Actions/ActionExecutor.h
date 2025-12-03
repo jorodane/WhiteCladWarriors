@@ -12,7 +12,7 @@ class AUnitBase;
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class WHITECLADWARRIORS_API UActionExecutor : public UObject
 {
 	GENERATED_BODY()

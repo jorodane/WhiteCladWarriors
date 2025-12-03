@@ -59,6 +59,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
+
 //public:	
 //	// Sets default values for this actor's properties
 //	AActionBase();
