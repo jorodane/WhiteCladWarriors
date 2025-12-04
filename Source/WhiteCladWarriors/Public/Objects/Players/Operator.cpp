@@ -2,6 +2,7 @@
 
 #include "Objects/Players/Operator.h"
 #include "Objects/Players/AreaSelector.h"
+#include "Actions/ActionBase.h"
 #include "Interfaces/Selectable.h"
 #include "Actions/UnitActionComponent.h"
 #include "Settings/MapSetting.h"
@@ -9,6 +10,18 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Camera/CameraComponent.h"
+
+
+bool UActionTargetContainer::operator < (const UActionTargetContainer& Other) const
+{
+	return (this->Action ? this->Action->GetUIOrder() : 0) < (Other.Action ? Other.Action->GetUIOrder() : 0);
+}
+
+bool UActionTargetContainer::operator > (const UActionTargetContainer& Other) const
+{
+	return (this->Action ? this->Action->GetUIOrder() : 0) > (Other.Action ? Other.Action->GetUIOrder() : 0);
+}
+
 
 bool AOperator::IsVisibleOnCamera(FMatrix Matrix, AActor* Target)
 {
@@ -89,12 +102,12 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 	CameraMove(Result, Multiplier);
 };
 
-TArray<FActionTargetContainer> AOperator::GetAvailableActionList()
+TArray<UActionTargetContainer*> AOperator::GetAvailableActionList()
 {
-	TArray< FActionTargetContainer> Result;
+	TArray<UActionTargetContainer*> Result;
 
-	for (TPair<FName, FActionTargetContainer> CurrentContainer : AvailableActions) Result.Add(CurrentContainer.Value);
-	//Result.Sort();
+	for (TPair<FName, UActionTargetContainer*> CurrentContainer : AvailableActions) Result.Add(CurrentContainer.Value);
+	Result.Sort();
 
 	return Result;
 }
@@ -162,6 +175,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 		ISelectable::Execute_Select(Target, this, bIsSingleSelection);
 		ActorAddToActionList(Target);
 	}
+
 }
 void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 {
@@ -194,34 +208,46 @@ void AOperator::DeselectActor(AActor* Target)
 
 void AOperator::DeselectActors_Implementation()
 {
-	for (AActor* CurrentTarget : SelectedActors) ISelectable::Execute_Deselect(CurrentTarget);
+	for (AActor* CurrentTarget : SelectedActors)
+	{
+		ISelectable::Execute_Deselect(CurrentTarget);
+		ActorRemoveFromActionList(CurrentTarget);
+	}
 	SelectedActors.Empty();
 	OnSelectedChanged.Broadcast(SelectedActors);
 }
 
 void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
 {
+	if(!IsValid(Target)) return;
 	for (const FName& CurrentActionName : Target->ActionList)
 	{
-		FActionTargetContainer* CurrentContainer = AvailableActions.Find(CurrentActionName);
-
-		if (CurrentContainer == nullptr)
+		UActionTargetContainer** Finder = AvailableActions.Find(CurrentActionName);
+		UActionTargetContainer* CurrentContainer = Finder ? *Finder : nullptr;
+		if (!CurrentContainer)
 		{
-			CurrentContainer = &AvailableActions.Add(CurrentActionName);
+			CurrentContainer = AvailableActions.Add(CurrentActionName, NewObject<UActionTargetContainer>(this));
 			CurrentContainer->Action = UActionSetting::GetAction(CurrentActionName);
 		}
-		CurrentContainer->Components.AddUnique(Target);
+		if(CurrentContainer) CurrentContainer->Components.AddUnique(Target);
 	}
 }
 
 void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
 {
+	if(!IsValid(Target)) return;
 	for (const FName& CurrentActionName : Target->ActionList)
 	{
-		if (FActionTargetContainer* CurrentContainer = AvailableActions.Find(CurrentActionName))
+		UActionTargetContainer** Finder = AvailableActions.Find(CurrentActionName);
+		UActionTargetContainer* CurrentContainer = Finder ? *Finder : nullptr;
+		if (CurrentContainer)
 		{
 			CurrentContainer->Components.Remove(Target);
-			if (CurrentContainer->Components.Num() == 0) AvailableActions.Remove(CurrentActionName);
+			if (CurrentContainer->Components.Num() == 0)
+			{
+				CurrentContainer->ConditionalBeginDestroy();
+				AvailableActions.Remove(CurrentActionName);
+			}
 		}
 	}
 }

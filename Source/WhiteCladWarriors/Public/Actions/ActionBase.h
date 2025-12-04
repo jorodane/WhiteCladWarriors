@@ -62,6 +62,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	void ExecuteAction(const TArray<UUnitActionComponent*>& TargetComponents);
+	void ExecuteAction_Implementation(const TArray<UUnitActionComponent*>& TargetComponents) {}
+
 
 //public:	
 //	// Sets default values for this actor's properties

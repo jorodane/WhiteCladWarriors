@@ -24,16 +24,22 @@ enum class EInputType : uint8
 	Position, Direction, SingleTarget, MultiTarget,
 };
 
-USTRUCT(BlueprintType)
-struct FActionTargetContainer
+UCLASS(BlueprintType)
+class UActionTargetContainer : public UObject
 {
 	GENERATED_BODY()
 
+public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TObjectPtr<AActionBase> Action;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<UUnitActionComponent*> Components;
+
+public:
+	bool operator < (const UActionTargetContainer& Other) const;
+	bool operator > (const UActionTargetContainer& Other) const;
+
 };
 
 UCLASS()
@@ -78,7 +84,7 @@ protected:
 	TArray<AActor*> SelectedActors;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
-	TMap<FName, FActionTargetContainer> AvailableActions;
+	TMap<FName, UActionTargetContainer*> AvailableActions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;
@@ -111,7 +117,7 @@ public:
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<FActionTargetContainer> GetAvailableActionList();
+	TArray<UActionTargetContainer*> GetAvailableActionList();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetActorsInArea(bool& bIsAllSame, bool& bIsSingleSelected);
