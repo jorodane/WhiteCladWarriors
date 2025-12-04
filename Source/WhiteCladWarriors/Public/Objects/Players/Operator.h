@@ -13,12 +13,27 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AAc
 
 class AIngameController;
 class AAreaSelector;
+class AActionBase;
+class AUnitBase;
 class UCameraComponent;
+class UUnitActionComponent;
 
 UENUM(BlueprintType)
 enum class EInputType : uint8
 {
 	Position, Direction, SingleTarget, MultiTarget,
+};
+
+USTRUCT(BlueprintType)
+struct FActionTargetContainer
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<AActionBase> Action;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TArray<UUnitActionComponent*> Components;
 };
 
 UCLASS()
@@ -60,7 +75,10 @@ protected:
 	TEnumAsByte<ETraceTypeQuery> SelectChannel;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
-	TArray<AActor*> SelectedActors = TArray<AActor*>();
+	TArray<AActor*> SelectedActors;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
+	TMap<FName, FActionTargetContainer> AvailableActions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;
@@ -92,10 +110,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<FActionTargetContainer> GetAvailableActionList();
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetActorsInArea(bool& bIsAllSame, bool& bIsSingleSelected);
 	virtual TArray<AActor*> GetActorsInArea_Implementation(bool& bIsAllSame, bool& bIsSingleSelected);
-
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetVisibleSameClasses(TSubclassOf<AActor> Template);
@@ -143,6 +163,16 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActors();
 	virtual void DeselectActors_Implementation();
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ComponentAddToActionList(UUnitActionComponent* Target);
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ComponentRemoveFromActionList(UUnitActionComponent* Target);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ActorAddToActionList(AActor* Target);
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ActorRemoveFromActionList(AActor* Target);
 
 public:
 	void OnPlayerConnected_Implementation(AIngameController* NewPlayer);

@@ -14,4 +14,7 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	bool bCancelable;
 };

@@ -22,5 +22,5 @@ public:
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TObjectPtr<AUnitBase> Target;
+	TArray<AUnitBase*> Target;
 };

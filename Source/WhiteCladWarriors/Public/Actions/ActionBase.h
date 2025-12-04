@@ -33,6 +33,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Action")
 	int UIOrder;
 
+	UPROPERTY(EditAnywhere, Category = "Action")
+	bool bShowStack;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline FText		GetActionName()				{ return ActionName;}

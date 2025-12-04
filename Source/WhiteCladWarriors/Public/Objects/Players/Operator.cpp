@@ -2,11 +2,13 @@
 
 #include "Objects/Players/Operator.h"
 #include "Objects/Players/AreaSelector.h"
+#include "Interfaces/Selectable.h"
+#include "Actions/UnitActionComponent.h"
+#include "Settings/MapSetting.h"
+#include "Settings/ActionSetting.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Interfaces/Selectable.h"
 #include "Camera/CameraComponent.h"
-#include "Settings/MapSetting.h"
 
 bool AOperator::IsVisibleOnCamera(FMatrix Matrix, AActor* Target)
 {
@@ -87,6 +89,16 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 	CameraMove(Result, Multiplier);
 };
 
+TArray<FActionTargetContainer> AOperator::GetAvailableActionList()
+{
+	TArray< FActionTargetContainer> Result;
+
+	for (TPair<FName, FActionTargetContainer> CurrentContainer : AvailableActions) Result.Add(CurrentContainer.Value);
+	//Result.Sort();
+
+	return Result;
+}
+
 TArray<AActor*> AOperator::GetActorsInArea_Implementation(bool& bIsAllSame, bool& bIsSingleSelected)
 {
 	if(IsValid(DragAreaActor)) return DragAreaActor->GetActorsInArea(this, bIsAllSame, bIsSingleSelected);
@@ -148,6 +160,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 	{
 		SelectedActors.AddUnique(Target);
 		ISelectable::Execute_Select(Target, this, bIsSingleSelection);
+		ActorAddToActionList(Target);
 	}
 }
 void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
@@ -170,6 +183,7 @@ void AOperator::DeselectActorWithoutNotify_Implementation(AActor* Target)
 	if (SelectedActors.Remove(Target) > 0)
 	{
 		ISelectable::Execute_Deselect(Target);
+		ActorRemoveFromActionList(Target);
 	}
 }
 void AOperator::DeselectActor(AActor* Target)
@@ -185,6 +199,54 @@ void AOperator::DeselectActors_Implementation()
 	OnSelectedChanged.Broadcast(SelectedActors);
 }
 
+void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
+{
+	for (const FName& CurrentActionName : Target->ActionList)
+	{
+		FActionTargetContainer* CurrentContainer = AvailableActions.Find(CurrentActionName);
+
+		if (CurrentContainer == nullptr)
+		{
+			CurrentContainer = &AvailableActions.Add(CurrentActionName);
+			CurrentContainer->Action = UActionSetting::GetAction(CurrentActionName);
+		}
+		CurrentContainer->Components.AddUnique(Target);
+	}
+}
+
+void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
+{
+	for (const FName& CurrentActionName : Target->ActionList)
+	{
+		if (FActionTargetContainer* CurrentContainer = AvailableActions.Find(CurrentActionName))
+		{
+			CurrentContainer->Components.Remove(Target);
+			if (CurrentContainer->Components.Num() == 0) AvailableActions.Remove(CurrentActionName);
+		}
+	}
+}
+
+void AOperator::ActorAddToActionList(AActor* Target)
+{
+	for (UActorComponent* CurrentComponent : Target->GetComponents())
+	{
+		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
+		{
+			ComponentAddToActionList(AsActionComponent);
+		}
+	}
+}
+
+void AOperator::ActorRemoveFromActionList(AActor* Target)
+{
+	for (UActorComponent* CurrentComponent : Target->GetComponents())
+	{
+		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
+		{
+			ComponentRemoveFromActionList(AsActionComponent);
+		}
+	}
+}
 
 void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
 {
