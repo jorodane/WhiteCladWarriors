@@ -94,10 +94,10 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 	FVector2D MouseFromEdge = ViewportSize - MousePosition;
 	FVector2D Result = FVector2D::ZeroVector;
 
-	if (MousePosition.X >= 0 && MousePosition.X <= CameraMovePaddingSize) Result.X += -1.0f;
 	if (MouseFromEdge.X >= 0 && MouseFromEdge.X <= CameraMovePaddingSize) Result.X += 1.0f;
+	if (MousePosition.X >= 0 && MousePosition.X <= CameraMovePaddingSize) Result.X -= 1.0f;
 	if (MousePosition.Y >= 0 && MousePosition.Y <= CameraMovePaddingSize) Result.Y += 1.0f;
-	if (MouseFromEdge.Y >= 0 && MouseFromEdge.Y <= CameraMovePaddingSize) Result.Y += -1.0f;
+	if (MouseFromEdge.Y >= 0 && MouseFromEdge.Y <= CameraMovePaddingSize) Result.Y -= 1.0f;
 
 	CameraMove(Result, Multiplier);
 };
