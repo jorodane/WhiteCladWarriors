@@ -7,6 +7,7 @@
 #include "ActionBase.generated.h"
 
 class UActionNode;
+class AOperator;
 
 UCLASS( Blueprintable, BlueprintType )
 class WHITECLADWARRIORS_API AActionBase : public AActor
@@ -63,8 +64,8 @@ public:
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void ExecuteAction(const TArray<UUnitActionComponent*>& TargetComponents);
-	void ExecuteAction_Implementation(const TArray<UUnitActionComponent*>& TargetComponents) {}
+	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
+	void ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents) {}
 
 
 //public:	

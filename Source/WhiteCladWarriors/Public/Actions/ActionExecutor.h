@@ -7,7 +7,8 @@
 #include "ActionExecutor.generated.h"
 
 class AOperator;
-class AUnitBase;
+class UUnitActionComponent;
+class UActionNode;
 
 /**
  * 
@@ -19,8 +20,28 @@ class WHITECLADWARRIORS_API UActionExecutor : public UObject
 	
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> CurrentNode;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TArray<AUnitBase*> Target;
+	TArray<UUnitActionComponent*> Target;
+
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void EnterNode(UActionNode* TargetNode);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	void OnNodeEnter(UActionNode* NewNode);
+	void OnNodeEnter_Implementation(UActionNode* NewNode) {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	void OnNodeEnd(UActionNode* LastNode);
+	void OnNodeEnd_Implementation(UActionNode* LastNode) {};
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Action")
+	void OnNodeMove(UActionNode* OldNode, UActionNode* NewNode);
+	void OnNodeMove_Implementation(UActionNode* OldNode, UActionNode* NewNode) {};
 };
