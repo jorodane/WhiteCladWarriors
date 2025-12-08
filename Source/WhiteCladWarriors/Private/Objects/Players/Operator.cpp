@@ -68,6 +68,28 @@ void AOperator::UnPossessed()
 	MouseHitActor = nullptr;
 }
 
+void AOperator::ClaimInputLast(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
+{
+	UActionExecutor* Result = CreateInputClaim(TargetNode, TargetExecutor);
+}
+
+void AOperator::ClaimInputFirst(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
+{
+	UActionExecutor* Result = CreateInputClaim(TargetNode, TargetExecutor);
+}
+
+UActionExecutor* AOperator::CreateInputClaim(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
+{
+	UActionExecutor* Result = nullptr;
+
+	return Result;
+}
+
+void AOperator::RemoveInputClaim(UActionExecutor* WantExecutor)
+{
+	InputList.RemoveAll([&](const FInputClaim& CurrentClaim) -> bool { return CurrentClaim.TargetExecutor == WantExecutor; });
+}
+
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
 	Multiplier *= CameraLength / DEFAULT_CAMERALENGTH;

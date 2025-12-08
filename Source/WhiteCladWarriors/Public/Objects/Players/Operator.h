@@ -8,10 +8,6 @@
 #include "Interfaces/PlayerConnectable.h"
 #include "Operator.generated.h"
 
-#define DEFAULT_CAMERALENGTH 2000.0f
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
-
 class AIngameController;
 class AAreaSelector;
 class AActionBase;
@@ -52,13 +48,16 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<UUnitActionComponent*> Components;
 
-	TQueue<FInputClaim> InputQueue;
-
 public:
 	bool operator < (const UActionTargetContainer& Other) const;
 	bool operator > (const UActionTargetContainer& Other) const;
 
 };
+
+#define DEFAULT_CAMERALENGTH 2000.0f
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputClaimChanged, const FInputClaim&, NewClaim);
 
 UCLASS()
 class WHITECLADWARRIORS_API AOperator : public APawn, public IPlayerConnectable
@@ -68,6 +67,9 @@ class WHITECLADWARRIORS_API AOperator : public APawn, public IPlayerConnectable
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Select")
 	FOnSelectedChanged OnSelectedChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnInputClaimChanged OnInputClaimChanged;
 
 protected:
 
@@ -104,6 +106,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
 	TMap<FName, UActionTargetContainer*> AvailableActions;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
+	TArray<FInputClaim> InputList;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;
 
@@ -120,6 +125,18 @@ public:
 	void UnPossessed() override;
 
 public:
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void ClaimInputLast(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void ClaimInputFirst(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
+
+	UActionExecutor* CreateInputClaim(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void RemoveInputClaim(UActionExecutor* WantExecutor);
+
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMove(FVector2D Direction, float Multiplier);
 
