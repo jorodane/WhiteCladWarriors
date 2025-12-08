@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Queue.h"
 #include "GameFramework/Pawn.h"
 #include "Interfaces/PlayerConnectable.h"
 #include "Operator.generated.h"
@@ -14,6 +15,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AAc
 class AIngameController;
 class AAreaSelector;
 class AActionBase;
+class UActionExecutor;
+class UActionSelectorNode;
 class AUnitBase;
 class UCameraComponent;
 class UUnitActionComponent;
@@ -22,6 +25,19 @@ UENUM(BlueprintType)
 enum class EInputType : uint8
 {
 	Position, Direction, SingleTarget, MultiTarget,
+};
+
+USTRUCT(BlueprintType)
+struct FInputClaim
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<UActionSelectorNode> TargetNode;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<UActionExecutor> TargetExecutor;
+
 };
 
 UCLASS(BlueprintType)
@@ -35,6 +51,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<UUnitActionComponent*> Components;
+
+	TQueue<FInputClaim> InputQueue;
 
 public:
 	bool operator < (const UActionTargetContainer& Other) const;

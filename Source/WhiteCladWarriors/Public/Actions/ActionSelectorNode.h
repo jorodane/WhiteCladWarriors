@@ -17,4 +17,13 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	bool bCancelable;
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void OnPositionInput(UActionExecutor* Executor, FVector Position);
+	virtual void OnPositionInput_Implementation(UActionExecutor* Executor, FVector Position) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void OnActorInput(UActionExecutor* Executor, AActor* Actor);
+	virtual void OnActorInput_Implementation(UActionExecutor* Executor, AActor* Actor) {}
 };

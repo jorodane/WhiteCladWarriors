@@ -19,7 +19,7 @@ class WHITECLADWARRIORS_API UActionExecutor : public UObject
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TObjectPtr<UActionNode> CurrentNode;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
