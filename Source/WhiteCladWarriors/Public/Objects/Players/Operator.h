@@ -34,6 +34,16 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TObjectPtr<UActionExecutor> TargetExecutor;
 
+	FInputClaim()
+	{
+		TargetNode = nullptr;
+		TargetExecutor = nullptr;
+	}
+	FInputClaim(UActionSelectorNode* WantNode, UActionExecutor* WantExecutor)
+	{
+		TargetNode = WantNode;
+		TargetExecutor = WantExecutor;
+	}
 };
 
 UCLASS(BlueprintType)
@@ -132,8 +142,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ClaimInputFirst(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
 
-	UActionExecutor* CreateInputClaim(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
-
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void RemoveInputClaim(UActionExecutor* WantExecutor);
 
@@ -220,4 +228,7 @@ public:
 	void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
 
+public:
+	UFUNCTION(BlueprintCallable, Category = "Operator")
+	static AOperator* GetLocalOperator();
 };

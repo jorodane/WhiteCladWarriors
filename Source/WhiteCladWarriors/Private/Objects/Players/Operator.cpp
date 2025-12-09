@@ -3,8 +3,9 @@
 #include "Objects/Players/Operator.h"
 #include "Objects/Players/AreaSelector.h"
 #include "Actions/ActionBase.h"
-#include "Interfaces/Selectable.h"
+#include "Actions/ActionExecutor.h"
 #include "Actions/UnitActionComponent.h"
+#include "Interfaces/Selectable.h"
 #include "Settings/MapSetting.h"
 #include "Settings/ActionSetting.h"
 #include "Kismet/GameplayStatics.h"
@@ -70,24 +71,27 @@ void AOperator::UnPossessed()
 
 void AOperator::ClaimInputLast(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
 {
-	UActionExecutor* Result = CreateInputClaim(TargetNode, TargetExecutor);
+	FInputClaim NewClaim = FInputClaim(TargetNode, TargetExecutor);
+	InputList.Add(NewClaim);
+	if(InputList.Num() == 1) OnInputClaimChanged.Broadcast(NewClaim);
 }
 
 void AOperator::ClaimInputFirst(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
 {
-	UActionExecutor* Result = CreateInputClaim(TargetNode, TargetExecutor);
-}
-
-UActionExecutor* AOperator::CreateInputClaim(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
-{
-	UActionExecutor* Result = nullptr;
-
-	return Result;
+	FInputClaim NewClaim = FInputClaim(TargetNode, TargetExecutor);
+	InputList.Insert(NewClaim, 0);
+	OnInputClaimChanged.Broadcast(NewClaim);
 }
 
 void AOperator::RemoveInputClaim(UActionExecutor* WantExecutor)
 {
-	InputList.RemoveAll([&](const FInputClaim& CurrentClaim) -> bool { return CurrentClaim.TargetExecutor == WantExecutor; });
+	int TargetIndex = InputList.IndexOfByPredicate([&](const FInputClaim& CurrentClaim) -> bool { return CurrentClaim.TargetExecutor == WantExecutor; });
+	InputList.RemoveAt(TargetIndex);
+	if (TargetIndex == 0)
+	{
+		if (InputList.Num() > 0)	OnInputClaimChanged.Broadcast(InputList[0]);
+		else OnInputClaimChanged.Broadcast(FInputClaim(nullptr, nullptr));
+	};
 }
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
@@ -308,3 +312,7 @@ void AOperator::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer
 	PlayerController = nullptr;
 }
 
+AOperator* AOperator::GetLocalOperator()
+{
+	 UGameplayStatics::GetPlayerController();
+}

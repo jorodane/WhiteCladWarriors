@@ -28,7 +28,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TArray<UUnitActionComponent*> Target;
 
-
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(UActionNode* TargetNode);
