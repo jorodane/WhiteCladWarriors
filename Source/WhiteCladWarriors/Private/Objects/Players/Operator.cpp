@@ -13,6 +13,9 @@
 #include "Camera/CameraComponent.h"
 
 
+TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
+FInputClaim FInputClaim::Claim_None;
+
 bool UActionTargetContainer::operator < (const UActionTargetContainer& Other) const
 {
 	return (this->Action ? this->Action->GetUIOrder() : 0) < (Other.Action ? Other.Action->GetUIOrder() : 0);
@@ -32,6 +35,7 @@ bool AOperator::IsVisibleOnCamera(FMatrix Matrix, AActor* Target)
 	return	UKismetMathLibrary::InRange_FloatFloat((ActorLocationOnCamera.X / ActorLocationOnCamera.W), -1.0, 1.0) &&
 			UKismetMathLibrary::InRange_FloatFloat((ActorLocationOnCamera.Y / ActorLocationOnCamera.W), -1.0, 1.0);
 }
+
 
 void AOperator::Tick(float DeltaSeconds)
 {
@@ -59,6 +63,7 @@ void AOperator::Tick(float DeltaSeconds)
 void AOperator::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
+	if (NewController->IsLocalPlayerController()) LocalOperator = this;
 }
 
 void AOperator::UnPossessed()
@@ -67,31 +72,19 @@ void AOperator::UnPossessed()
 	DeselectActors();
 	if (IsValid(MouseHitActor)) ISelectable::Execute_MouseHoverEnd(MouseHitActor);
 	MouseHitActor = nullptr;
+	if (LocalOperator == this) LocalOperator = nullptr;
 }
 
-void AOperator::ClaimInputLast(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
+void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 {
-	FInputClaim NewClaim = FInputClaim(TargetNode, TargetExecutor);
-	InputList.Add(NewClaim);
-	if(InputList.Num() == 1) OnInputClaimChanged.Broadcast(NewClaim);
-}
-
-void AOperator::ClaimInputFirst(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor)
-{
-	FInputClaim NewClaim = FInputClaim(TargetNode, TargetExecutor);
-	InputList.Insert(NewClaim, 0);
-	OnInputClaimChanged.Broadcast(NewClaim);
+	CurrentInput = ClaimInfo;
+	OnInputClaimChanged.Broadcast(CurrentInput);
 }
 
 void AOperator::RemoveInputClaim(UActionExecutor* WantExecutor)
 {
-	int TargetIndex = InputList.IndexOfByPredicate([&](const FInputClaim& CurrentClaim) -> bool { return CurrentClaim.TargetExecutor == WantExecutor; });
-	InputList.RemoveAt(TargetIndex);
-	if (TargetIndex == 0)
-	{
-		if (InputList.Num() > 0)	OnInputClaimChanged.Broadcast(InputList[0]);
-		else OnInputClaimChanged.Broadcast(FInputClaim(nullptr, nullptr));
-	};
+	CurrentInput = FInputClaim::Claim_None;
+	OnInputClaimChanged.Broadcast(CurrentInput);
 }
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
@@ -312,7 +305,3 @@ void AOperator::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer
 	PlayerController = nullptr;
 }
 
-AOperator* AOperator::GetLocalOperator()
-{
-	 UGameplayStatics::GetPlayerController();
-}

@@ -28,21 +28,24 @@ struct FInputClaim
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	static FInputClaim Claim_None;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionExecutor> TargetExecutor;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	FName TargetTag;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	FText TargetDescription;
 
 	FInputClaim()
 	{
 		TargetNode = nullptr;
 		TargetExecutor = nullptr;
-	}
-	FInputClaim(UActionSelectorNode* WantNode, UActionExecutor* WantExecutor)
-	{
-		TargetNode = WantNode;
-		TargetExecutor = WantExecutor;
 	}
 };
 
@@ -83,6 +86,8 @@ public:
 
 protected:
 
+	static TObjectPtr<AOperator> LocalOperator;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	TObjectPtr<UCameraComponent> SelectorCamera;
 
@@ -117,7 +122,7 @@ protected:
 	TMap<FName, UActionTargetContainer*> AvailableActions;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
-	TArray<FInputClaim> InputList;
+	FInputClaim CurrentInput;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;
@@ -129,6 +134,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
 	static bool IsVisibleOnCamera(FMatrix Matrix, AActor* Target);
 
+	UFUNCTION(BlueprintPure, Category = "Operator")
+	static AOperator* GetLocalOperator() { return LocalOperator; }
+
 public:
 	void Tick(float DeltaSeconds) override;
 	void PossessedBy(AController* NewController) override;
@@ -137,10 +145,7 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	void ClaimInputLast(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
-
-	UFUNCTION(BlueprintCallable, Category = "Input")
-	void ClaimInputFirst(UActionSelectorNode* TargetNode, UActionExecutor* TargetExecutor);
+	void ClaimInput(const FInputClaim& ClaimInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void RemoveInputClaim(UActionExecutor* WantExecutor);
@@ -227,8 +232,5 @@ public:
 	void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
 	void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Operator")
-	static AOperator* GetLocalOperator();
+	
 };
