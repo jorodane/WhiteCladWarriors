@@ -31,6 +31,9 @@ struct FInputClaim
 	static FInputClaim Claim_None;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	EInputType ClaimType;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
@@ -149,6 +152,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void RemoveInputClaim(UActionExecutor* WantExecutor);
+
+	UFUNCTION(BlueprintPure, Category = "Input")
+	bool IsInputClaimed();
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMove(FVector2D Direction, float Multiplier);

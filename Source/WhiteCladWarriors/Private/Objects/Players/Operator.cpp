@@ -83,9 +83,12 @@ void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 
 void AOperator::RemoveInputClaim(UActionExecutor* WantExecutor)
 {
+	if (!IsInputClaimed()) return;
 	CurrentInput = FInputClaim::Claim_None;
 	OnInputClaimChanged.Broadcast(CurrentInput);
 }
+
+bool AOperator::IsInputClaimed() { return IsValid(CurrentInput.TargetExecutor); }
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
