@@ -4,6 +4,7 @@
 #include "Objects/Players/AreaSelector.h"
 #include "Actions/ActionBase.h"
 #include "Actions/ActionExecutor.h"
+#include "Actions/ActionSelectorNode.h"
 #include "Actions/UnitActionComponent.h"
 #include "Interfaces/Selectable.h"
 #include "Settings/MapSetting.h"
@@ -81,12 +82,18 @@ void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 	OnInputClaimChanged.Broadcast(CurrentInput);
 }
 
-void AOperator::RemoveInputClaim(UActionExecutor* WantExecutor)
+void AOperator::ForceRemoveInputClaim()
 {
-	if (!IsInputClaimed()) return;
 	CurrentInput = FInputClaim::Claim_None;
 	OnInputClaimChanged.Broadcast(CurrentInput);
 }
+
+void AOperator::CancelInputClaim()
+{
+	if (!IsInputClaimed() || CurrentInput.TargetNode == nullptr) return;
+	if (CurrentInput.TargetNode->CancelInput(CurrentInput.TargetExecutor)) ForceRemoveInputClaim();
+}
+
 
 bool AOperator::IsInputClaimed() { return IsValid(CurrentInput.TargetExecutor); }
 

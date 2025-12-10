@@ -151,7 +151,10 @@ public:
 	void ClaimInput(const FInputClaim& ClaimInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	void RemoveInputClaim(UActionExecutor* WantExecutor);
+	void ForceRemoveInputClaim();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void CancelInputClaim();
 
 	UFUNCTION(BlueprintPure, Category = "Input")
 	bool IsInputClaimed();

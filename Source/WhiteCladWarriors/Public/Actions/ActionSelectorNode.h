@@ -16,14 +16,41 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 	
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> OnComplete;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> OnCanceled;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> OnFailed;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	bool bCancelable;
+protected:
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	bool OnPositionInput(UActionExecutor* Executor, FVector Position);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	bool OnActorInput(UActionExecutor* Executor, AActor* Actor);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	bool OnCancelInput(UActionExecutor* Executor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	bool CompleteInput(UActionExecutor* Executor);
+	bool CompleteInput_Implementation(UActionExecutor* Executor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	void FailInput(UActionExecutor* Executor);
+	void FailInput_Implementation(UActionExecutor* Executor);
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void OnPositionInput(UActionExecutor* Executor, FVector Position);
-	virtual void OnPositionInput_Implementation(UActionExecutor* Executor, FVector Position) {}
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool PositionInput(UActionExecutor* Executor, FVector Position) { return OnPositionInput(Executor, Position); }
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void OnActorInput(UActionExecutor* Executor, AActor* Actor);
-	virtual void OnActorInput_Implementation(UActionExecutor* Executor, AActor* Actor) {}
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool ActorInput(UActionExecutor* Executor, AActor* Actor) { return OnActorInput(Executor, Actor); }
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool CancelInput(UActionExecutor* Executor);
 };

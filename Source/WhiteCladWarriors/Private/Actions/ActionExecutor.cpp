@@ -57,6 +57,10 @@ void UActionExecutor::EnterNode(UActionNode* TargetNode)
 		CurrentNode = TargetNode;
 		TargetNode->ClaimExecute(this);
 	}
-	else OnNodeEnd(CurrentNode);
+	else
+	{
+		OnNodeEnd(CurrentNode);
+		ConditionalBeginDestroy();
+	}
 }
 
