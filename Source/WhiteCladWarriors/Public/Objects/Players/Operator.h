@@ -6,6 +6,7 @@
 #include "Containers/Queue.h"
 #include "GameFramework/Pawn.h"
 #include "Interfaces/PlayerConnectable.h"
+#include "Generals/Structs/InputPackage.h"
 #include "Operator.generated.h"
 
 class AIngameController;
@@ -100,18 +101,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AIngameController> PlayerController;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
-	TObjectPtr<AActor> MouseHitActor;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
-	TObjectPtr<AActor> MouseClickActor;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess=true))
-	FVector MouseTerrainPosition;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Select", meta = (AllowPrivateAccess=true))
-	FVector DragStartPosition;
-
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
 	TEnumAsByte<ETraceTypeQuery> ClickAreaChannel;
 
@@ -124,8 +113,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
 	TMap<FName, UActionTargetContainer*> AvailableActions;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
+	FInputPackage CurrentInputPackage;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
-	FInputClaim CurrentInput;
+	FInputClaim CurrentInputClaim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;

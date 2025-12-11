@@ -49,15 +49,15 @@ void AOperator::Tick(float DeltaSeconds)
 		bool isClickAreaHit = AsPlayerController->GetHitResultUnderCursorByChannel(ClickAreaChannel, false, ClickAreaHitResult);
 		bool isSelectHit = AsPlayerController->GetHitResultUnderCursorByChannel(SelectChannel, false, SelectHitResult);
 
-		if (isClickAreaHit) MouseTerrainPosition = ClickAreaHitResult.Location;
+		if (isClickAreaHit) CurrentInputPackage.MouseTerrainPosition = ClickAreaHitResult.Location;
 		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
-		if (CurrentSelectHitActor != MouseHitActor)
+		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
 		{
-			if (IsValid(MouseHitActor)) ISelectable::Execute_MouseHoverEnd(MouseHitActor);
-			MouseHitActor = CurrentSelectHitActor;
-			if (IsValid(MouseHitActor)) ISelectable::Execute_MouseHoverBegin(MouseHitActor);
+			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverEnd(CurrentInputPackage.MouseHitActor);
+			CurrentInputPackage.MouseHitActor = CurrentSelectHitActor;
+			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverBegin(CurrentInputPackage.MouseHitActor);
 		}
-		MouseHitActor = SelectHitResult.GetActor();
+		CurrentInputPackage.MouseHitActor = SelectHitResult.GetActor();
 	}
 }
 
@@ -71,31 +71,31 @@ void AOperator::UnPossessed()
 {
 	Super::UnPossessed();
 	DeselectActors();
-	if (IsValid(MouseHitActor)) ISelectable::Execute_MouseHoverEnd(MouseHitActor);
-	MouseHitActor = nullptr;
+	if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverEnd(CurrentInputPackage.MouseHitActor);
+	CurrentInputPackage.MouseHitActor = nullptr;
 	if (LocalOperator == this) LocalOperator = nullptr;
 }
 
 void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 {
-	CurrentInput = ClaimInfo;
-	OnInputClaimChanged.Broadcast(CurrentInput);
+	CurrentInputClaim = ClaimInfo;
+	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
 void AOperator::ForceRemoveInputClaim()
 {
-	CurrentInput = FInputClaim::Claim_None;
-	OnInputClaimChanged.Broadcast(CurrentInput);
+	CurrentInputClaim = FInputClaim::Claim_None;
+	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
 void AOperator::CancelInputClaim()
 {
-	if (!IsInputClaimed() || CurrentInput.TargetNode == nullptr) return;
-	if (CurrentInput.TargetNode->CancelInput(CurrentInput.TargetExecutor)) ForceRemoveInputClaim();
+	if (!IsInputClaimed() || CurrentInputClaim.TargetNode == nullptr) return;
+	if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor)) ForceRemoveInputClaim();
 }
 
 
-bool AOperator::IsInputClaimed() { return IsValid(CurrentInput.TargetExecutor); }
+bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetExecutor); }
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
