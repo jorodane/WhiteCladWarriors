@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Generals/Structs/InputPackage.h"
 #include "ActionNode.generated.h"
 
 class UActionExecutor;
@@ -21,4 +22,7 @@ public:
 	void ClaimExecute(UActionExecutor* Executor);
 	virtual void ClaimExecute_Implementation(UActionExecutor* Executor) {}
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void ClaimExecuteWithInput(UActionExecutor* Executor, const FInputPackage& Input);
+	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, const FInputPackage& Input) {}
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Generals/Structs/InputPackage.h"
 #include "ActionBase.generated.h"
 
 class UActionNode;
@@ -67,7 +68,9 @@ public:
 	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
 	void ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents) {}
 
-
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	void ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
+	void ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input) {}
 //public:	
 //	// Sets default values for this actor's properties
 //	AActionBase();

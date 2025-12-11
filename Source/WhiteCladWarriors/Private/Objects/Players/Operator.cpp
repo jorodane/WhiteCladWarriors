@@ -192,7 +192,7 @@ void AOperator::DrawDragArea_Implementation(FVector Begin, FVector End)
 void AOperator::SelectToggle_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	if (SelectedActors.Contains(Target)) DeselectActor(Target);
+	if (CurrentInputPackage.SelectedActors.Contains(Target)) DeselectActor(Target);
 	else SelectActor(Target, true);
 }
 void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection)
@@ -200,7 +200,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 	if (!IsValid(Target)) return;
 	if (ISelectable::Execute_IsSelectable(Target, this))
 	{
-		SelectedActors.AddUnique(Target);
+		CurrentInputPackage.SelectedActors.AddUnique(Target);
 		ISelectable::Execute_Select(Target, this, bIsSingleSelection);
 		ActorAddToActionList(Target);
 	}
@@ -209,7 +209,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 {
 	SelectActorWithoutNotify(Target, bIsSingleSelection);
-	OnSelectedChanged.Broadcast(SelectedActors);
+	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
 void AOperator::SelectActors_Implementation(const TArray<AActor*>& Targets, bool bIsSingleSelection)
@@ -218,12 +218,12 @@ void AOperator::SelectActors_Implementation(const TArray<AActor*>& Targets, bool
 	{
 		SelectActorWithoutNotify(CurrentTarget, bIsSingleSelection);
 	};
-	OnSelectedChanged.Broadcast(SelectedActors);
+	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 void AOperator::DeselectActorWithoutNotify_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	if (SelectedActors.Remove(Target) > 0)
+	if (CurrentInputPackage.SelectedActors.Remove(Target) > 0)
 	{
 		ISelectable::Execute_Deselect(Target);
 		ActorRemoveFromActionList(Target);
@@ -232,18 +232,18 @@ void AOperator::DeselectActorWithoutNotify_Implementation(AActor* Target)
 void AOperator::DeselectActor(AActor* Target)
 {
 	DeselectActorWithoutNotify(Target);
-	OnSelectedChanged.Broadcast(SelectedActors);
+	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
 void AOperator::DeselectActors_Implementation()
 {
-	for (AActor* CurrentTarget : SelectedActors)
+	for (AActor* CurrentTarget : CurrentInputPackage.SelectedActors)
 	{
 		ISelectable::Execute_Deselect(CurrentTarget);
 		ActorRemoveFromActionList(CurrentTarget);
 	}
-	SelectedActors.Empty();
-	OnSelectedChanged.Broadcast(SelectedActors);
+	CurrentInputPackage.SelectedActors.Empty();
+	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
 void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)

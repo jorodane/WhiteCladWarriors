@@ -12,16 +12,16 @@ struct FInputPackage
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	TObjectPtr<AActor> MouseHitActor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	TObjectPtr<AActor> MouseClickActor;
+	FVector DragStartPosition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	FVector MouseTerrainPosition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	FVector DragStartPosition;
+	TObjectPtr<AActor> MouseHitActor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	TObjectPtr<AActor> MouseClickActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	TArray<AActor*> SelectedActors;

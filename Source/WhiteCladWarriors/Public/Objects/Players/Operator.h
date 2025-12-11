@@ -107,9 +107,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
 	TEnumAsByte<ETraceTypeQuery> SelectChannel;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
-	TArray<AActor*> SelectedActors;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
 	TMap<FName, UActionTargetContainer*> AvailableActions;
 
