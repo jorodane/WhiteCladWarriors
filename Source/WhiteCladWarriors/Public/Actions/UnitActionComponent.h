@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Generals/Structs/InputPackage.h"
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "UnitActionComponent.generated.h"
 
+class AActionBase;
 /**
  * 
  */

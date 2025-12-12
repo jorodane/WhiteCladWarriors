@@ -53,6 +53,19 @@ struct FInputClaim
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FActionBinder
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TObjectPtr<AActionBase> Action;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TArray<UUnitActionComponent*> Components;
+};
+
 UCLASS(BlueprintType)
 class UActionTargetContainer : public UObject
 {
@@ -60,10 +73,7 @@ class UActionTargetContainer : public UObject
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TObjectPtr<AActionBase> Action;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TArray<UUnitActionComponent*> Components;
+	FActionBinder Value;
 
 public:
 	bool operator < (const UActionTargetContainer& Other) const;
@@ -225,6 +235,9 @@ public:
 	void ActorAddToActionList(AActor* Target);
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ActorRemoveFromActionList(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	TArray<FActionBinder> GetSimpleAction();
 
 public:
 	void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
