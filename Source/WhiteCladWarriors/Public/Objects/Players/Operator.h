@@ -53,6 +53,32 @@ struct FInputClaim
 	}
 };
 
+
+UCLASS(BlueprintType)
+class UActionTargetContainer : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<AActionBase> Action;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TArray<UUnitActionComponent*> Components;
+
+public:
+	bool operator < (const UActionTargetContainer& Other) const;
+	bool operator > (const UActionTargetContainer& Other) const;
+	
+};
+
+#define DEFAULT_CAMERALENGTH 2000.0f
+
+DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, Claim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputClaimChanged, const FInputClaim&, NewClaim);
+
+
 USTRUCT(BlueprintType)
 struct FActionBinder
 {
@@ -64,27 +90,14 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TArray<UUnitActionComponent*> Components;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	FFunctionForSimpleAction Function;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	int Order;
 };
 
-UCLASS(BlueprintType)
-class UActionTargetContainer : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	FActionBinder Value;
-
-public:
-	bool operator < (const UActionTargetContainer& Other) const;
-	bool operator > (const UActionTargetContainer& Other) const;
-
-};
-
-#define DEFAULT_CAMERALENGTH 2000.0f
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputClaimChanged, const FInputClaim&, NewClaim);
 
 UCLASS()
 class WHITECLADWARRIORS_API AOperator : public APawn, public IPlayerConnectable
@@ -237,7 +250,7 @@ public:
 	void ActorRemoveFromActionList(AActor* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	TArray<FActionBinder> GetSimpleAction();
+	void SimpleAction();
 
 public:
 	void OnPlayerConnected_Implementation(AIngameController* NewPlayer);

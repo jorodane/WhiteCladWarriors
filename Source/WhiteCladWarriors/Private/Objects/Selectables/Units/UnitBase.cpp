@@ -2,21 +2,67 @@
 
 
 #include "Objects/Selectables/Units/UnitBase.h"
+#include "Actions/UnitActionComponent.h"
+#include "Actions/ActionBase.h"
+#include "Settings/ActionSetting.h"
 
-bool AUnitBase::IsSelectable_Implementation(class AOperator* Operator)
-{ 
-	return true;
-}
-
-void AUnitBase::Select_Implementation(class AOperator* Operator, bool bIsSingleSelection)
+void AUnitBase::BeginPlay()
 {
-
+	Super::BeginPlay();
+	
+	for (UActorComponent* CurrentComponent : GetComponents()) AddActionComponent(Cast<UUnitActionComponent>(CurrentComponent));
 }
 
-void AUnitBase::Deselect_Implementation()
+TArray<AActionBase*> AUnitBase::GetActionList() const
 {
-
+	TArray<AActionBase*> Result;
+	ActionMap.GetKeys(Result);
+	return Result;
 }
+
+
+bool AUnitBase::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*& OutAction, TArray<UUnitActionComponent*>& OutComponents) const
+{
+	int MaxOrder = 0;
+	AActionBase* MaxAction = nullptr;
+	for (const TPair<AActionBase*, TArray<UUnitActionComponent*>>& CurrentPair : ActionMap)
+	{
+		AActionBase* CurrentAction = CurrentPair.Key;
+		if (!IsValid(CurrentAction)) continue;
+		for (UUnitActionComponent* CurrentComponent : CurrentPair.Value)
+		{
+			if (!IsValid(CurrentComponent)) continue;
+
+			int CurrentOrder = CurrentAction->GetSimpleActionOrder(CurrentInput, CurrentComponent);
+
+			if (CurrentOrder > MaxOrder)
+			{
+				MaxOrder = CurrentOrder;
+				MaxAction = CurrentAction;
+			}
+		}
+	}
+	if (MaxAction == nullptr) return false;
+
+	OutAction = MaxAction;
+	const TArray<UUnitActionComponent*>* ResultComponents = ActionMap.Find(OutAction);
+	OutComponents = *ResultComponents;
+	return MaxOrder > 0;
+}
+
+void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
+{
+	if (!IsValid(NewComponent)) return;
+
+	for (FName CurrentName : NewComponent->ActionList)
+	{
+		if (AActionBase* CurrentAction = UActionSetting::GetAction(CurrentName))
+		{
+			TArray<UUnitActionComponent*>& CurrentList = ActionMap.FindOrAdd(CurrentAction);
+			CurrentList.Add(NewComponent);
+		}
+	}
+};
 
 //// Sets default values
 //AUnitBase::AUnitBase()
@@ -27,11 +73,7 @@ void AUnitBase::Deselect_Implementation()
 //}
 //
 //// Called when the game starts or when spawned
-//void AUnitBase::BeginPlay()
-//{
-//	Super::BeginPlay();
-//	
-//}
+
 //
 //// Called every frame
 //void AUnitBase::Tick(float DeltaTime)

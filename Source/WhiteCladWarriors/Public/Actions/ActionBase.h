@@ -67,6 +67,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	int					GetActionOrder(const FInputPackage& CurrentInput);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
+	int					GetSimpleActionOrder(const FInputPackage& CurrentInput, UUnitActionComponent* CurrentTarget);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
 	void ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents) {}

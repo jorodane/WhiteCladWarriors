@@ -15,7 +15,7 @@ UCLASS()
 class WHITECLADWARRIORS_API UUnitActionComponent : public UUnitComponentBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	TArray<FName> ActionList;

@@ -7,11 +7,12 @@
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/UnitActionComponent.h"
 #include "Interfaces/Selectable.h"
+#include "Camera/CameraComponent.h"
 #include "Settings/MapSetting.h"
 #include "Settings/ActionSetting.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Camera/CameraComponent.h"
+#include "Misc/Optional.h"
 
 
 TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
@@ -19,12 +20,12 @@ FInputClaim FInputClaim::Claim_None;
 
 bool UActionTargetContainer::operator < (const UActionTargetContainer& Other) const
 {
-	return (this->Value.Action ? this->Value.Action->GetUIOrder() : 0) < (Other.Value.Action ? Other.Value.Action->GetUIOrder() : 0);
+	return (IsValid(this->Action) ? this->Action->GetUIOrder() : 0) < (IsValid(Other.Action) ? Other.Action->GetUIOrder() : 0);
 }
 
 bool UActionTargetContainer::operator > (const UActionTargetContainer& Other) const
 {
-	return (this->Value.Action ? this->Value.Action->GetUIOrder() : 0) > (Other.Value.Action ? Other.Value.Action->GetUIOrder() : 0);
+	return (IsValid(this->Action) ? this->Action->GetUIOrder() : 0) > (IsValid(Other.Action) ? Other.Action->GetUIOrder() : 0);
 }
 
 
@@ -256,9 +257,9 @@ void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
 		if (!CurrentContainer)
 		{
 			CurrentContainer = AvailableActions.Add(CurrentActionName, NewObject<UActionTargetContainer>(this));
-			CurrentContainer->Value.Action = UActionSetting::GetAction(CurrentActionName);
+			CurrentContainer->Action = UActionSetting::GetAction(CurrentActionName);
 		}
-		if(CurrentContainer) CurrentContainer->Value.Components.AddUnique(Target);
+		if(CurrentContainer) CurrentContainer->Components.AddUnique(Target);
 	}
 }
 
@@ -271,8 +272,8 @@ void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
 		UActionTargetContainer* CurrentContainer = Finder ? *Finder : nullptr;
 		if (CurrentContainer)
 		{
-			CurrentContainer->Value.Components.Remove(Target);
-			if (CurrentContainer->Value.Components.Num() == 0)
+			CurrentContainer->Components.Remove(Target);
+			if (CurrentContainer->Components.Num() == 0)
 			{
 				CurrentContainer->ConditionalBeginDestroy();
 				AvailableActions.Remove(CurrentActionName);
@@ -303,11 +304,9 @@ void AOperator::ActorRemoveFromActionList(AActor* Target)
 	}
 }
 
-TArray<FActionBinder> AOperator::GetSimpleAction()
+void AOperator::SimpleAction()
 {
-	TArray<FActionBinder> Result;
 
-	return Result;
 }
 
 void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
