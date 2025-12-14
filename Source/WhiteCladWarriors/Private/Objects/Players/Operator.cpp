@@ -2,6 +2,7 @@
 
 #include "Objects/Players/Operator.h"
 #include "Objects/Players/AreaSelector.h"
+#include "Objects/Selectables/Units/UnitBase.h"
 #include "Actions/ActionBase.h"
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionSelectorNode.h"
@@ -306,7 +307,26 @@ void AOperator::ActorRemoveFromActionList(AActor* Target)
 
 void AOperator::SimpleAction()
 {
+	TMap<AActionBase*, TSet<UUnitActionComponent*>> ExecuteActionMap;
 
+	for (AActor* CurrentActor : CurrentInputPackage.SelectedActors)
+	{
+		AUnitBase* CurrentAsUnit = Cast<AUnitBase>(CurrentActor);
+		if (!CurrentAsUnit) continue;
+		AActionBase* ResultAction = nullptr;
+		TArray<UUnitActionComponent*> ResultComponents;
+		if (!CurrentAsUnit->GetSimpleAction(CurrentInputPackage, ResultAction, ResultComponents)) continue;
+		TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionMap.FindOrAdd(ResultAction);
+		ResultComponentList.Append(ResultComponents);
+	}
+
+	for (TPair<AActionBase*, TSet<UUnitActionComponent*>>& CurrentPair : ExecuteActionMap)
+	{
+		AActionBase* CurrentAction = CurrentPair.Key;
+		TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
+		if(!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
+		CurrentAction->ExecuteActionWithInput(this, CurrentList.Array(), CurrentInputPackage);
+	}
 }
 
 void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)

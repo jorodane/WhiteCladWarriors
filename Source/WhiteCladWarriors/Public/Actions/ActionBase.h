@@ -65,18 +65,13 @@ public:
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
-	int					GetActionOrder(const FInputPackage& CurrentInput);
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	int					GetSimpleActionOrder(const FInputPackage& CurrentInput, UUnitActionComponent* CurrentTarget);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
 	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
-	void ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents) {}
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
 	void ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
-	void ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input) {}
 //public:	
 //	// Sets default values for this actor's properties
 //	AActionBase();
