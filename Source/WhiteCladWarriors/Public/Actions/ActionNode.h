@@ -16,6 +16,13 @@ UCLASS( Blueprintable, BlueprintType )
 class WHITECLADWARRIORS_API UActionNode : public UObject
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> OnComplete;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> OnFailed;
 	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
