@@ -39,11 +39,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetPosition(const FName& WantTag) const;
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	bool HasPosition(const FName& WantTag) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetDirection(const FName& WantTag, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetDirection(const FName& WantTag) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	bool HasDirection(const FName& WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddActor(const FName& WantTag, AActor* WantActor);
@@ -52,7 +58,10 @@ public:
 	void RemoveActor(const FName& WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActor(const FName& WantTag) const;
+	AActor* GetActor(const FName& WantTag) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<AActor*> GetActorArray(const FName& WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(UActionNode* TargetNode);

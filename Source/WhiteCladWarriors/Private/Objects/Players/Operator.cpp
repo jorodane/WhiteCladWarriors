@@ -96,7 +96,6 @@ void AOperator::CancelInputClaim()
 	if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor)) ForceRemoveInputClaim();
 }
 
-
 bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetExecutor); }
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
@@ -312,7 +311,7 @@ void AOperator::SimpleAction()
 	for (AActor* CurrentActor : CurrentInputPackage.SelectedActors)
 	{
 		AUnitBase* CurrentAsUnit = Cast<AUnitBase>(CurrentActor);
-		if (!CurrentAsUnit) continue;
+		if (!IsValid(CurrentAsUnit)) continue;
 		AActionBase* ResultAction = nullptr;
 		TArray<UUnitActionComponent*> ResultComponents;
 		if (!CurrentAsUnit->GetSimpleAction(CurrentInputPackage, ResultAction, ResultComponents)) continue;

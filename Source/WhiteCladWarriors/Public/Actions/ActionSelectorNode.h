@@ -3,12 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Generals/Structs/InputPackage.h"
 #include "Actions/ActionNode.h"
 #include "ActionSelectorNode.generated.h"
 
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class EInputType : uint8
+{
+	Position, Direction, SingleTarget, MultiTarget,
+};
+
 UCLASS()
 class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 {
@@ -23,10 +30,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	bool OnPositionInput(UActionExecutor* Executor, FVector Position);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	bool OnActorInput(UActionExecutor* Executor, AActor* Actor);
+	bool OnReceiveInput(UActionExecutor* Executor, const FInputPackage& Input);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 	bool OnCancelInput(UActionExecutor* Executor);
@@ -41,10 +45,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool PositionInput(UActionExecutor* Executor, FVector Position) { return OnPositionInput(Executor, Position); }
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool ActorInput(UActionExecutor* Executor, AActor* Actor) { return OnActorInput(Executor, Actor); }
+	bool ReceiveInput(UActionExecutor* Executor, const FInputPackage& Input) { return OnReceiveInput(Executor, Input); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool CancelInput(UActionExecutor* Executor);

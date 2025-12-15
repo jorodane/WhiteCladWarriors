@@ -17,6 +17,8 @@ FVector UActionExecutor::GetPosition(const FName& WantTag) const
 	else return FVector::ZeroVector;
 }
 
+bool UActionExecutor::HasPosition(const FName& WantTag) const { return PositionMap.Contains(WantTag); }
+
 void UActionExecutor::SetDirection(const FName& WantTag, const FVector& WantDirection)
 {
 	FVector& Setter = DirectionMap.FindOrAdd(WantTag);
@@ -30,6 +32,8 @@ FVector UActionExecutor::GetDirection(const FName& WantTag) const
 	else return FVector::ZeroVector;
 }
 
+bool UActionExecutor::HasDirection(const FName& WantTag) const { return DirectionMap.Contains(WantTag); }
+
 void UActionExecutor::AddActor(const FName& WantTag, AActor* WantActor)
 {
 	ActorMultiMap.AddUnique(WantTag, WantActor);
@@ -40,7 +44,14 @@ void UActionExecutor::RemoveActor(const FName& WantTag, AActor* WantActor)
 	ActorMultiMap.RemoveSingle(WantTag, WantActor);
 }
 
-TArray<AActor*> UActionExecutor::GetActor(const FName& WantTag) const
+AActor* UActionExecutor::GetActor(const FName& WantTag) const
+{
+	AActor* const* Result = ActorMultiMap.Find(WantTag);
+	if (Result) return *Result;
+	else return nullptr;
+}
+
+TArray<AActor*> UActionExecutor::GetActorArray(const FName& WantTag) const
 {
 	TArray<AActor*> Result;
 	ActorMultiMap.MultiFind(WantTag, Result);

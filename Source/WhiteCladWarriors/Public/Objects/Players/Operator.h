@@ -18,21 +18,12 @@ class AUnitBase;
 class UCameraComponent;
 class UUnitActionComponent;
 
-UENUM(BlueprintType)
-enum class EInputType : uint8
-{
-	Position, Direction, SingleTarget, MultiTarget,
-};
-
 USTRUCT(BlueprintType)
 struct FInputClaim
 {
 	GENERATED_BODY()
 
 	static FInputClaim Claim_None;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	EInputType ClaimType;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode;
