@@ -316,16 +316,18 @@ void AOperator::SimpleAction()
 		AActionBase* ResultAction = nullptr;
 		TArray<UUnitActionComponent*> ResultComponents;
 		if (!CurrentAsUnit->GetSimpleAction(CurrentInputPackage, ResultAction, ResultComponents)) continue;
+		if (!IsValid(ResultAction) || ResultComponents.Num() == 0) continue;
 		TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionMap.FindOrAdd(ResultAction);
 		ResultComponentList.Append(ResultComponents);
 	}
 
-	for (TPair<AActionBase*, TSet<UUnitActionComponent*>>& CurrentPair : ExecuteActionMap)
+	for (auto& CurrentPair : ExecuteActionMap)
 	{
 		AActionBase* CurrentAction = CurrentPair.Key;
 		TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
 		if(!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
-		CurrentAction->ExecuteActionWithInput(this, CurrentList.Array(), CurrentInputPackage);
+		const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
+		CurrentAction->ExecuteActionWithInput(this, ResultArray, CurrentInputPackage);
 	}
 }
 
