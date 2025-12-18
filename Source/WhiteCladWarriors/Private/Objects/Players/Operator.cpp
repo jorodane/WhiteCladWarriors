@@ -14,7 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Misc/Optional.h"
-
+#include "HAL/PlatformApplicationMisc.h"
 
 TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
 FInputClaim FInputClaim::Claim_None;
@@ -121,6 +121,8 @@ void AOperator::SetCameraLength_Implementation(float Value)
 
 void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier)
 {
+	if (!FPlatformApplicationMisc::IsThisApplicationForeground()) return;
+
 	FVector2D MouseFromEdge = ViewportSize - MousePosition;
 	FVector2D Result = FVector2D::ZeroVector;
 

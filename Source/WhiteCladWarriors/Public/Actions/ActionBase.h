@@ -21,6 +21,9 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Action")
+	FKey ActionHotKey;
+
+	UPROPERTY(EditAnywhere, Category = "Action")
 	FText ActionName;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
