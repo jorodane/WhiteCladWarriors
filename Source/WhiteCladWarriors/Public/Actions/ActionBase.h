@@ -24,7 +24,10 @@ protected:
 	FKey ActionHotKey;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	FText ActionName;
+	FName ActionNameDefine;
+
+	UPROPERTY(EditAnywhere, Category = "Action")
+	FText ActionNameUI;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
 	FSlateBrush ActionIcon;
@@ -43,9 +46,20 @@ protected:
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Action")
-	inline FText		GetActionName()				{ return ActionName;}
+	inline FKey		GetHotKey() { return ActionHotKey; }
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	inline FText		SetActionName(FText Value)	{ return ActionName = Value; }
+	inline FKey		SetHotKey(FKey Value) { return ActionHotKey = Value; }
+
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline FName		GetActionNameDefine() { return ActionNameDefine; }
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	inline FName		SetActionNameDefine(FName Value) { return ActionNameDefine = Value; }
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline FText		GetActionNameUI()				{ return ActionNameUI;}
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	inline FText		SetActionNameUI(FText Value)	{ return ActionNameUI = Value; }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline FSlateBrush	GetActionIcon()				{ return ActionIcon; }
