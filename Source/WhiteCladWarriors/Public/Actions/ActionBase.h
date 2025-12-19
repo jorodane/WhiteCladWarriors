@@ -81,6 +81,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline bool			GetShowStack() { return bShowStack; }
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	inline bool			SetShowStack(bool Value) { return bShowStack = Value; }
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	int					GetSimpleActionOrder(const FInputPackage& CurrentInput, UUnitActionComponent* CurrentTarget);
 
