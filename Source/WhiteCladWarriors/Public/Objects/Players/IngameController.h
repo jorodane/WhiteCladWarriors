@@ -17,9 +17,6 @@ class WHITECLADWARRIORS_API AIngameController : public APlayerController
 {
 	GENERATED_BODY()
 
-protected:
-	virtual void OnPossess(APawn* aPawn) override;
-
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	TObjectPtr<AOperator> ConnectedOperator;
@@ -27,12 +24,20 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	TObjectPtr<AUnitBase> ConnectedHero;
 
+
+protected:
+	virtual void OnPossess(APawn* aPawn) override;
+
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
+	void SetCursor(EMouseCursor::Type NewCursor);
+	virtual void SetCursor_Implementation(EMouseCursor::Type NewCursor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnOperatorConnected(AOperator* NewOperator);
-	void OnOperatorConnected_Implementation(AOperator* NewOperator);
+	virtual void OnOperatorConnected_Implementation(AOperator* NewOperator);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnOperatorDisconnected(AOperator* OldOperator);
-	void OnOperatorDisconnected_Implementation(AOperator* OldOperator);
+	virtual void OnOperatorDisconnected_Implementation(AOperator* OldOperator);
 };

@@ -16,10 +16,15 @@ void AIngameController::OnPossess(APawn* aPawn)
 	}
 }
 
+void AIngameController::SetCursor_Implementation(EMouseCursor::Type NewCursor)
+{
+	if (!NewCursor) NewCursor = EMouseCursor::Default;
+	CurrentMouseCursor = NewCursor;
+}
+
 void AIngameController::OnOperatorConnected_Implementation(AOperator* NewOperator)
 {
 	if (ConnectedOperator) OnOperatorDisconnected(ConnectedOperator);
-
 	ConnectedOperator = NewOperator;
 	
 	if (ConnectedOperator)

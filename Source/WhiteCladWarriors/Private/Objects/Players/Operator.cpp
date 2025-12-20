@@ -2,6 +2,7 @@
 
 #include "Objects/Players/Operator.h"
 #include "Objects/Players/AreaSelector.h"
+#include "Objects/Players/InGameController.h"
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Actions/ActionBase.h"
 #include "Actions/ActionExecutor.h"
@@ -81,18 +82,19 @@ void AOperator::UnPossessed()
 void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 {
 	CurrentInputClaim = ClaimInfo;
-	OnInputClaimChanged.Broadcast(CurrentInputClaim);
+	OnUpdateInput();
 }
 
 void AOperator::OnUpdateInput_Implementation()
 {
-
+	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursor);
+	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
 void AOperator::ForceRemoveInputClaim()
 {
 	CurrentInputClaim = FInputClaim::Claim_None;
-	OnInputClaimChanged.Broadcast(CurrentInputClaim);
+	OnUpdateInput();
 }
 
 void AOperator::CancelInputClaim()
