@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "Interfaces/PlayerConnectable.h"
 #include "Generals/Structs/InputPackage.h"
+#include "GenericPlatform/ICursor.h"
 #include "Operator.generated.h"
 
 class AIngameController;
@@ -36,6 +37,9 @@ struct FInputClaim
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	FText TargetDescription;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TEnumAsByte<EMouseCursor::Type> TargetCursor;
 
 	FInputClaim()
 	{
@@ -156,6 +160,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ForceRemoveInputClaim();
 
+	UFUNCTION(BlueprintNativeEvent, Category = "Input")
+	void OnUpdateInput();
+	virtual void OnUpdateInput_Implementation();
+
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void CancelInputClaim();
 
@@ -167,11 +175,11 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Camera")
 	void CameraZoom(float Value, float Min, float Max, float Multiplier);
-	void CameraZoom_Implementation(float Value, float Min, float Max, float Multiplier);
+	virtual void CameraZoom_Implementation(float Value, float Min, float Max, float Multiplier);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Camera")
 	void SetCameraLength(float Value);
-	void SetCameraLength_Implementation(float Value);
+	virtual void SetCameraLength_Implementation(float Value);
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
@@ -244,8 +252,8 @@ public:
 	void SimpleAction();
 
 public:
-	void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
-	void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
-	AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
+	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
+	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
+	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
 	
 };

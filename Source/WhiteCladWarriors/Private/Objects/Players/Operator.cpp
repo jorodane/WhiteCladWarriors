@@ -84,6 +84,11 @@ void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
+void AOperator::OnUpdateInput_Implementation()
+{
+
+}
+
 void AOperator::ForceRemoveInputClaim()
 {
 	CurrentInputClaim = FInputClaim::Claim_None;
