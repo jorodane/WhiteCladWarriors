@@ -79,16 +79,76 @@ void AOperator::UnPossessed()
 	if (LocalOperator == this) LocalOperator = nullptr;
 }
 
-void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
+void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll)
 {
-	CurrentInputClaim = ClaimInfo;
-	OnUpdateInput();
+	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
+	if (IsInputClaimed())
+	{
+		bool bIsInputComplete = CurrentInputClaim.TargetNode ? CurrentInputClaim.TargetNode->ReceiveInput(CurrentInputClaim.TargetExecutor, CurrentInputPackage) : false;
+		if(bIsInputComplete) ForceRemoveInputClaim();
+	}
+	else if(bIsMapClick)
+	{
+		CameraMoveTo(CurrentInputPackage.MouseTerrainPosition);
+	}
+	else
+	{
+		TArray<AActor*> OutResultArray;
+		AActor* OutResultSingle;
+		bool OutAllSame, OutOnlySingle;
+		double CurrentTime = GetWorld()->GetTimeSeconds();
+		bool bIsDoubleClick = IsValid(CurrentInputPackage.MouseHitActor) && CurrentInputPackage.MouseHitActor == CurrentInputPackage.MouseClickActor && (CurrentTime - LastLeftClickTime) < DOUBLE_CLICK_DELAY;
+		LastLeftClickTime = CurrentTime;
+		CurrentInputPackage.MouseClickActor = CurrentInputPackage.MouseHitActor;
+		if (GetFocusActors(bIsClick, bIsDoubleClick, bIsSelectAllMode, OutResultArray, OutResultSingle, OutAllSame, OutOnlySingle))
+		{
+			if (!bIsAdditive) DeselectActors();
+			else if(bIsClick && !(bIsSelectAll || bIsDoubleClick))
+			{
+				SelectToggle(OutResultSingle);
+				return;
+			}
+			SelectActors(OutResultArray, OutOnlySingle);
+		}
+		else if(!bIsAdditive) DeselectActors();
+	}
+}
+
+
+void AOperator::OnRightClick_Implementation(bool bIsMapClick)
+{
+	if (IsInputClaimed()) CancelInputClaim();
+	else SimpleAction(CurrentInputPackage);
+}
+
+void AOperator::OnMapClick_Implementation(bool bIsDown, bool bIsRightClick, FVector ClickLocation)
+{
+	CurrentInputPackage.MouseHitActor = CurrentInputPackage.MouseClickActor = nullptr;
+	if(bIsDown) CurrentInputPackage.DragStartPosition = ClickLocation;
+	else 
+	{
+		CurrentInputPackage.MouseTerrainPosition = ClickLocation;
+		if (bIsRightClick) OnRightClick(true);
+		else OnLeftClick(true, bIsAdditiveMode, bIsSelectAllMode);
+	}
+}
+
+void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocation)
+{
+	if (!IsInputClaimed()) CameraMoveTo(ClickLocation);
 }
 
 void AOperator::OnUpdateInput_Implementation()
 {
 	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursor);
 	OnInputClaimChanged.Broadcast(CurrentInputClaim);
+}
+
+
+void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
+{
+	CurrentInputClaim = ClaimInfo;
+	OnUpdateInput();
 }
 
 void AOperator::ForceRemoveInputClaim()
@@ -108,13 +168,20 @@ bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetExecut
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
 	Multiplier *= CameraLength / DEFAULT_CAMERALENGTH;
-	FVector2D Limit = AMapSetting::GetCurrentMapHalfSize();
-	FVector Result = GetActorLocation();
 	Direction.Normalize();
-	Result.X = FMath::Clamp(Result.X + (Direction.Y * Multiplier), -Limit.X, Limit.X);
-	Result.Y = FMath::Clamp(Result.Y + (Direction.X * Multiplier), -Limit.Y, Limit.Y);
-	SetActorLocation(Result);
+	FVector Result = GetActorLocation();
+	Result.X += Direction.Y * Multiplier;
+	Result.Y += Direction.X * Multiplier;
+	CameraMoveTo(Result);
 };
+
+void AOperator::CameraMoveTo(FVector Position)
+{
+	FVector2D Limit = AMapSetting::GetCurrentMapHalfSize();
+	Position.X = FMath::Clamp(Position.X, -Limit.X, Limit.X);
+	Position.Y = FMath::Clamp(Position.Y, -Limit.Y, Limit.Y);
+	SetActorLocation(Position);
+}
 
 void AOperator::CameraZoom_Implementation(float Value, float Min, float Max, float Multiplier)
 {
@@ -184,6 +251,28 @@ TArray<AActor*> AOperator::GetOwnActorsOfClass_Implementation(TSubclassOf<AActor
 {
 	TArray<AActor*> Result;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), Template, Result);
+	return Result;
+}
+
+bool AOperator::GetFocusActors_Implementation(bool bIsClick, bool bIsDoubleClick, bool bIsSelectAll, TArray<AActor*>& OutResultArray, AActor*& OutResultSingle, bool& OutAllSame, bool& OutOnlySingle)
+{
+	if (bIsClick)
+	{
+		AActor* MainActor = CurrentInputPackage.MouseHitActor;
+		if (IsValid(MainActor))
+		{
+			if (bIsSelectAll || bIsDoubleClick) OutResultArray = GetVisibleSameActors(MainActor);
+			else
+			{
+				OutResultArray.SetNum(1);
+				OutResultArray[0] = MainActor;
+				OutAllSame = OutOnlySingle = true;
+			}
+		}
+	}
+	else OutResultArray = GetActorsInArea(OutAllSame, OutOnlySingle);
+	bool Result = OutResultArray.Num() > 0;
+	if(Result) OutResultSingle = OutResultArray[0];
 	return Result;
 }
 
@@ -313,17 +402,17 @@ void AOperator::ActorRemoveFromActionList(AActor* Target)
 	}
 }
 
-void AOperator::SimpleAction()
+void AOperator::SimpleAction(const FInputPackage& Input)
 {
 	TMap<AActionBase*, TSet<UUnitActionComponent*>> ExecuteActionMap;
 
-	for (AActor* CurrentActor : CurrentInputPackage.SelectedActors)
+	for (AActor* CurrentActor : Input.SelectedActors)
 	{
 		AUnitBase* CurrentAsUnit = Cast<AUnitBase>(CurrentActor);
 		if (!IsValid(CurrentAsUnit)) continue;
 		AActionBase* ResultAction = nullptr;
 		TArray<UUnitActionComponent*> ResultComponents;
-		if (!CurrentAsUnit->GetSimpleAction(CurrentInputPackage, ResultAction, ResultComponents)) continue;
+		if (!CurrentAsUnit->GetSimpleAction(Input, ResultAction, ResultComponents)) continue;
 		if (!IsValid(ResultAction) || ResultComponents.Num() == 0) continue;
 		TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionMap.FindOrAdd(ResultAction);
 		ResultComponentList.Append(ResultComponents);
@@ -333,9 +422,9 @@ void AOperator::SimpleAction()
 	{
 		AActionBase* CurrentAction = CurrentPair.Key;
 		TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
-		if(!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
+		if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
 		const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
-		CurrentAction->ExecuteActionWithInput(this, ResultArray, CurrentInputPackage);
+		CurrentAction->ExecuteActionWithInput(this, ResultArray, Input);
 	}
 }
 

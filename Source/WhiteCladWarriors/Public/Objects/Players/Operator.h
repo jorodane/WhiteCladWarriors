@@ -68,6 +68,8 @@ public:
 };
 
 #define DEFAULT_CAMERALENGTH 2000.0f
+#define DOUBLE_CLICK_DELAY 0.3
+#define CLICK_CHECK_SQUARE_DISTANCE 800
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, Claim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
@@ -134,11 +136,20 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
 	FInputClaim CurrentInputClaim;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
+	double LastLeftClickTime = -DOUBLE_CLICK_DELAY;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraMovePaddingSize = 10.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	float CameraLength = DEFAULT_CAMERALENGTH;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
+	bool bIsAdditiveMode;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
+	bool bIsSelectAllMode;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -153,16 +164,31 @@ public:
 	void UnPossessed() override;
 
 public:
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	void OnLeftClick(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll);
+	virtual void OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	void OnRightClick(bool bIsMapClick);
+	virtual void OnRightClick_Implementation(bool bIsMapClick);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	void OnMapClick(bool bIsDown, bool bIsRightClick, FVector ClickLocation);
+	virtual void OnMapClick_Implementation(bool bIsDown, bool bIsRightClick, FVector ClickLocation);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	void OnMapDrag(bool bIsRightClick, FVector ClickLocation);
+	virtual void OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocation);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Input")
+	void OnUpdateInput();
+	virtual void OnUpdateInput_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ClaimInput(const FInputClaim& ClaimInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ForceRemoveInputClaim();
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Input")
-	void OnUpdateInput();
-	virtual void OnUpdateInput_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void CancelInputClaim();
@@ -172,6 +198,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMove(FVector2D Direction, float Multiplier);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void CameraMoveTo(FVector Position);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Camera")
 	void CameraZoom(float Value, float Min, float Max, float Multiplier);
@@ -206,6 +235,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetOwnActorsOfClass(TSubclassOf<AActor> Template);
 	virtual TArray<AActor*> GetOwnActorsOfClass_Implementation(TSubclassOf<AActor> Template);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	bool GetFocusActors(bool bIsClick, bool bIsDoubleClick, bool bIsSelectAll, TArray<AActor*>& OutResultArray, AActor*& OutResultSingle, bool& OutAllSame, bool& OutOnlySingle);
+	virtual bool GetFocusActors_Implementation(bool bIsClick, bool bIsDoubleClick, bool bIsSelectAll, TArray<AActor*>& OutResultArray, AActor*& OutResultSingle, bool& OutAllSame, bool& OutOnlySingle);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DrawDragArea(FVector Begin, FVector End);
@@ -249,7 +282,7 @@ public:
 	void ActorRemoveFromActionList(AActor* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SimpleAction();
+	void SimpleAction(const FInputPackage& Input);
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);

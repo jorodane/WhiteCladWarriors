@@ -25,5 +25,4 @@ struct FInputPackage
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	TArray<AActor*> SelectedActors;
-
 };

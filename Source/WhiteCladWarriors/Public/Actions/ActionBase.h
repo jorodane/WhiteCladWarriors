@@ -44,6 +44,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Action")
 	bool bShowStack;
 
+	UPROPERTY(EditAnywhere, Category = "Action")
+	bool bShowHotKey;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline FKey		GetHotKey() { return ActionHotKey; }
@@ -86,8 +89,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline bool			SetShowStack(bool Value) { return bShowStack = Value; }
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline bool			GetShowHotKey() { return bShowHotKey; }
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	inline bool			SetShowHotKey(bool Value) { return bShowHotKey = Value; }
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	int					GetSimpleActionOrder(const FInputPackage& CurrentInput, UUnitActionComponent* CurrentTarget);
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline bool			IsRootNodeSelector() const;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
 	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
