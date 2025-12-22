@@ -66,6 +66,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(UActionNode* TargetNode);
 
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void EndNode(UActionNode* TargetNode);
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void OnNodeEnter(UActionNode* NewNode);
 	void OnNodeEnter_Implementation(UActionNode* NewNode) {};

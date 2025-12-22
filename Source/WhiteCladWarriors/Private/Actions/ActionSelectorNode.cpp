@@ -4,15 +4,21 @@
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/ActionExecutor.h"
 
+UActionSelectorNode::UActionSelectorNode()
+{
+	AddNodeLink("OnFailed",		OnFailed);
+	AddNodeLink("OnCanceled", OnCanceled);
+}
+
 bool UActionSelectorNode::CompleteInput_Implementation(UActionExecutor* Executor)
 {
-	Executor->EnterNode(OnComplete);
+	MoveExecutorToNext(Executor);
 	return true;
 }
 
 void UActionSelectorNode::FailInput_Implementation(UActionExecutor* Executor)
 {
-	Executor->EnterNode(OnFailed);
+	MoveExecutorToLinkedNode(Executor, "OnFailed");
 }
 
 bool UActionSelectorNode::CancelInput(UActionExecutor* Executor) 
@@ -20,7 +26,7 @@ bool UActionSelectorNode::CancelInput(UActionExecutor* Executor)
 	if (bCancelable)
 	{
 		OnCancelInput(Executor);
-		Executor->EnterNode(OnCanceled);
+		MoveExecutorToLinkedNode(Executor, "OnCanceled");
 	}
 	return bCancelable;
 }

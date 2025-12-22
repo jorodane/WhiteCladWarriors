@@ -22,11 +22,16 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> OnFailed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> OnCanceled;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	bool bCancelable;
+
+public:
+	UActionSelectorNode();
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")

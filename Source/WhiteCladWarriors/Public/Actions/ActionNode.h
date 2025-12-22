@@ -19,12 +19,24 @@ class WHITECLADWARRIORS_API UActionNode : public UObject
 
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TObjectPtr<UActionNode> OnComplete;
+	TObjectPtr<UActionNode> NextNode;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TObjectPtr<UActionNode> OnFailed;
+	TMap<FName, UActionNode*> LinkedNodes;
 	
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void AddNodeLink(FName ResultName, UActionNode* Destination);
+	virtual void AddNodeLink_Implementation(FName ResultName, UActionNode* Destination);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void MoveExecutorToLinkedNode(UActionExecutor* Executor, FName ResultName);
+	virtual void MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, FName ResultName);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void MoveExecutorToNext(UActionExecutor* Executor);
+	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor);
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecute(UActionExecutor* Executor);
 	virtual void ClaimExecute_Implementation(UActionExecutor* Executor) {}

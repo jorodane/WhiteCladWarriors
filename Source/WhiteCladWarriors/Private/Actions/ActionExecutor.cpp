@@ -70,8 +70,12 @@ void UActionExecutor::EnterNode(UActionNode* TargetNode)
 	}
 	else
 	{
-		OnNodeEnd(CurrentNode);
-		ConditionalBeginDestroy();
+		EndNode(CurrentNode);
 	}
 }
 
+void UActionExecutor::EndNode(UActionNode* TargetNode)
+{
+	OnNodeEnd(TargetNode);
+	ConditionalBeginDestroy();
+}
