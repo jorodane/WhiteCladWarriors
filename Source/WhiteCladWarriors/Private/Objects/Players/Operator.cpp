@@ -144,9 +144,9 @@ void AOperator::OnUpdateInput_Implementation()
 	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
-
-void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
+void AOperator::ClaimInput(AActionBase* ClaimAction, const FInputClaim& ClaimInfo)
 {
+	if(InputClaimMap.Find(ClaimAction))
 	CurrentInputClaim = ClaimInfo;
 	OnUpdateInput();
 }
@@ -160,7 +160,10 @@ void AOperator::ForceRemoveInputClaim()
 void AOperator::CancelInputClaim()
 {
 	if (!IsInputClaimed() || CurrentInputClaim.TargetNode == nullptr) return;
-	if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor, CurrentInputClaim.TargetComponent)) ForceRemoveInputClaim();
+	for (auto CurrentComponent : CurrentInputClaim.TargetComponentArray)
+	{
+		if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor, CurrentComponent)) ForceRemoveInputClaim();
+	}
 }
 
 bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetExecutor); }
@@ -207,6 +210,22 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 
 	CameraMove(Result, Multiplier);
 };
+
+void AOperator::ExecuteAction(AActionBase* Target, bool bIsButtonClick)
+{
+	if(!IsValid(Target)) return;
+
+	bool ImmediateBySmartKey = !bIsButtonClick && Target->GetIsSmartKey();
+
+	if ()
+	{
+
+	}
+	else
+	{
+
+	}
+}
 
 TArray<UActionTargetContainer*> AOperator::GetAvailableActionList()
 {

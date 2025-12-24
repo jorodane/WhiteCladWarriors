@@ -43,6 +43,9 @@ protected:
 	int UIOrder;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
+	bool bIsSmartKey;
+
+	UPROPERTY(EditAnywhere, Category = "Action")
 	bool bShowStack;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
@@ -86,6 +89,11 @@ public:
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
+	inline bool			GetIsSmartKey() { return bIsSmartKey; }
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	inline bool			SetIsSmartKey(bool Value) { return bIsSmartKey = Value; }
+
+	UFUNCTION(BlueprintPure, Category = "Action")
 	inline bool			GetShowStack() { return bShowStack; }
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline bool			SetShowStack(bool Value) { return bShowStack = Value; }
@@ -103,6 +111,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline bool			IsExecutable(UUnitActionComponent* CurrentTarget) const { return true; };
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	bool			IsNeedInputForStart(const FInputClaim& TriggerInput) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline TArray<UUnitActionComponent*> GetExecutableArray(const TArray<UUnitActionComponent*>& TargetComponents) const { return TargetComponents; };

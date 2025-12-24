@@ -10,6 +10,17 @@ bool AActionBase::IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const
 	return IsValid(AsSelectorNode);
 }
 
+bool AActionBase::IsNeedInputForStart(const FInputClaim& TriggerInput) const
+{
+	UActionSelectorNode* RootSelector;
+	if (IsRootNodeSelector(RootSelector))
+	{
+		RootSelector->GetInputClaim();
+		return true;
+	}
+	return false;
+}
+
 
 UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 {

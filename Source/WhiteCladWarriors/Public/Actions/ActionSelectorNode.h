@@ -24,9 +24,6 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	FInputClaim InputClaim;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> OnFailed;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> OnCanceled;
@@ -59,7 +56,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
-	UFUNCTION(BlueprintPure, Category = "Action")
-	void GetInputClaim(FInputClaim& Result) const { Result = InputClaim; };
-	FInputClaim GetInputClaim() const { return InputClaim; };
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
+	FInputClaim GetInputClaim() const;
 };

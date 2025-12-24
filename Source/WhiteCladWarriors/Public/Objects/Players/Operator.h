@@ -101,11 +101,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
 	TMap<FName, UActionTargetContainer*> AvailableActions;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
-	FInputPackage CurrentInputPackage;
+	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
+	TMap<AActionBase*, FInputClaim> InputClaimMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
 	FInputClaim CurrentInputClaim;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
+	FInputPackage CurrentInputPackage;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
 	double LastLeftClickTime = -DOUBLE_CLICK_DELAY;
@@ -156,13 +159,16 @@ public:
 	virtual void OnUpdateInput_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	void ClaimInput(const FInputClaim& ClaimInfo);
+	void ClaimInput(AActionBase* ClaimAction, const FInputClaim& ClaimInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ForceRemoveInputClaim();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	void CancelInputClaim();
+	void CancelInputClaim(AActionBase* ClaimAction);
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void CancelEveryInputClaim();
 
 	UFUNCTION(BlueprintPure, Category = "Input")
 	bool IsInputClaimed();
@@ -183,6 +189,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ExecuteAction(AActionBase* Target, bool bIsButtonClick);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UActionTargetContainer*> GetAvailableActionList();

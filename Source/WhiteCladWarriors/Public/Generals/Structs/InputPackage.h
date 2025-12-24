@@ -39,7 +39,10 @@ struct FInputClaim
 	static FInputClaim Claim_None;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UUnitActionComponent> TargetComponent;
+	TArray<UUnitActionComponent*> TargetComponentArray;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TObjectPtr<AActionBase> TargetAction;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode;
@@ -53,9 +56,17 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TEnumAsByte<EMouseCursor::Type> TargetCursor;
 
-	FInputClaim()
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	bool bIsBackground = true;
+
+	void Clear()
 	{
+		TargetComponentArray.SetNum(0);
+		TargetAction = nullptr;
 		TargetNode = nullptr;
 		TargetExecutor = nullptr;
+		TargetDescription = FText::GetEmpty();
+		TargetCursor = EMouseCursor::Default;
+		bIsBackground = true;
 	}
 };
