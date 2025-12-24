@@ -8,7 +8,7 @@
 #include "ActionNode.generated.h"
 
 class UActionExecutor;
-
+class UUnitActionComponent;
 /**
  * 
  */
@@ -30,18 +30,18 @@ public:
 	virtual void AddNodeLink_Implementation(FName ResultName, UActionNode* Destination);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToLinkedNode(UActionExecutor* Executor, FName ResultName);
-	virtual void MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, FName ResultName);
+	void MoveExecutorToLinkedNode(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName);
+	virtual void MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToNext(UActionExecutor* Executor);
-	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor);
+	void MoveExecutorToNext(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimExecute(UActionExecutor* Executor);
-	virtual void ClaimExecute_Implementation(UActionExecutor* Executor) {}
+	void ClaimExecute(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	virtual void ClaimExecute_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimExecuteWithInput(UActionExecutor* Executor, const FInputPackage& Input);
-	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, const FInputPackage& Input) {}
+	void ClaimExecuteWithInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input);
+	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) {}
 };

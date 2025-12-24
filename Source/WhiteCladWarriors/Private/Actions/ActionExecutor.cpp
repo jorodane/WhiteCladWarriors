@@ -4,54 +4,54 @@
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionNode.h"
 
-void UActionExecutor::SetPosition(const FName& WantTag, const FVector& WantPosition)
+void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 {
 	FVector& Setter = PositionMap.FindOrAdd(WantTag);
 	Setter = WantPosition;
 }
 
-FVector UActionExecutor::GetPosition(const FName& WantTag) const
+FVector UActionExecutor::GetPosition(FName WantTag) const
 {
 	const FVector* Result = PositionMap.Find(WantTag);
 	if (Result) return *Result;
 	else return FVector::ZeroVector;
 }
 
-bool UActionExecutor::HasPosition(const FName& WantTag) const { return PositionMap.Contains(WantTag); }
+bool UActionExecutor::HasPosition(FName WantTag) const { return PositionMap.Contains(WantTag); }
 
-void UActionExecutor::SetDirection(const FName& WantTag, const FVector& WantDirection)
+void UActionExecutor::SetDirection(FName WantTag, UUnitActionComponent* WantUUnitActionComponent, const FVector& WantDirection)
 {
-	FVector& Setter = DirectionMap.FindOrAdd(WantTag);
+	FVector& Setter = DirectionMap.FindOrAdd(TPair<UUnitActionComponent*, FName>(WantUUnitActionComponent, WantTag));
 	Setter = WantDirection;
 }
 
-FVector UActionExecutor::GetDirection(const FName& WantTag) const
+FVector UActionExecutor::GetDirection(FName WantTag, UUnitActionComponent* WantUUnitActionComponent) const
 {
-	const FVector* Result = DirectionMap.Find(WantTag);
+	const FVector* Result = DirectionMap.Find(TPair<UUnitActionComponent*, FName>(WantUUnitActionComponent, WantTag));
 	if (Result) return *Result;
 	else return FVector::ZeroVector;
 }
 
-bool UActionExecutor::HasDirection(const FName& WantTag) const { return DirectionMap.Contains(WantTag); }
+bool UActionExecutor::HasDirection(FName WantTag, UUnitActionComponent* WantUUnitActionComponent) const { return DirectionMap.Contains(TPair<UUnitActionComponent*, FName>(WantUUnitActionComponent, WantTag)); }
 
-void UActionExecutor::AddActor(const FName& WantTag, AActor* WantActor)
+void UActionExecutor::AddActor(FName WantTag, AActor* WantActor)
 {
 	ActorMultiMap.AddUnique(WantTag, WantActor);
 }
 
-void UActionExecutor::RemoveActor(const FName& WantTag, AActor* WantActor)
+void UActionExecutor::RemoveActor(FName WantTag, AActor* WantActor)
 {
 	ActorMultiMap.RemoveSingle(WantTag, WantActor);
 }
 
-AActor* UActionExecutor::GetActor(const FName& WantTag) const
+AActor* UActionExecutor::GetActor(FName WantTag) const
 {
 	AActor* const* Result = ActorMultiMap.Find(WantTag);
 	if (Result) return *Result;
 	else return nullptr;
 }
 
-TArray<AActor*> UActionExecutor::GetActorArray(const FName& WantTag) const
+TArray<AActor*> UActionExecutor::GetActorArray(FName WantTag) const
 {
 	TArray<AActor*> Result;
 	ActorMultiMap.MultiFind(WantTag, Result);
@@ -59,23 +59,25 @@ TArray<AActor*> UActionExecutor::GetActorArray(const FName& WantTag) const
 }
 
 
-void UActionExecutor::EnterNode(UActionNode* TargetNode)
+void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
-	if (IsValid(TargetNode))
+	UActionNode* OriginNode = nullptr;
+	if (UActionNode** Finder = ComponentMap.Find(TargetComponent))
 	{
-		if(IsValid(CurrentNode))	OnNodeMove(CurrentNode, TargetNode);
-		else							OnNodeEnter(TargetNode);
-		CurrentNode = TargetNode;
-		TargetNode->ClaimExecute(this);
+		OriginNode = *Finder;
+		ComponentMap.Emplace(TargetComponent, TargetNode);
 	}
 	else
 	{
-		EndNode(CurrentNode);
+		ComponentMap.Add(TargetComponent, TargetNode);
 	}
+
+	if (IsValid(TargetNode)) TargetNode->ClaimExecute(this, TargetComponent);
+	else EndNode(TargetComponent, OriginNode);
 }
 
-void UActionExecutor::EndNode(UActionNode* TargetNode)
+void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
-	OnNodeEnd(TargetNode);
-	ConditionalBeginDestroy();
+	ComponentMap.Remove(TargetComponent);
+	if(ComponentMap.Num() == 0) ConditionalBeginDestroy();
 }

@@ -19,35 +19,6 @@ class AUnitBase;
 class UCameraComponent;
 class UUnitActionComponent;
 
-USTRUCT(BlueprintType)
-struct FInputClaim
-{
-	GENERATED_BODY()
-
-	static FInputClaim Claim_None;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionSelectorNode> TargetNode;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionExecutor> TargetExecutor;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	FName TargetTag;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	FText TargetDescription;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TEnumAsByte<EMouseCursor::Type> TargetCursor;
-
-	FInputClaim()
-	{
-		TargetNode = nullptr;
-		TargetExecutor = nullptr;
-	}
-};
-
 
 UCLASS(BlueprintType)
 class UActionTargetContainer : public UObject

@@ -9,15 +9,15 @@ void UActionNode::AddNodeLink_Implementation(FName ResultName, UActionNode* Dest
 	LinkedNodes.Add(ResultName, Destination);
 }
 
-void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, FName ResultName)
+void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName)
 {
 	UActionNode** Result = LinkedNodes.Find(ResultName);
-	if (IsValid(*Result)) Executor->EnterNode(*Result);
-	else Executor->EndNode(this);
+	if (IsValid(*Result)) Executor->EnterNode(TargetComponent, *Result);
+	else Executor->EndNode(TargetComponent, this);
 }
 
-void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor)
+void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 {
-	if (IsValid(NextNode)) Executor->EnterNode(NextNode);
-	else Executor->EndNode(this);
+	if (IsValid(NextNode)) Executor->EnterNode(TargetComponent, NextNode);
+	else Executor->EndNode(TargetComponent, this);
 }

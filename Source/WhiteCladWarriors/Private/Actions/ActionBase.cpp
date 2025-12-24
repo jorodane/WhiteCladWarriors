@@ -4,7 +4,14 @@
 #include "Actions/ActionBase.h"
 #include "Actions/ActionSelectorNode.h"
 
-bool AActionBase::IsRootNodeSelector() const
+bool AActionBase::IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const
 {
-	return IsValid(Cast<UActionSelectorNode>(RootNode));
+	AsSelectorNode = RootNodeAsSelector();
+	return IsValid(AsSelectorNode);
+}
+
+
+UActionSelectorNode* AActionBase::RootNodeAsSelector() const
+{
+	return Cast<UActionSelectorNode>(RootNode);
 }

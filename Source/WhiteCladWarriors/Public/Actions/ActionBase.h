@@ -8,6 +8,7 @@
 #include "ActionBase.generated.h"
 
 class UActionNode;
+class UActionSelectorNode;
 class AOperator;
 
 UCLASS( Blueprintable, BlueprintType )
@@ -98,7 +99,16 @@ public:
 	int					GetSimpleActionOrder(const FInputPackage& CurrentInput, UUnitActionComponent* CurrentTarget);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	inline bool			IsRootNodeSelector() const;
+	inline bool			IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline bool			IsExecutable(UUnitActionComponent* CurrentTarget) const { return true; };
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline TArray<UUnitActionComponent*> GetExecutableArray(const TArray<UUnitActionComponent*>& TargetComponents) const { return TargetComponents; };
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline UActionSelectorNode*		RootNodeAsSelector() const;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
 	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);

@@ -19,65 +19,50 @@ class WHITECLADWARRIORS_API UActionExecutor : public UObject
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TObjectPtr<UActionNode> CurrentNode;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TArray<UUnitActionComponent*> Target;
+	TMap<UUnitActionComponent*, UActionNode*> ComponentMap;
 
 	TMap<FName, FVector> PositionMap;
-	TMap<FName, FVector> DirectionMap;
+	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetPosition(const FName& WantTag, const FVector& WantPosition);
+	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(const FName& WantTag) const;
+	FVector GetPosition(FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasPosition(const FName& WantTag) const;
+	bool HasPosition(FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetDirection(const FName& WantTag, const FVector& WantDirection);
+	void SetDirection(FName WantTag, UUnitActionComponent* WantComponent, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(const FName& WantTag) const;
+	FVector GetDirection(FName WantTag, UUnitActionComponent* WantComponent) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasDirection(const FName& WantTag) const;
+	bool HasDirection(FName WantTag, UUnitActionComponent* WantComponent) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddActor(const FName& WantTag, AActor* WantActor);
+	void AddActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void RemoveActor(const FName& WantTag, AActor* WantActor);
+	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(const FName& WantTag) const;
+	AActor* GetActor(FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(const FName& WantTag) const;
+	TArray<AActor*> GetActorArray(FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EnterNode(UActionNode* TargetNode);
+	void EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndNode(UActionNode* TargetNode);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Action")
-	void OnNodeEnter(UActionNode* NewNode);
-	void OnNodeEnter_Implementation(UActionNode* NewNode) {};
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Action")
-	void OnNodeEnd(UActionNode* LastNode);
-	void OnNodeEnd_Implementation(UActionNode* LastNode) {};
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Action")
-	void OnNodeMove(UActionNode* OldNode, UActionNode* NewNode);
-	void OnNodeMove_Implementation(UActionNode* OldNode, UActionNode* NewNode) {};
+	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
 };

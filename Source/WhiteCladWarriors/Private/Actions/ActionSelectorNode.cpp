@@ -10,23 +10,23 @@ UActionSelectorNode::UActionSelectorNode()
 	AddNodeLink("OnCanceled", OnCanceled);
 }
 
-bool UActionSelectorNode::CompleteInput_Implementation(UActionExecutor* Executor)
+bool UActionSelectorNode::CompleteInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 {
-	MoveExecutorToNext(Executor);
+	MoveExecutorToNext(Executor, TargetComponent);
 	return true;
 }
 
-void UActionSelectorNode::FailInput_Implementation(UActionExecutor* Executor)
+void UActionSelectorNode::FailInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 {
-	MoveExecutorToLinkedNode(Executor, "OnFailed");
+	MoveExecutorToLinkedNode(Executor, TargetComponent, "OnFailed");
 }
 
-bool UActionSelectorNode::CancelInput(UActionExecutor* Executor) 
+bool UActionSelectorNode::CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 { 
 	if (bCancelable)
 	{
 		OnCancelInput(Executor);
-		MoveExecutorToLinkedNode(Executor, "OnCanceled");
+		MoveExecutorToLinkedNode(Executor, TargetComponent, "OnCanceled");
 	}
 	return bCancelable;
 }

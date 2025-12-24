@@ -7,6 +7,7 @@
 #include "Actions/ActionNode.h"
 #include "ActionSelectorNode.generated.h"
 
+struct FInputClaim;
 /**
  * 
  */
@@ -23,12 +24,15 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	FInputClaim InputClaim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> OnFailed;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> OnCanceled;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bCancelable;
+	bool bCancelable = true;
 
 public:
 	UActionSelectorNode();
@@ -41,17 +45,21 @@ protected:
 	bool OnCancelInput(UActionExecutor* Executor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	bool CompleteInput(UActionExecutor* Executor);
-	bool CompleteInput_Implementation(UActionExecutor* Executor);
+	bool CompleteInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	bool CompleteInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void FailInput(UActionExecutor* Executor);
-	void FailInput_Implementation(UActionExecutor* Executor);
+	void FailInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	void FailInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool ReceiveInput(UActionExecutor* Executor, const FInputPackage& Input) { return OnReceiveInput(Executor, Input); }
+	bool ReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) { return OnReceiveInput(Executor, Input); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool CancelInput(UActionExecutor* Executor);
+	bool CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	void GetInputClaim(FInputClaim& Result) const { Result = InputClaim; };
+	FInputClaim GetInputClaim() const { return InputClaim; };
 };
