@@ -84,7 +84,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
 	if (IsInputClaimed())
 	{
-		bool bIsInputComplete = CurrentInputClaim.TargetNode ? CurrentInputClaim.TargetNode->ReceiveInput(CurrentInputClaim.TargetExecutor, CurrentInputPackage) : false;
+		bool bIsInputComplete = CurrentInputClaim.TargetNode ? CurrentInputClaim.TargetNode->ReceiveInput(CurrentInputClaim.TargetExecutor, CurrentInputClaim.TargetComponent, CurrentInputPackage) : false;
 		if(bIsInputComplete) ForceRemoveInputClaim();
 	}
 	else if(bIsMapClick)
@@ -160,7 +160,7 @@ void AOperator::ForceRemoveInputClaim()
 void AOperator::CancelInputClaim()
 {
 	if (!IsInputClaimed() || CurrentInputClaim.TargetNode == nullptr) return;
-	if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor)) ForceRemoveInputClaim();
+	if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor, CurrentInputClaim.TargetComponent)) ForceRemoveInputClaim();
 }
 
 bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetExecutor); }

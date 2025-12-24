@@ -8,6 +8,7 @@
 
 class UActionSelectorNode;
 class UActionExecutor;
+class UUnitActionComponent;
 
 USTRUCT(BlueprintType)
 struct FInputPackage
@@ -36,6 +37,9 @@ struct FInputClaim
 	GENERATED_BODY()
 
 	static FInputClaim Claim_None;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TObjectPtr<UUnitActionComponent> TargetComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode;

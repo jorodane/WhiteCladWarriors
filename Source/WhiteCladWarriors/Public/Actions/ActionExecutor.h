@@ -22,7 +22,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<AOperator> Operator;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<UUnitActionComponent*, UActionNode*> ComponentMap;
 
 	TMap<FName, FVector> PositionMap;
@@ -65,4 +65,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static UActionExecutor* CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents);
 };

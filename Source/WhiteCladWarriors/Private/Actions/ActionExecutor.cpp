@@ -2,6 +2,7 @@
 
 
 #include "Actions/ActionExecutor.h"
+#include "Objects/Players/Operator.h"
 #include "Actions/ActionNode.h"
 
 void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
@@ -61,23 +62,41 @@ TArray<AActor*> UActionExecutor::GetActorArray(FName WantTag) const
 
 void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
+	bool bIsValidNode = IsValid(TargetNode);
 	UActionNode* OriginNode = nullptr;
 	if (UActionNode** Finder = ComponentMap.Find(TargetComponent))
 	{
 		OriginNode = *Finder;
-		ComponentMap.Emplace(TargetComponent, TargetNode);
+		if (!bIsValidNode)
+		{
+			EndNode(TargetComponent, OriginNode);
+			return;
+		}
+		else ComponentMap.Emplace(TargetComponent, TargetNode);
 	}
 	else
 	{
+		if (!bIsValidNode) return;
 		ComponentMap.Add(TargetComponent, TargetNode);
 	}
 
-	if (IsValid(TargetNode)) TargetNode->ClaimExecute(this, TargetComponent);
-	else EndNode(TargetComponent, OriginNode);
+	TargetNode->ClaimExecute(this, TargetComponent);
 }
 
 void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
 	ComponentMap.Remove(TargetComponent);
 	if(ComponentMap.Num() == 0) ConditionalBeginDestroy();
+}
+
+UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents)
+{
+	if(!IsValid(TargetOperator) || TargetComponents.Num() == 0) return nullptr;
+
+	UActionExecutor* Result = NewObject<UActionExecutor>(TargetOperator);
+	for (UUnitActionComponent* Currentcomponent : TargetComponents)
+	{
+		Result->ComponentMap.Add(Currentcomponent, nullptr);
+	}
+	return Result;
 }
