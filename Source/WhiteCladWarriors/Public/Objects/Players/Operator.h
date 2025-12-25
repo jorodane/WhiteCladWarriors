@@ -102,9 +102,6 @@ protected:
 	TMap<FName, UActionTargetContainer*> AvailableActions;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
-	TMap<AActionBase*, FInputClaim> InputClaimMap;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
 	FInputClaim CurrentInputClaim;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
@@ -165,10 +162,7 @@ public:
 	void ForceRemoveInputClaim();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	void CancelInputClaim(AActionBase* ClaimAction);
-
-	UFUNCTION(BlueprintCallable, Category = "Input")
-	void CancelEveryInputClaim();
+	void CancelInputClaim();
 
 	UFUNCTION(BlueprintPure, Category = "Input")
 	bool IsInputClaimed();
@@ -191,7 +185,7 @@ public:
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ExecuteAction(AActionBase* Target, bool bIsButtonClick);
+	void ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsButtonClick);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UActionTargetContainer*> GetAvailableActionList();

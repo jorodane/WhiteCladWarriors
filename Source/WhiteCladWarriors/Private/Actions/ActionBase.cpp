@@ -10,12 +10,12 @@ bool AActionBase::IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const
 	return IsValid(AsSelectorNode);
 }
 
-bool AActionBase::IsNeedInputForStart(const FInputClaim& TriggerInput) const
+bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const
 {
 	UActionSelectorNode* RootSelector;
 	if (IsRootNodeSelector(RootSelector))
 	{
-		RootSelector->GetInputClaim();
+		TriggerInput = RootSelector->GetInputClaim(TargetComponent, this);
 		return true;
 	}
 	return false;

@@ -36,7 +36,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	bool OnReceiveInput(UActionExecutor* Executor, const FInputPackage& Input);
+	bool OnReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 	bool OnCancelInput(UActionExecutor* Executor);
@@ -51,11 +51,11 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool ReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) { return OnReceiveInput(Executor, Input); }
+	bool ReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) { return OnReceiveInput(Executor, TargetComponent, Input); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
-	FInputClaim GetInputClaim() const;
+	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction) const;
 };

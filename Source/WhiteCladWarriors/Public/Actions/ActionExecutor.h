@@ -8,8 +8,8 @@
 
 class AOperator;
 class UUnitActionComponent;
+class UActionSelectorNode;
 class UActionNode;
-
 /**
  * 
  */
@@ -28,6 +28,7 @@ public:
 	TMap<FName, FVector> PositionMap;
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
+
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -59,6 +60,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActor*> GetActorArray(FName WantTag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool SetInput(UUnitActionComponent* WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool SetInputArray(TArray<UUnitActionComponent*> WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);

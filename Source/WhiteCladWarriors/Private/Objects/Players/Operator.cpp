@@ -84,7 +84,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
 	if (IsInputClaimed())
 	{
-		bool bIsInputComplete = CurrentInputClaim.TargetNode ? CurrentInputClaim.TargetNode->ReceiveInput(CurrentInputClaim.TargetExecutor, CurrentInputClaim.TargetComponent, CurrentInputPackage) : false;
+		bool bIsInputComplete = CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
 		if(bIsInputComplete) ForceRemoveInputClaim();
 	}
 	else if(bIsMapClick)
@@ -146,7 +146,6 @@ void AOperator::OnUpdateInput_Implementation()
 
 void AOperator::ClaimInput(AActionBase* ClaimAction, const FInputClaim& ClaimInfo)
 {
-	if(InputClaimMap.Find(ClaimAction))
 	CurrentInputClaim = ClaimInfo;
 	OnUpdateInput();
 }
@@ -166,7 +165,7 @@ void AOperator::CancelInputClaim()
 	}
 }
 
-bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetExecutor); }
+bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetNode); }
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {
@@ -211,19 +210,28 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 	CameraMove(Result, Multiplier);
 };
 
-void AOperator::ExecuteAction(AActionBase* Target, bool bIsButtonClick)
+void AOperator::ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately)
 {
-	if(!IsValid(Target)) return;
+	if(!IsValid(TargetAction)) return;
 
-	bool ImmediateBySmartKey = !bIsButtonClick && Target->GetIsSmartKey();
+	FInputClaim ResultInput;
 
-	if ()
+	if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponent))
 	{
+		//bool ImmediateBySmartKey = !bIsButtonClick && TargetAction->GetIsSmartKey();
 
+		if (bIsStartImmediately)
+		{
+			TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+		}
+		else
+		{
+			ClaimInput(TargetAction, ResultInput);
+		}
 	}
 	else
 	{
-
+		TargetAction->ExecuteAction(this, TargetComponent);
 	}
 }
 
@@ -443,7 +451,9 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 		TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
 		if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
 		const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
-		CurrentAction->ExecuteActionWithInput(this, ResultArray, Input);
+		//CurrentAction->ExecuteActionWithInput(this, ResultArray, Input);
+
+		ExecuteAction(CurrentAction, ResultArray, true);
 	}
 }
 

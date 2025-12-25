@@ -2,8 +2,10 @@
 
 
 #include "Actions/ActionExecutor.h"
+#include "Actions/ActionSelectorNode.h"
 #include "Objects/Players/Operator.h"
 #include "Actions/ActionNode.h"
+
 
 void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 {
@@ -59,6 +61,23 @@ TArray<AActor*> UActionExecutor::GetActorArray(FName WantTag) const
 	return Result;
 }
 
+bool UActionExecutor::SetInput(UUnitActionComponent* WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
+{
+	if (UActionNode** ComponentFinder = ComponentMap.Find(WantComponent))
+	{
+		UActionSelectorNode* CurrentNode = Cast<UActionSelectorNode>(*ComponentFinder);
+		if (IsValid(CurrentNode) && CurrentNode == WantNode) return WantNode->ReceiveInput(this, WantComponent, WantInput);
+	}
+	return false;
+}
+
+bool UActionExecutor::SetInputArray(TArray<UUnitActionComponent*> WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
+{
+	bool Result = false;
+	for (UUnitActionComponent* CurrentComponent : WantComponent) Result |= SetInput(CurrentComponent, WantNode, WantInput);
+	return Result;
+}
+
 
 void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
@@ -72,7 +91,10 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 			EndNode(TargetComponent, OriginNode);
 			return;
 		}
-		else ComponentMap.Emplace(TargetComponent, TargetNode);
+		else
+		{
+			ComponentMap.Emplace(TargetComponent, TargetNode);
+		}
 	}
 	else
 	{
@@ -86,7 +108,10 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
 	ComponentMap.Remove(TargetComponent);
-	if(ComponentMap.Num() == 0) ConditionalBeginDestroy();
+	if (ComponentMap.Num() == 0)
+	{
+		ConditionalBeginDestroy();
+	}
 }
 
 UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents)
@@ -94,6 +119,7 @@ UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArr
 	if(!IsValid(TargetOperator) || TargetComponents.Num() == 0) return nullptr;
 
 	UActionExecutor* Result = NewObject<UActionExecutor>(TargetOperator);
+	Result->Operator = TargetOperator;
 	for (UUnitActionComponent* Currentcomponent : TargetComponents)
 	{
 		Result->ComponentMap.Add(Currentcomponent, nullptr);

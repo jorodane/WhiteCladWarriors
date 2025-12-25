@@ -113,7 +113,7 @@ public:
 	inline bool			IsExecutable(UUnitActionComponent* CurrentTarget) const { return true; };
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool			IsNeedInputForStart(const FInputClaim& TriggerInput) const;
+	bool			IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline TArray<UUnitActionComponent*> GetExecutableArray(const TArray<UUnitActionComponent*>& TargetComponents) const { return TargetComponents; };
@@ -126,16 +126,5 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
 	void ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
-//public:	
-//	// Sets default values for this actor's properties
-//	AActionBase();
-//
-//protected:
-//	// Called when the game starts or when spawned
-//	virtual void BeginPlay() override;
-//
-//public:	
-//	// Called every frame
-//	virtual void Tick(float DeltaTime) override;
 
 };

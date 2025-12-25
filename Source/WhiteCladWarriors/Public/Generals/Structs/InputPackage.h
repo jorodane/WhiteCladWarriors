@@ -6,6 +6,7 @@
 #include "InputPackage.generated.h"
 
 
+class AActionBase;
 class UActionSelectorNode;
 class UActionExecutor;
 class UUnitActionComponent;
@@ -56,9 +57,6 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TEnumAsByte<EMouseCursor::Type> TargetCursor;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	bool bIsBackground = true;
-
 	void Clear()
 	{
 		TargetComponentArray.SetNum(0);
@@ -67,6 +65,5 @@ struct FInputClaim
 		TargetExecutor = nullptr;
 		TargetDescription = FText::GetEmpty();
 		TargetCursor = EMouseCursor::Default;
-		bIsBackground = true;
 	}
 };
