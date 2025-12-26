@@ -84,6 +84,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
 	if (IsInputClaimed())
 	{
+		if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray);
 		bool bIsInputComplete = CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
 		if(bIsInputComplete) ForceRemoveInputClaim();
 	}
