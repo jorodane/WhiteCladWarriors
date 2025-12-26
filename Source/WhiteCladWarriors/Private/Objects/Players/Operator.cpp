@@ -84,7 +84,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
 	if (IsInputClaimed())
 	{
-		if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray);
+		if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode);
 		bool bIsInputComplete = CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
 		if(bIsInputComplete) ForceRemoveInputClaim();
 	}
@@ -219,8 +219,6 @@ void AOperator::ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActio
 
 	if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponent))
 	{
-		//bool ImmediateBySmartKey = !bIsButtonClick && TargetAction->GetIsSmartKey();
-
 		if (bIsStartImmediately)
 		{
 			TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);

@@ -75,5 +75,5 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	static UActionExecutor* CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents);
+	static UActionExecutor* CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
 };

@@ -114,7 +114,7 @@ void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode
 	}
 }
 
-UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents)
+UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
 {
 	if(!IsValid(TargetOperator) || TargetComponents.Num() == 0) return nullptr;
 
@@ -122,7 +122,7 @@ UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArr
 	Result->Operator = TargetOperator;
 	for (UUnitActionComponent* Currentcomponent : TargetComponents)
 	{
-		Result->ComponentMap.Add(Currentcomponent, nullptr);
+		Result->ComponentMap.Add(Currentcomponent, StartNode);
 	}
 	return Result;
 }
