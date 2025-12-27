@@ -10,6 +10,7 @@
 
 class AActionBase;
 class UUnitActionComponent;
+class UActionExecutor;
 struct FInputPackage;
 
 UCLASS()
@@ -22,6 +23,8 @@ protected:
 	FSlateBrush SelectedIcon;
 
 	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
+
+	TWeakPtr<UActionExecutor> MainExecutor;
 
 	protected:
 	virtual void BeginPlay() override;
