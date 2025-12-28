@@ -3,6 +3,7 @@
 
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionSelectorNode.h"
+#include "Actions/UnitActionComponent.h"
 #include "Objects/Players/Operator.h"
 #include "Actions/ActionNode.h"
 
@@ -108,21 +109,43 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
 {
 	ComponentMap.Remove(TargetComponent);
-	if (ComponentMap.Num() == 0)
-	{
-		ConditionalBeginDestroy();
-	}
+	CheckComponentMap();
+}
+
+void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)
+{
+	if (!IsValid(TargetComponent)) return;
+	TargetComponent->OnComponentRemoved.AddDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
+	ComponentMap.Add(TargetComponent, StartNode);
+}
+
+void UActionExecutor::AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode) { AddComponentToMap(Cast<UUnitActionComponent>(TargetComponent), StartNode); }
+
+void UActionExecutor::RemoveComponentFromMap(UUnitActionComponent* TargetComponent)
+{
+	if(IsValid(TargetComponent)) TargetComponent->OnComponentRemoved.RemoveAll(this);
+	ComponentMap.Remove(TargetComponent);
+	CheckComponentMap();
+}
+
+void UActionExecutor::RemoveComponentBaseFromMap(UUnitComponentBase* TargetComponent) { RemoveComponentFromMap(Cast<UUnitActionComponent>(TargetComponent)); }
+
+void UActionExecutor::CheckComponentMap()
+{
+	if (ComponentMap.Num() == 0) ConditionalBeginDestroy(); 
 }
 
 UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
 {
-	if(!IsValid(TargetOperator) || TargetComponents.Num() == 0) return nullptr;
+	if(!IsValid(TargetOperator)) return nullptr;
+	TargetComponents.RemoveAll([&](UUnitActionComponent* CurrentComponent)->bool{ return !IsValid(CurrentComponent);});
+	if(TargetComponents.Num() == 0) return nullptr;
 
 	UActionExecutor* Result = NewObject<UActionExecutor>(TargetOperator);
+	if(!IsValid(Result)) return nullptr;
 	Result->Operator = TargetOperator;
-	for (UUnitActionComponent* Currentcomponent : TargetComponents)
-	{
-		Result->ComponentMap.Add(Currentcomponent, StartNode);
-	}
+	for(UUnitActionComponent* CurrentComponent : TargetComponents) Result->AddComponentToMap(CurrentComponent, StartNode);
 	return Result;
+
+	return nullptr;
 }

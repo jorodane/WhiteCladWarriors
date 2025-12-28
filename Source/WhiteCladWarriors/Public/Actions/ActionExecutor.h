@@ -73,6 +73,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
 
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void RemoveComponentFromMap(UUnitActionComponent* TargetComponent);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void RemoveComponentBaseFromMap(UUnitComponentBase* TargetComponent);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void CheckComponentMap();
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static UActionExecutor* CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);

@@ -3,6 +3,12 @@
 
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 
+void UUnitComponentBase::BeginDestroy()
+{
+	BroadcastRemoveMessage();
+	Super::BeginDestroy();
+}
+
 TArray<UWidget*> UUnitComponentBase::GetConnectedWidgetsWithTag(FName WantTag)
 {
 	FWidgetArray* Result = ConnectedWidgets.Find(WantTag);
@@ -24,34 +30,8 @@ void UUnitComponentBase::DisconnectInfoWidget_Implementation(UWidget* TargetWidg
 	if (FWidgetArray* Array = ConnectedWidgets.Find(ClaimedTag)) Array->WidgetArray.Remove(TargetWidget);
 };
 
-
-
-//// Sets default values for this component's properties
-//UUnitComponentBase::UUnitComponentBase()
-//{
-//	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-//	// off to improve performance if you don't need them.
-//	PrimaryComponentTick.bCanEverTick = true;
-//
-//	// ...
-//}
-//
-//
-//// Called when the game starts
-//void UUnitComponentBase::BeginPlay()
-//{
-//	Super::BeginPlay();
-//
-//	// ...
-//	
-//}
-//
-//
-//// Called every frame
-//void UUnitComponentBase::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-//{
-//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-//
-//	// ...
-//}
-
+void UUnitComponentBase::BroadcastRemoveMessage()
+{
+	OnComponentRemoved.Broadcast(this);
+	OnComponentRemoved.Clear();
+}

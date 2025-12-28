@@ -245,6 +245,10 @@ public:
 	void DeselectActor(AActor* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void DeselectUnit(AUnitBase* Target);
+	void DeselectUnit_Implementation(AUnitBase* Target);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActors();
 	virtual void DeselectActors_Implementation();
 

@@ -11,12 +11,19 @@
 class AActionBase;
 class UUnitActionComponent;
 class UActionExecutor;
+class UActionNode;
 struct FInputPackage;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 
 UCLASS()
 class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnUnitDie OnUnitDie;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
@@ -24,9 +31,12 @@ protected:
 
 	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
 
-	TWeakPtr<UActionExecutor> MainExecutor;
+	TObjectPtr<UActionExecutor> MainExecutor;
 
-	protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	bool bMainExecutorCancelable = true;
+
+protected:
 	virtual void BeginPlay() override;
 
 public:
@@ -39,23 +49,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddActionComponent(UUnitActionComponent* NewComponent);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
+	bool GetActionExecutorCancelable() const;
+	virtual bool GetActionExecutorCancelable_Implementation() const { return bMainExecutorCancelable; };
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool SetActionExecutor(UActionExecutor* NewExecutor, bool bIsCancelable = true);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void EndActionExecutor(UActionExecutor* OldExecutor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
+	void Die();
+	virtual void Die_Implementation();
+
 public:
 	bool IsSelectable_Implementation(class AOperator* Operator) { return true; }
-	//void Select_Implementation(class AOperator* Operator, bool bIsSingleSelection);
-	//void Deselect_Implementation();
 	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
-
-//public:
-//	// Sets default values for this character's properties
-//	AUnitBase();
-//
-
-//
-//public:	
-//	// Called every frame
-//	virtual void Tick(float DeltaTime) override;
-//
-//	// Called to bind functionality to input
-//	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 };

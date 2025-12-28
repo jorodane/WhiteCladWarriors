@@ -85,7 +85,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	if (IsInputClaimed())
 	{
 		if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode);
-		bool bIsInputComplete = CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
+		bool bIsInputComplete = CurrentInputClaim.TargetExecutor ? CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode, CurrentInputPackage) : true;
 		if(bIsInputComplete) ForceRemoveInputClaim();
 	}
 	else if(bIsMapClick)
@@ -328,6 +328,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 		CurrentInputPackage.SelectedActors.AddUnique(Target);
 		ISelectable::Execute_Select(Target, this, bIsSingleSelection);
 		ActorAddToActionList(Target);
+		if(AUnitBase* TargetAsUnit = Cast<AUnitBase>(Target)) TargetAsUnit->OnUnitDie.AddDynamic(this, &AOperator::DeselectUnit);
 	}
 
 }
@@ -360,12 +361,19 @@ void AOperator::DeselectActor(AActor* Target)
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
+void AOperator::DeselectUnit_Implementation(AUnitBase* Target) 
+{ 
+	if(IsValid(Target)) Target->OnUnitDie.RemoveAll(this);
+	DeselectActor(Target); 
+};
+
 void AOperator::DeselectActors_Implementation()
 {
 	for (AActor* CurrentTarget : CurrentInputPackage.SelectedActors)
 	{
 		ISelectable::Execute_Deselect(CurrentTarget);
 		ActorRemoveFromActionList(CurrentTarget);
+		if (AUnitBase* CurrentUnit = Cast<AUnitBase>(CurrentTarget)) CurrentUnit->OnUnitDie.RemoveAll(this);
 	}
 	CurrentInputPackage.SelectedActors.Empty();
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);

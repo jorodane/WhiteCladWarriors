@@ -3,6 +3,7 @@
 
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Actions/UnitActionComponent.h"
+#include "Actions/ActionExecutor.h"
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
 
@@ -64,28 +65,31 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 	}
 };
 
-//// Sets default values
-//AUnitBase::AUnitBase()
-//{
-// 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-//	PrimaryActorTick.bCanEverTick = true;
-//
-//}
-//
-//// Called when the game starts or when spawned
 
-//
-//// Called every frame
-//void AUnitBase::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//
-//}
-//
-//// Called to bind functionality to input
-//void AUnitBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-//{
-//	Super::SetupPlayerInputComponent(PlayerInputComponent);
-//
-//}
+bool AUnitBase::SetActionExecutor(UActionExecutor* NewExecutor, bool bIsCancelable = true)
+{
+	if (GetActionExecutorCancelable())
+	{
+		MainExecutor->OnCanceled(this);
 
+		return true;
+	}
+	return false;
+}
+
+void AUnitBase::EndActionExecutor(UActionExecutor* OldExecutor)
+{
+	if(MainExecutor != OldExecutor) return;
+	MainExecutor = nullptr;
+	bMainExecutorCancelable = true;
+}
+
+
+void AUnitBase::Die_Implementation() 
+{ 
+	for (UActorComponent* CurrentComponent : GetComponents())
+	{
+		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastRemoveMessage();
+	}
+	OnUnitDie.Broadcast(this); 
+}

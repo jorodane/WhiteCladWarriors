@@ -7,6 +7,8 @@
 #include "Interfaces/InfoConnectable.h"
 #include "UnitComponentBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComponentRemoved, UUnitComponentBase*, TargetComponent);
+
 class UWidget;
 
 USTRUCT(BlueprintType)
@@ -24,6 +26,11 @@ class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent, public 
 {
 	GENERATED_BODY()
 
+
+public:
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnComponentRemoved OnComponentRemoved;
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
 	TArray<FGenericWidgetClaimer> InfoWidgets;
@@ -35,8 +42,14 @@ public:
 	TMap<FName, FWidgetArray> ConnectedWidgets;
 
 public:
+	virtual void BeginDestroy() override;
+
+public:
 	UFUNCTION(BlueprintPure, Category = "GenericWidget")
 	TArray<UWidget*> GetConnectedWidgetsWithTag(FName WantTag);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void BroadcastRemoveMessage();
 
 public:
 	TArray<FGenericWidgetClaimer> GetInfoWidgets_Implementation() const { return InfoWidgets; }
