@@ -66,7 +66,7 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 };
 
 
-bool AUnitBase::SetActionExecutor(UActionExecutor* NewExecutor, bool bIsCancelable = true)
+bool AUnitBase::SetActionExecutor(UActionExecutor* NewExecutor, bool bIsCancelable)
 {
 	if (GetActionExecutorCancelable())
 	{
