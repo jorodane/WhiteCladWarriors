@@ -2,10 +2,16 @@
 
 
 #include "Objects/Selectables/Units/UnitBase.h"
+#include "Generals/ReservedActionMessage.h"
 #include "Actions/UnitActionComponent.h"
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
+
+void FMainActionInfo::SetActionMessage_Simple(FName Message)
+{
+	if (IsValid(Executor)) Executor->SetActionMessage(Component);
+}
 
 void AUnitBase::BeginPlay()
 {
@@ -55,6 +61,8 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 {
 	if (!IsValid(NewComponent)) return;
 
+	ActionComponentArray.AddUnique(NewComponent);
+
 	for (FName CurrentName : NewComponent->ActionList)
 	{
 		if (AActionBase* CurrentAction = UActionSetting::GetAction(CurrentName))
@@ -66,22 +74,25 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 };
 
 
-bool AUnitBase::SetActionExecutor(UActionExecutor* NewExecutor, bool bIsCancelable)
+bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
-	if (GetActionExecutorCancelable())
-	{
-		MainExecutor->OnCanceled(this);
+	return SetMainAction(Info.Executor, Info.Component, Info.bIsCancelable);
+}
 
+bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable)
+{
+	if (GetMainActionCancelable())
+	{
+		MainAction.SetActionMessage_Simple(ACTION_MESSAGE_CANCEL);
+		MainAction.Set(Executor, Component, bIsCancelable);;
 		return true;
 	}
 	return false;
 }
 
-void AUnitBase::EndActionExecutor(UActionExecutor* OldExecutor)
+void AUnitBase::EndMainAction(UActionExecutor* OldExecutor)
 {
-	if(MainExecutor != OldExecutor) return;
-	MainExecutor = nullptr;
-	bMainExecutorCancelable = true;
+	MainAction.Clear(OldExecutor);
 }
 
 

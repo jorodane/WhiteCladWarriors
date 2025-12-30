@@ -8,6 +8,13 @@
 #include "Actions/ActionNode.h"
 
 
+void FActiveNodeInfo::SetNode(UActionNode* Node)
+{
+	CurrentNode = Node;
+	bIsMainNode = Node->bIsMainAction;
+}
+
+
 void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 {
 	FVector& Setter = PositionMap.FindOrAdd(WantTag);
@@ -64,9 +71,9 @@ TArray<AActor*> UActionExecutor::GetActorArray(FName WantTag) const
 
 bool UActionExecutor::SetInput(UUnitActionComponent* WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
 {
-	if (UActionNode** ComponentFinder = ComponentMap.Find(WantComponent))
+	if (FActiveNodeInfo* ComponentInfo = ComponentMap.Find(WantComponent))
 	{
-		UActionSelectorNode* CurrentNode = Cast<UActionSelectorNode>(*ComponentFinder);
+		UActionSelectorNode* CurrentNode = Cast<UActionSelectorNode>(ComponentInfo->CurrentNode);
 		if (IsValid(CurrentNode) && CurrentNode == WantNode) return WantNode->ReceiveInput(this, WantComponent, WantInput);
 	}
 	return false;
@@ -80,34 +87,49 @@ bool UActionExecutor::SetInputArray(TArray<UUnitActionComponent*> WantComponent,
 }
 
 
-void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
+void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode, int RecursiveDepth)
 {
 	bool bIsValidNode = IsValid(TargetNode);
+	bool bCanEnter = bIsValidNode ? TargetNode->GetCanEnter(this, TargetComponent) : false;
 	UActionNode* OriginNode = nullptr;
-	if (UActionNode** Finder = ComponentMap.Find(TargetComponent))
+	if (FActiveNodeInfo* CurrentInfo = ComponentMap.Find(TargetComponent))
 	{
-		OriginNode = *Finder;
+		OriginNode = CurrentInfo->CurrentNode;
 		if (!bIsValidNode)
 		{
 			EndNode(TargetComponent, OriginNode);
 			return;
 		}
-		else
+		else if (!bCanEnter)
 		{
-			ComponentMap.Emplace(TargetComponent, TargetNode);
+			if (RecursiveDepth > 0) EnterNode(TargetComponent, TargetNode->BlockedNode, RecursiveDepth - 1);
+			else EndNode(TargetComponent, OriginNode);
+			return;
 		}
+
+		CurrentInfo->SetNode(TargetNode);
 	}
 	else
 	{
 		if (!bIsValidNode) return;
-		ComponentMap.Add(TargetComponent, TargetNode);
+		else if (!bCanEnter)
+		{
+			if (RecursiveDepth > 0) EnterNode(TargetComponent, TargetNode->BlockedNode, RecursiveDepth - 1);
+			return;
+		}
+		ComponentMap.Add(TargetComponent, FActiveNodeInfo(TargetNode));
 	}
-
+	bool bIsMainAction = bIsValidNode && TargetNode->bIsMainAction;
+	bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
+	if (bIsMainAction && !bWasMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable);
+	if (!bIsMainAction && bWasMainAction) TargetComponent->EndMainAction(this);
 	TargetNode->ClaimExecute(this, TargetComponent);
 }
 
-void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode)
+void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode)
 {
+	if (!IsValid(TargetComponent)) return;
+	if(IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(this);
 	ComponentMap.Remove(TargetComponent);
 	CheckComponentMap();
 }

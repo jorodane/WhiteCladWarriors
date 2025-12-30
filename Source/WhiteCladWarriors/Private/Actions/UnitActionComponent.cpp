@@ -2,6 +2,7 @@
 
 
 #include "Actions/UnitActionComponent.h"
+#include "Objects/Selectables/Units/UnitBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AActor* UUnitActionComponent::SpawnActor_Implementation(TSubclassOf<AActor> TemplateClass)
@@ -23,3 +24,22 @@ FVector UUnitActionComponent::GetDirection_Implementation(FVector Destination, b
 	else Result = Result.GetSafeNormal();
 	return Result;
 };
+
+AUnitBase* UUnitActionComponent::GetOwnerUnit_Implementation() { return Cast<AUnitBase>(GetOwner()); }
+
+bool UUnitActionComponent::GetMainActionCancelable()
+{
+	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->GetMainActionCancelable();
+	return false;
+}
+
+bool UUnitActionComponent::TrySetMainAction_Implementation(UActionExecutor* Executor, bool bIsCancelable)
+{
+	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->SetMainAction(Executor, this, bIsCancelable);
+	return false;
+}
+
+void UUnitActionComponent::EndMainAction_Implementation(UActionExecutor* Executor)
+{
+	if (AUnitBase* OwnerUnit = GetOwnerUnit()) OwnerUnit->EndMainAction(Executor);
+}

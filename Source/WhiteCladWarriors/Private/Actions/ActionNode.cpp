@@ -3,6 +3,12 @@
 
 #include "Actions/ActionNode.h"
 #include "Actions/ActionExecutor.h"
+#include "Actions/UnitActionComponent.h"
+
+bool UActionNode::GetCanEnter_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
+{
+	return !(bIsMainAction && !TargetComponent->GetMainActionCancelable());
+}
 
 void UActionNode::AddNodeLink_Implementation(FName ResultName, UActionNode* Destination)
 {

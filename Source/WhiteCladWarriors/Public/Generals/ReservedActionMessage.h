@@ -4,9 +4,4 @@
 
 #include "CoreMinimal.h"
 
-UENUM(BlueprintType)
-enum class EValidPinType : uint8
-{
-	IsNotValid = 0,
-	IsValid = 1,
-};
+#define ACTION_MESSAGE_CANCEL TEXT("Canceled")

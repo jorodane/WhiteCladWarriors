@@ -16,6 +16,39 @@ struct FInputPackage;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 
+USTRUCT(BlueprintType)
+struct FMainActionInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TObjectPtr<UActionExecutor> Executor;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TObjectPtr<UUnitActionComponent> Component;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsCancelable = true;
+
+	void Clear()
+	{
+		Executor = nullptr;
+		Component = nullptr;
+		bIsCancelable = true;
+	}
+
+	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable = true)
+	{
+		Executor = WantExecutor;
+		Component = WantComponent;
+		bIsCancelable = bWantIsCancelable;
+	}
+
+	void Clear(UActionExecutor* OldExecutor) { if (Executor == OldExecutor) Clear(); }
+
+	void SetActionMessage_Simple(FName Message);
+};
+
 UCLASS()
 class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
 {
@@ -31,10 +64,9 @@ protected:
 
 	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
 
-	TObjectPtr<UActionExecutor> MainExecutor;
+	TArray<UUnitActionComponent*> ActionComponentArray;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	bool bMainExecutorCancelable = true;
+	FMainActionInfo MainAction;
 
 protected:
 	virtual void BeginPlay() override;
@@ -50,14 +82,15 @@ public:
 	void AddActionComponent(UUnitActionComponent* NewComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
-	bool GetActionExecutorCancelable() const;
-	virtual bool GetActionExecutorCancelable_Implementation() const { return bMainExecutorCancelable; };
+	bool GetMainActionCancelable() const;
+	virtual bool GetMainActionCancelable_Implementation() const { return MainAction.bIsCancelable; };
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool SetActionExecutor(UActionExecutor* NewExecutor, bool bIsCancelable = true);
+	bool SetMainAction(const FMainActionInfo& Info);
+	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable = true);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndActionExecutor(UActionExecutor* OldExecutor);
+	void EndMainAction(UActionExecutor* OldExecutor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
 	void Die();

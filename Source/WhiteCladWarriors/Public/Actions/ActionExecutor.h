@@ -10,20 +10,41 @@ class AOperator;
 class UUnitActionComponent;
 class UActionSelectorNode;
 class UActionNode;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionMessage_Simple, AUnitBase*, From);
+
 /**
  * 
  */
+USTRUCT(BlueprintType)
+struct FActiveNodeInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<UActionNode> CurrentNode;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	bool bIsMainNode;
+
+	void SetNode(UActionNode* Node);
+
+	FActiveNodeInfo() { }
+	FActiveNodeInfo(UActionNode* Node) { SetNode(Node); }
+};
+
+
 UCLASS(Blueprintable, BlueprintType)
 class WHITECLADWARRIORS_API UActionExecutor : public UObject
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<UUnitActionComponent*, UActionNode*> ComponentMap;
+	TMap<UUnitActionComponent*, FActiveNodeInfo> ComponentMap;
 
 	TMap<FName, FVector> PositionMap;
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
@@ -31,6 +52,9 @@ public:
 
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void SetActionMessage(UUnitActionComponent* From) {  }
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
@@ -68,10 +92,10 @@ public:
 	bool SetInputArray(TArray<UUnitActionComponent*> WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
+	void EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
+	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);

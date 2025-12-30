@@ -18,7 +18,7 @@ class WHITECLADWARRIORS_API AActionBase : public AActor
 
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionNode> RootNode;
+	TObjectPtr<UActionNode> RootNode = nullptr;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Action")
@@ -37,19 +37,22 @@ protected:
 	float ActionCooldown;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	int ActionMaxStack;
+	int ActionMaxStack = 1;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	int UIOrder;
+	int UIOrder = 100;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	bool bIsSmartKey;
+	bool bIsMainAction = true;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	bool bShowStack;
+	bool bIsSmartKey = false;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
-	bool bShowHotKey;
+	bool bShowStack = false;
+
+	UPROPERTY(EditAnywhere, Category = "Action")
+	bool bShowHotKey = false;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Action")
