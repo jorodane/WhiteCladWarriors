@@ -27,3 +27,9 @@ void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, U
 	if (IsValid(NextNode)) Executor->EnterNode(TargetComponent, NextNode);
 	else Executor->EndNode(TargetComponent, this);
 }
+
+void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message)
+{
+	if (!IsValid(Executor) || !IsValid(TargetComponent)) return;
+	if (UActionNode** NodeFinder = LinkedNodes.Find(Message)) Executor->EnterNode(TargetComponent, *NodeFinder);
+}

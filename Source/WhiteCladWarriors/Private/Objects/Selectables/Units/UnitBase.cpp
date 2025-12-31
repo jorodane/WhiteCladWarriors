@@ -10,7 +10,7 @@
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
-	if (IsValid(Executor)) Executor->SetActionMessage(Component);
+	if (IsValid(Executor)) Executor->SetActionMessage_Simple(Component, Message);
 }
 
 void AUnitBase::BeginPlay()

@@ -57,4 +57,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecuteWithInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input);
 	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void OnActionMessage_Simple(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message);
+	void OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message);
 };

@@ -11,9 +11,17 @@
 void FActiveNodeInfo::SetNode(UActionNode* Node)
 {
 	CurrentNode = Node;
-	bIsMainNode = Node->bIsMainAction;
+	bIsMainNode = IsValid(Node) ? Node->bIsMainAction : false;
 }
 
+void UActionExecutor::SetActionMessage_Simple(UUnitActionComponent* From, const FName& Message)
+{
+	if (FActiveNodeInfo* ComponentInfo = ComponentMap.Find(From))
+	{
+		UActionNode* CurrentNode = ComponentInfo->CurrentNode;
+		if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(this, From, Message);
+	}
+}
 
 void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 {
