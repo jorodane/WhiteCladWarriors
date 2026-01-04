@@ -10,7 +10,12 @@
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
-	if (IsValid(Executor)) Executor->SetActionMessage_Simple(Component, Message);
+	if (IsValid()) Executor.Get()->SetActionMessage_Simple(Component.Get(), Message);
+}
+
+bool FMainActionInfo::IsValid() const
+{
+	return Executor.IsValid() && Component.IsValid();
 }
 
 void AUnitBase::BeginPlay()
@@ -76,8 +81,12 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 
 bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
-	return SetMainAction(Info.Executor, Info.Component, Info.bIsCancelable);
+	if(Info.IsValid()) return SetMainAction(Info.Executor.Get(), Info.Component.Get(), Info.bIsCancelable);
+	else return SetMainAction(nullptr, nullptr);
 }
+
+bool AUnitBase::GetMainActionCancelable_Implementation() const 
+{ return MainAction.bIsCancelable; };
 
 bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable)
 {
@@ -88,6 +97,11 @@ bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* C
 		return true;
 	}
 	return false;
+}
+
+void AUnitBase::EndMainAction()
+{
+	if(MainAction.IsValid()) EndMainAction(MainAction.Executor.Get());
 }
 
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor)

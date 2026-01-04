@@ -53,7 +53,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetActionMessage_Simple(UUnitActionComponent* From, const FName& Message);
+	void SetActionMessage_Simple(UUnitActionComponent* From, FName Message);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetPosition(FName WantTag, const FVector& WantPosition);

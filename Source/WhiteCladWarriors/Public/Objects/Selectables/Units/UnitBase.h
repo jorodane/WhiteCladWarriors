@@ -21,11 +21,10 @@ struct FMainActionInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	TObjectPtr<UActionExecutor> Executor;
+	TWeakObjectPtr<UActionExecutor> Executor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	TObjectPtr<UUnitActionComponent> Component;
+	TWeakObjectPtr<UUnitActionComponent> Component;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsCancelable = true;
@@ -44,9 +43,11 @@ struct FMainActionInfo
 		bIsCancelable = bWantIsCancelable;
 	}
 
-	void Clear(UActionExecutor* OldExecutor) { if (Executor == OldExecutor) Clear(); }
+	void Clear(const UActionExecutor* OldExecutor) { if (Executor == OldExecutor) Clear(); }
 
 	void SetActionMessage_Simple(FName Message);
+
+	bool IsValid() const;
 };
 
 UCLASS()
@@ -83,13 +84,14 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
 	bool GetMainActionCancelable() const;
-	virtual bool GetMainActionCancelable_Implementation() const { return MainAction.bIsCancelable; };
+	virtual bool GetMainActionCancelable_Implementation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
 	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable = true);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
+	void EndMainAction();
 	void EndMainAction(UActionExecutor* OldExecutor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")

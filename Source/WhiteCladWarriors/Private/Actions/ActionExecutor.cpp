@@ -14,12 +14,15 @@ void FActiveNodeInfo::SetNode(UActionNode* Node)
 	bIsMainNode = IsValid(Node) ? Node->bIsMainAction : false;
 }
 
-void UActionExecutor::SetActionMessage_Simple(UUnitActionComponent* From, const FName& Message)
+void UActionExecutor::SetActionMessage_Simple(UUnitActionComponent* From, FName Message)
 {
 	if (FActiveNodeInfo* ComponentInfo = ComponentMap.Find(From))
 	{
-		UActionNode* CurrentNode = ComponentInfo->CurrentNode;
-		if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(this, From, Message);
+		if (ComponentInfo)
+		{
+			UActionNode* CurrentNode = ComponentInfo->CurrentNode;
+			if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(this, From, Message);
+		}
 	}
 }
 
