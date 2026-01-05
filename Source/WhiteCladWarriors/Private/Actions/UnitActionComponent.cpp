@@ -33,13 +33,13 @@ bool UUnitActionComponent::GetMainActionCancelable()
 	return false;
 }
 
-bool UUnitActionComponent::TrySetMainAction_Implementation(UActionExecutor* Executor, bool bIsCancelable)
+bool UUnitActionComponent::TrySetMainAction_Implementation(UActionExecutor* Executor, bool bIsCancelable, bool bIsStopMovement)
 {
-	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->SetMainAction(Executor, this, bIsCancelable);
+	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->SetMainAction(Executor, this, bIsCancelable, bIsStopMovement);
 	return false;
 }
 
-void UUnitActionComponent::EndMainAction_Implementation(UActionExecutor* Executor)
+void UUnitActionComponent::EndMainAction_Implementation(UActionExecutor* Executor, bool bIsStopMovement)
 {
-	if (AUnitBase* OwnerUnit = GetOwnerUnit()) OwnerUnit->EndMainAction(Executor);
+	if (AUnitBase* OwnerUnit = GetOwnerUnit()) OwnerUnit->EndMainAction(Executor, bIsStopMovement);
 }

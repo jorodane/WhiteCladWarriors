@@ -132,15 +132,15 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 	}
 	bool bIsMainAction = bIsValidNode && TargetNode->bIsMainAction;
 	bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
-	if (bIsMainAction && !bWasMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable);
-	if (!bIsMainAction && bWasMainAction) TargetComponent->EndMainAction(this);
+	if (bIsMainAction && !bWasMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
+	if (!bIsMainAction && bWasMainAction) TargetComponent->EndMainAction(this, TargetNode->bIsStopMovementOnEnd);
 	TargetNode->ClaimExecute(this, TargetComponent);
 }
 
 void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode)
 {
 	if (!IsValid(TargetComponent)) return;
-	if(IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(this);
+	if(IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(this, OldNode->bIsStopMovementOnEnd);
 	ComponentMap.Remove(TargetComponent);
 	CheckComponentMap();
 }

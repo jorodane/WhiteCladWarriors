@@ -29,21 +29,26 @@ struct FMainActionInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsCancelable = true;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsStopMovement = false;
+
 	void Clear()
 	{
 		Executor = nullptr;
 		Component = nullptr;
 		bIsCancelable = true;
+		bIsStopMovement = false;
 	}
 
-	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable = true)
+	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable = true, bool bWantIsStopMovement = false)
 	{
 		Executor = WantExecutor;
 		Component = WantComponent;
 		bIsCancelable = bWantIsCancelable;
+		bIsStopMovement = bWantIsStopMovement;
 	}
 
-	void Clear(const UActionExecutor* OldExecutor) { if (Executor == OldExecutor) Clear(); }
+	void Clear(const UActionExecutor* OldExecutor);
 
 	void SetActionMessage_Simple(FName Message);
 
@@ -88,11 +93,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
-	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable = true);
+	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable = true, bool bIsStopMovement = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction();
-	void EndMainAction(UActionExecutor* OldExecutor);
+	void EndMainAction(bool bIsStopMovement);
+	void EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
 	void Die();

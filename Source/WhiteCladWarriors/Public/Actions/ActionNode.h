@@ -22,6 +22,9 @@ public:
 	TObjectPtr<UActionNode> NextNode;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UActionNode> CanceledNode;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> BlockedNode;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
@@ -32,6 +35,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	bool bIsCancelable = false;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	bool bIsStopMovementOnStart = false;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	bool bIsStopMovementOnEnd = false;
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
@@ -49,6 +58,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void MoveExecutorToNext(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement);
+	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecute(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);

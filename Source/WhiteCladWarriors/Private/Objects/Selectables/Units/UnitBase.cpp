@@ -8,6 +8,11 @@
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
 
+void FMainActionInfo::Clear(const UActionExecutor* OldExecutor) 
+{ 
+	if (!Executor.IsValid() || Executor.Get() == OldExecutor) Clear();
+}
+
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
 	if (IsValid()) Executor.Get()->SetActionMessage_Simple(Component.Get(), Message);
@@ -88,7 +93,7 @@ bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 bool AUnitBase::GetMainActionCancelable_Implementation() const 
 { return MainAction.bIsCancelable; };
 
-bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable)
+bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable, bool bIsStopMovement)
 {
 	if (GetMainActionCancelable())
 	{
@@ -99,12 +104,12 @@ bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* C
 	return false;
 }
 
-void AUnitBase::EndMainAction()
+void AUnitBase::EndMainAction(bool bIsStopMovement)
 {
-	if(MainAction.IsValid()) EndMainAction(MainAction.Executor.Get());
+	if (MainAction.IsValid()) EndMainAction(MainAction.Executor.Get(), bIsStopMovement);
 }
 
-void AUnitBase::EndMainAction(UActionExecutor* OldExecutor)
+void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement)
 {
 	MainAction.Clear(OldExecutor);
 }
