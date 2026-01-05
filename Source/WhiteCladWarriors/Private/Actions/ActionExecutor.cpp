@@ -130,10 +130,22 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 		}
 		ComponentMap.Add(TargetComponent, FActiveNodeInfo(TargetNode));
 	}
-	bool bIsMainAction = bIsValidNode && TargetNode->bIsMainAction;
+
+	bool bIsMainAction = TargetNode->bIsMainAction;
 	bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
-	if (bIsMainAction && !bWasMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
-	if (!bIsMainAction && bWasMainAction) TargetComponent->EndMainAction(this, TargetNode->bIsStopMovementOnEnd);
+	if (TargetNode != OriginNode)
+	{
+		if (bIsMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
+
+		if (TargetNode)
+		{
+			FString Result;
+			TargetNode->GetName(Result);
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, Result);
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(L"%d", bIsMainAction));
+		}
+	}
+
 	TargetNode->ClaimExecute(this, TargetComponent);
 }
 

@@ -39,7 +39,7 @@ bool UUnitActionComponent::TrySetMainAction_Implementation(UActionExecutor* Exec
 	return false;
 }
 
-void UUnitActionComponent::EndMainAction_Implementation(UActionExecutor* Executor, bool bIsStopMovement)
+void UUnitActionComponent::EndMainAction(UActionExecutor* Executor, bool bIsStopMovement)
 {
 	if (AUnitBase* OwnerUnit = GetOwnerUnit()) OwnerUnit->EndMainAction(Executor, bIsStopMovement);
 }

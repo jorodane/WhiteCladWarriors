@@ -52,6 +52,10 @@ struct FMainActionInfo
 
 	void SetActionMessage_Simple(FName Message);
 
+	bool Cancel(bool bWantStopMovement);
+
+	void End(bool bWantStopMovement);
+
 	bool IsValid() const;
 };
 

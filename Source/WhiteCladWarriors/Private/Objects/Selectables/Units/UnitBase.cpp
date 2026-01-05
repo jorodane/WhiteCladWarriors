@@ -18,6 +18,26 @@ void FMainActionInfo::SetActionMessage_Simple(FName Message)
 	if (IsValid()) Executor.Get()->SetActionMessage_Simple(Component.Get(), Message);
 }
 
+bool FMainActionInfo::Cancel(bool bWantStopMovement)
+{
+	if (bIsCancelable)
+	{
+		End(bWantStopMovement);
+		return true;
+	}
+	else return false;
+}
+
+void FMainActionInfo::End(bool bWantStopMovement)
+{
+	if (IsValid())
+	{
+		Component.Get()->OnEndMainAction(Executor.Get(), bWantStopMovement);
+		Clear();
+	}
+}
+
+
 bool FMainActionInfo::IsValid() const
 {
 	return Executor.IsValid() && Component.IsValid();
@@ -95,23 +115,19 @@ bool AUnitBase::GetMainActionCancelable_Implementation() const
 
 bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable, bool bIsStopMovement)
 {
-	if (GetMainActionCancelable())
-	{
-		MainAction.SetActionMessage_Simple(ACTION_MESSAGE_CANCEL);
-		MainAction.Set(Executor, Component, bIsCancelable);;
-		return true;
-	}
-	return false;
+	bool Result = MainAction.Cancel(bIsStopMovement);
+	if (Result) MainAction.Set(Executor, Component, bIsCancelable);
+	return Result;
 }
 
 void AUnitBase::EndMainAction(bool bIsStopMovement)
 {
-	if (MainAction.IsValid()) EndMainAction(MainAction.Executor.Get(), bIsStopMovement);
+	if (MainAction.IsValid()) MainAction.End(bIsStopMovement);
 }
 
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement)
 {
-	MainAction.Clear(OldExecutor);
+	MainAction.End(bIsStopMovement);
 }
 
 

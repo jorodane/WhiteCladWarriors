@@ -47,7 +47,10 @@ public:
 	bool TrySetMainAction(UActionExecutor* Executor, bool bIsCancelable, bool bIsStopMovement);
 	bool TrySetMainAction_Implementation(UActionExecutor* Executor, bool bIsCancelable, bool bIsStopMovement);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(UActionExecutor* Executor, bool bIsStopMovement);
-	void EndMainAction_Implementation(UActionExecutor* Executor, bool bIsStopMovement);
+
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	void OnEndMainAction(UActionExecutor* Executor, bool bIsStopMovement);
 };
