@@ -458,7 +458,6 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 		TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
 		if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
 		const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
-		//CurrentAction->ExecuteActionWithInput(this, ResultArray, Input);
 
 		ExecuteAction(CurrentAction, ResultArray, true);
 	}

@@ -178,7 +178,12 @@ UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArr
 	UActionExecutor* Result = NewObject<UActionExecutor>(TargetOperator);
 	if(!IsValid(Result)) return nullptr;
 	Result->Operator = TargetOperator;
-	for(UUnitActionComponent* CurrentComponent : TargetComponents) Result->AddComponentToMap(CurrentComponent, StartNode);
+	for (UUnitActionComponent* CurrentComponent : TargetComponents)
+	{
+		if (!IsValid(CurrentComponent)) continue;
+		Result->AddComponentToMap(CurrentComponent, StartNode);
+		//if (IsValid(StartNode)) StartNode->ClaimExecute(Result, CurrentComponent);
+	}
 	return Result;
 
 	return nullptr;
