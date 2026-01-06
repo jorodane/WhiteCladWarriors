@@ -15,6 +15,7 @@ class UActionNode;
 struct FInputPackage;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStopMovement);
 
 USTRUCT(BlueprintType)
 struct FMainActionInfo
@@ -67,6 +68,9 @@ class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
 public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitDie OnUnitDie;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnStopMovement OnStopMovement;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")

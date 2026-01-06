@@ -116,13 +116,21 @@ bool AUnitBase::GetMainActionCancelable_Implementation() const
 bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable, bool bIsStopMovement)
 {
 	bool Result = MainAction.Cancel(bIsStopMovement);
-	if (Result) MainAction.Set(Executor, Component, bIsCancelable);
+	if (Result)
+	{
+		if(bIsStopMovement) OnStopMovement.Broadcast();
+		MainAction.Set(Executor, Component, bIsCancelable);
+	}
 	return Result;
 }
 
 void AUnitBase::EndMainAction(bool bIsStopMovement)
 {
-	if (MainAction.IsValid()) MainAction.End(bIsStopMovement);
+	if (MainAction.IsValid())
+	{
+		if (bIsStopMovement) OnStopMovement.Broadcast();
+		MainAction.End(bIsStopMovement);
+	}
 }
 
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement)

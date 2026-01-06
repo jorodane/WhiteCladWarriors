@@ -133,18 +133,7 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 
 	bool bIsMainAction = TargetNode->bIsMainAction;
 	bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
-	if (TargetNode != OriginNode)
-	{
-		if (bIsMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
-
-		if (TargetNode)
-		{
-			FString Result;
-			TargetNode->GetName(Result);
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, Result);
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(L"%d", bIsMainAction));
-		}
-	}
+	if (bIsMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
 
 	TargetNode->ClaimExecute(this, TargetComponent);
 }

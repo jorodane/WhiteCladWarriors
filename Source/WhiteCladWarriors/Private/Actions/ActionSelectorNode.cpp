@@ -4,12 +4,6 @@
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/ActionExecutor.h"
 
-UActionSelectorNode::UActionSelectorNode()
-{
-	AddNodeLink("OnFailed",		OnFailed);
-	AddNodeLink("OnCanceled", OnCanceled);
-}
-
 bool UActionSelectorNode::CompleteInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 {
 	if (!IsValid(Executor)) return true;
@@ -20,16 +14,16 @@ bool UActionSelectorNode::CompleteInput_Implementation(UActionExecutor* Executor
 void UActionSelectorNode::FailInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 {
 	if (!IsValid(Executor)) return;
-	MoveExecutorToLinkedNode(Executor, TargetComponent, "OnFailed");
+	Executor->EnterNode(TargetComponent, BlockedNode);
 }
 
 bool UActionSelectorNode::CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 { 
 	if (!IsValid(Executor)) return true;
-	if (bCancelable)
+	if (bIsCancelable)
 	{
 		OnCancelInput(Executor);
-		MoveExecutorToLinkedNode(Executor, TargetComponent, "OnCanceled");
+		Executor->EnterNode(TargetComponent, CanceledNode);
 	}
-	return bCancelable;
+	return bIsCancelable;
 }
