@@ -244,6 +244,12 @@ TArray<UActionTargetContainer*> AOperator::GetAvailableActionList()
 	return Result;
 }
 
+bool AOperator::IsSmartKey(AActionBase* TargetAction)
+{
+	//Get SmartKey Option Here
+	return TargetAction->GetIsSmartKey();
+}
+
 TArray<AActor*> AOperator::GetActorsInArea_Implementation(bool& bIsAllSame, bool& bIsSingleSelected)
 {
 	if(IsValid(DragAreaActor)) return DragAreaActor->GetActorsInArea(this, bIsAllSame, bIsSingleSelected);

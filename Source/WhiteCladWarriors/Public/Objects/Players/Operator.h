@@ -191,7 +191,7 @@ public:
 	TArray<UActionTargetContainer*> GetAvailableActionList();
 
 	UFUNCTION(BlueprintPure, Category = "Input")
-	bool IsSmartKey(AActionBase* TargetAction) { return false; };
+	bool IsSmartKey(AActionBase* TargetAction);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetActorsInArea(bool& bIsAllSame, bool& bIsSingleSelected);

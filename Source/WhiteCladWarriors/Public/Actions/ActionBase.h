@@ -92,7 +92,7 @@ public:
 	inline int			SetUIOrder(int Value) { return UIOrder = Value; }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	inline bool			GetIsSmartKey() { return bIsSmartKey; }
+	inline bool			GetIsSmartKey() const { return bIsSmartKey; }
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline bool			SetIsSmartKey(bool Value) { return bIsSmartKey = Value; }
 
@@ -124,10 +124,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline UActionSelectorNode*		RootNodeAsSelector() const;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
+	void ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Action")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
+	void ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
 
 };
