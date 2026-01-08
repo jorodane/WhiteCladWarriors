@@ -10,15 +10,19 @@ bool UActionNode::GetCanEnter_Implementation(UActionExecutor* Executor, UUnitAct
 	return !(bIsMainAction && !TargetComponent->GetMainActionCancelable());
 }
 
-void UActionNode::AddNodeLink_Implementation(FName ResultName, UActionNode* Destination)
+void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination)
 {
 	LinkedNodes.Add(ResultName, Destination);
 }
 
 void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName)
 {
-	UActionNode** Result = LinkedNodes.Find(ResultName);
-	if (IsValid(*Result)) Executor->EnterNode(TargetComponent, *Result);
+	FLinkedNodeInfo* Result = LinkedNodes.Find(ResultName);
+	if (Result)
+	{
+		FLinkedNodeInfo NodeInfo = *Result;
+		Executor->EnterNode(TargetComponent, NodeInfo.Node);
+	}
 	else Executor->EndNode(TargetComponent, this);
 }
 
@@ -42,5 +46,5 @@ void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitAct
 void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message)
 {
 	if (!IsValid(Executor) || !IsValid(TargetComponent)) return;
-	if (UActionNode** NodeFinder = LinkedNodes.Find(Message)) Executor->EnterNode(TargetComponent, *NodeFinder);
+	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message)) Executor->EnterNode(TargetComponent, (*NodeFinder).Node);
 }

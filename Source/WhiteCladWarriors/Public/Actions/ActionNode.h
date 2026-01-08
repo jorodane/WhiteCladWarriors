@@ -12,6 +12,19 @@ class UUnitActionComponent;
 /**
  * 
  */
+
+USTRUCT(BlueprintType)
+struct FLinkedNodeInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TObjectPtr<UActionNode> Node;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsSubNode = true;
+};
+
 UCLASS( Blueprintable, BlueprintType )
 class WHITECLADWARRIORS_API UActionNode : public UObject
 {
@@ -28,7 +41,7 @@ public:
 	TObjectPtr<UActionNode> BlockedNode;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TMap<FName, UActionNode*> LinkedNodes;
+	TMap<FName, FLinkedNodeInfo> LinkedNodes;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	bool bIsMainAction = false;
@@ -48,8 +61,8 @@ public:
 	virtual bool GetCanEnter_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void AddNodeLink(FName ResultName, UActionNode* Destination);
-	virtual void AddNodeLink_Implementation(FName ResultName, UActionNode* Destination);
+	void AddNodeLink(FName ResultName, const FLinkedNodeInfo& Destination);
+	virtual void AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void MoveExecutorToLinkedNode(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName);
