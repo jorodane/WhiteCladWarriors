@@ -145,10 +145,20 @@ void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode
 	if (IsValid(OldNode) && OldNode->bIsMainAction)
 	{
 		TargetComponent->EndMainAction(this, OldNode->bIsStopMovementOnEnd);
-
 	}
 	ComponentMap.Remove(TargetComponent);
 	CheckComponentMap();
+}
+
+void UActionExecutor::CancelMainNode(UUnitActionComponent* TargetComponent)
+{
+	if (FActiveNodeInfo* Finder = ComponentMap.Find(TargetComponent)) CancelNode(TargetComponent, Finder->CurrentNode);
+}
+
+void UActionExecutor::CancelNode(UUnitActionComponent* TargetComponent, UActionNode* WantNode)
+{
+	if (!(IsValid(TargetComponent) && IsValid(WantNode))) return;
+	WantNode->ClaimCancel(this, TargetComponent, WantNode->bIsStopMovementOnEnd);
 }
 
 void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)

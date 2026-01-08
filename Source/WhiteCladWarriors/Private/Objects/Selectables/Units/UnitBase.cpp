@@ -20,12 +20,16 @@ void FMainActionInfo::SetActionMessage_Simple(FName Message)
 
 bool FMainActionInfo::Cancel(bool bWantStopMovement)
 {
-	if (bIsCancelable)
+	if(!IsValid()) return true;
+	if (!bIsCancelable) return false;
+
+	if (UUnitActionComponent* TargetComponent = Component.Get())
 	{
-		End(bWantStopMovement);
-		return true;
+		Executor->CancelMainNode(TargetComponent);
+		TargetComponent->OnEndMainAction(Executor.Get(), bWantStopMovement);
 	}
-	else return false;
+	Clear();
+	return true;
 }
 
 void FMainActionInfo::End(bool bWantStopMovement)

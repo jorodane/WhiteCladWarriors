@@ -98,6 +98,13 @@ public:
 	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
+	void CancelNode(UUnitActionComponent* TargetComponent, UActionNode* WantNode);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void CancelMainNode(UUnitActionComponent* TargetComponent);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
