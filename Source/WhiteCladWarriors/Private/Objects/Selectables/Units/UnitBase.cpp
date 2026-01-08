@@ -47,11 +47,33 @@ bool FMainActionInfo::IsValid() const
 	return Executor.IsValid() && Component.IsValid();
 }
 
+AUnitBase::AUnitBase()
+{
+	
+}
+
 void AUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	for (UActorComponent* CurrentComponent : GetComponents()) AddActionComponent(Cast<UUnitActionComponent>(CurrentComponent));
+
+	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
+	{
+		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
+		{
+			AnimInstance->OnMontageEnded.AddDynamic(this, &AUnitBase::MontageEnded);
+			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &AUnitBase::MontageNotifyBegin);
+			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &AUnitBase::MontageNotifyEnd);
+		}
+	}
+}
+
+void AUnitBase::BeginDestroy()
+{
+	Super::BeginDestroy();
+	//MontageComponent.Reset();
+	//MontageExecutor.Reset();
 }
 
 TArray<AActionBase*> AUnitBase::GetActionList() const
@@ -140,6 +162,61 @@ void AUnitBase::EndMainAction(bool bIsStopMovement)
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement)
 {
 	MainAction.End(bIsStopMovement);
+}
+
+void AUnitBase::ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
+	const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd)
+{
+	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
+	{
+		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
+		{
+			AnimInstance->Montage_Play(MontageToPlay, PlayRate, EMontagePlayReturnType::MontageLength, StartingPosition);
+			MontageExecutor = (Executor);
+			MontageComponent = (Component);
+
+			OnMontageEnd = MontageEnd;
+			OnMontageNotifyBegin = MontageNotifyBegin;
+			OnMontageNotifyEnd = MontageNotifyEnd;
+		}
+	}
+}
+
+void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
+{
+	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
+	{
+		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
+		{
+			AnimInstance->Montage_Stop(0.2f, WantMontage);
+		}
+	}
+}
+
+void AUnitBase::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
+{
+	if (MontageExecutor && MontageComponent)
+	{
+		OnMontageEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), bIsInterrupted);
+		MontageExecutor = nullptr;//.Reset();
+		MontageComponent = nullptr;//.Reset();
+	}
+}
+
+void AUnitBase::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
+{
+	if (MontageExecutor && MontageComponent)
+	{
+		OnMontageNotifyBegin.Execute(MontageExecutor.Get(), MontageComponent.Get(), NotifyName);
+	}
+}
+
+void AUnitBase::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
+{
+	if (MontageExecutor && MontageComponent)
+	{
+		OnMontageNotifyEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), NotifyName);
+	}
 }
 
 

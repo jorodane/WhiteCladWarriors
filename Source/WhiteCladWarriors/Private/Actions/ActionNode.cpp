@@ -28,10 +28,15 @@ void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, U
 	else Executor->EndNode(TargetComponent, this);
 }
 
-void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement)
+void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
 {
 	if (IsValid(CanceledNode)) Executor->EnterNode(TargetComponent, CanceledNode);
 	else Executor->EndNode(TargetComponent, this);
+}
+
+void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement)
+{
+	MoveExecutorToCancel(Executor, TargetComponent);
 }
 
 void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message)

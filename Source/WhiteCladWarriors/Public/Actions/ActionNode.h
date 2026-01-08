@@ -60,6 +60,10 @@ public:
 	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void MoveExecutorToCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	virtual void MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement);
 	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement);
 

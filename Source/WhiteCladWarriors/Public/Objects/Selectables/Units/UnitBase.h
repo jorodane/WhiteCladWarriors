@@ -17,6 +17,9 @@ struct FInputPackage;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStopMovement);
 
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, FName, NotifyName);
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, bool, bIsInterrupted);
+
 USTRUCT(BlueprintType)
 struct FMainActionInfo
 {
@@ -72,6 +75,10 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnStopMovement OnStopMovement;
 
+	FOnMontageNotify OnMontageNotifyBegin;
+	FOnMontageNotify OnMontageNotifyEnd;
+	FOnMontageEnd OnMontageEnd;
+
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
 	FSlateBrush SelectedIcon;
@@ -82,8 +89,15 @@ protected:
 
 	FMainActionInfo MainAction;
 
+	TObjectPtr<UActionExecutor> MontageExecutor;
+	TObjectPtr<UUnitActionComponent> MontageComponent;
+
+public:
+	AUnitBase();
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Action")
@@ -107,9 +121,27 @@ public:
 	void EndMainAction(bool bIsStopMovement);
 	void EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	void ClaimPlayMontage(UActionExecutor* Executor, UUnitActionComponent* Component, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition, 
+		const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd);
+	void ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
+		const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	void ClaimStopMontage(UAnimMontage* WantMontage);
+	void ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
+
+	UFUNCTION()
+	void MontageEnded(UAnimMontage* Montage, bool bIsInterrupted);
+	UFUNCTION()
+	void MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
+	UFUNCTION()
+	void MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
 	void Die();
 	virtual void Die_Implementation();
+
 
 public:
 	bool IsSelectable_Implementation(class AOperator* Operator) { return true; }
