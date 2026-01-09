@@ -46,6 +46,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<UUnitActionComponent*, FActiveNodeInfo> ComponentMap;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TArray<FActiveNodeInfo> SubNodes;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TArray<AActor*> CreatedActors;
+
 	TMap<FName, FVector> PositionMap;
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
