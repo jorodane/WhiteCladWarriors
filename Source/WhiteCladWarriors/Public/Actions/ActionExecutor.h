@@ -25,12 +25,16 @@ struct FActiveNodeInfo
 	TObjectPtr<UActionNode> CurrentNode;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<UUnitActionComponent> CurrentComponent;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	bool bIsMainNode;
 
 	void SetNode(UActionNode* Node);
 
 	FActiveNodeInfo() { }
-	FActiveNodeInfo(UActionNode* Node) { SetNode(Node); }
+	FActiveNodeInfo(UUnitActionComponent* WantComponent) { CurrentComponent = WantComponent; }
+	FActiveNodeInfo(UUnitActionComponent* WantComponent, UActionNode* Node) { CurrentComponent = WantComponent; SetNode(Node); }
 };
 
 

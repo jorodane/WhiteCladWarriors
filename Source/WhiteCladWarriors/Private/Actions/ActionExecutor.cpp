@@ -128,7 +128,7 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 			if (RecursiveDepth > 0) EnterNode(TargetComponent, TargetNode->BlockedNode, RecursiveDepth - 1);
 			return;
 		}
-		ComponentMap.Add(TargetComponent, FActiveNodeInfo(TargetNode));
+		ComponentMap.Add(TargetComponent, FActiveNodeInfo(TargetComponent, TargetNode));
 	}
 
 	bool bIsMainAction = TargetNode->bIsMainAction;
@@ -142,10 +142,7 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode)
 {
 	if (!IsValid(TargetComponent)) return;
-	if (IsValid(OldNode) && OldNode->bIsMainAction)
-	{
-		TargetComponent->EndMainAction(this, OldNode->bIsStopMovementOnEnd);
-	}
+	if (IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(this, OldNode->bIsStopMovementOnEnd);
 	ComponentMap.Remove(TargetComponent);
 	CheckComponentMap();
 }
@@ -165,7 +162,8 @@ void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, U
 {
 	if (!IsValid(TargetComponent)) return;
 	TargetComponent->OnComponentRemoved.AddDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
-	ComponentMap.Add(TargetComponent, StartNode);
+	FActiveNodeInfo NewInfo(TargetComponent, StartNode);
+	ComponentMap.Add(TargetComponent, NewInfo);
 }
 
 void UActionExecutor::AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode) { AddComponentToMap(Cast<UUnitActionComponent>(TargetComponent), StartNode); }
@@ -181,7 +179,7 @@ void UActionExecutor::RemoveComponentBaseFromMap(UUnitComponentBase* TargetCompo
 
 void UActionExecutor::CheckComponentMap()
 {
-	if (ComponentMap.Num() == 0) ConditionalBeginDestroy(); 
+	if (ComponentMap.Num() == 0 && SubNodes.Num() == 0 && CreatedActors.Num() == 0) ConditionalBeginDestroy(); 
 }
 
 UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
