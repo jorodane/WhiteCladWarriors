@@ -8,6 +8,22 @@
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
 
+void FMainActionInfo::Clear()
+{
+	Executor = nullptr;
+	Component = nullptr;
+	bIsCancelable = true;
+	bIsStopMovement = false;
+}
+
+void FMainActionInfo::Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable, bool bWantIsStopMovement)
+{
+	Executor = WantExecutor;
+	Component = WantComponent;
+	bIsCancelable = bWantIsCancelable;
+	bIsStopMovement = bWantIsStopMovement;
+}
+
 void FMainActionInfo::Clear(const UActionExecutor* OldExecutor) 
 { 
 	if (!Executor.IsValid() || Executor.Get() == OldExecutor) Clear();
@@ -15,7 +31,7 @@ void FMainActionInfo::Clear(const UActionExecutor* OldExecutor)
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
-	if (IsValid()) Executor.Get()->SetActionMessage_Simple(Component.Get(), Message);
+	if (IsValid()) Executor.Get()->SetActionMessage_Simple(Component.Get(), 0, Message);
 }
 
 bool FMainActionInfo::Cancel(bool bWantStopMovement)

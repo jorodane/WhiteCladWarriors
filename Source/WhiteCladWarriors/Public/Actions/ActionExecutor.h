@@ -22,15 +22,13 @@ struct FActiveNodeInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<int, UActionNode*> CurrentNode;
+	TMap<int, UActionNode*> NodeMap;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	bool bIsMainNode;
-
-	void SetNode(int ID, UActionNode* Node);
+	inline void SetNode(UActionNode* Node, int ID);
+	inline UActionNode* GetNode(int ID);
 
 	FActiveNodeInfo() { }
-	FActiveNodeInfo(UActionNode* Node) { SetNode(0, Node); }
+	FActiveNodeInfo(UActionNode* Node) { SetNode(Node, 0); }
 };
 
 
@@ -44,17 +42,19 @@ public:
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TMap<UUnitActionComponent*, FActiveNodeInfo> CursorMap;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<AActor*> CreatedActors;
 
 	TMap<FName, FVector> PositionMap;
-	TMap<UUnitActionComponent*, FActiveNodeInfo> CursorMap;
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
 
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetActionMessage_Simple(UUnitActionComponent* From, FName Message);
+	void SetActionMessage_Simple(UUnitActionComponent* From, int ID, FName Message);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetPosition(FName WantTag, const FVector& WantPosition);
@@ -87,19 +87,19 @@ public:
 	TArray<AActor*> GetActorArray(FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool SetInput(UUnitActionComponent* WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
+	bool SetInput(UUnitActionComponent* WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool SetInputArray(TArray<UUnitActionComponent*> WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
+	bool SetInputArray(TArray<UUnitActionComponent*> WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode, int RecursiveDepth = 12);
+	void EnterNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* TargetNode, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode);
+	void EndNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* OldNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void CancelNode(UUnitActionComponent* TargetComponent, UActionNode* WantNode);
+	void CancelNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* WantNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CancelMainNode(UUnitActionComponent* TargetComponent);
@@ -120,7 +120,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CheckCursorMap();
 
-	FActiveNodeInfo* FindCursor();
+	FActiveNodeInfo* GetCursor(UUnitActionComponent* TargetComponent);
+	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int ID = 0);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")

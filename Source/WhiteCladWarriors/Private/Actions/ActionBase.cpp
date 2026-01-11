@@ -31,10 +31,10 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 void AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
 {
 	UActionExecutor* NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
-	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecute(NewExecutor, CurrentComponent);
+	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecute(NewExecutor, CurrentComponent, 0);
 }
 void AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
 {
 	UActionExecutor* NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
-	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecuteWithInput(NewExecutor, CurrentComponent, Input);
+	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecuteWithInput(NewExecutor, CurrentComponent, 0, Input);
 }

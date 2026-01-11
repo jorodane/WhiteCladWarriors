@@ -85,7 +85,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	if (IsInputClaimed())
 	{
 		if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode);
-		bool bIsInputComplete = CurrentInputClaim.TargetExecutor ? CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode, CurrentInputPackage) : true;
+		bool bIsInputComplete = CurrentInputClaim.TargetExecutor ? CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.ID, CurrentInputClaim.TargetNode, CurrentInputPackage) : true;
 		if(bIsInputComplete) ForceRemoveInputClaim();
 	}
 	else if(bIsMapClick)
@@ -162,7 +162,7 @@ void AOperator::CancelInputClaim()
 	if (!IsInputClaimed() || CurrentInputClaim.TargetNode == nullptr) return;
 	for (auto CurrentComponent : CurrentInputClaim.TargetComponentArray)
 	{
-		if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor, CurrentComponent)) ForceRemoveInputClaim();
+		if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor, CurrentComponent, CurrentInputClaim.ID)) ForceRemoveInputClaim();
 	}
 }
 

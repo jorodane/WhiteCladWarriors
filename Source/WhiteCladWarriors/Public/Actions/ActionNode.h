@@ -65,30 +65,30 @@ public:
 	virtual void AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToLinkedNode(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName);
-	virtual void MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName);
+	void MoveExecutorToLinkedNode(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName);
+	virtual void MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToNext(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
-	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	void MoveExecutorToNext(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
-	virtual void MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	void MoveExecutorToCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	virtual void MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement);
-	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement);
+	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, bool bWantStopMovement);
+	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, bool bWantStopMovement);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimExecute(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
-	virtual void ClaimExecute_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent) {}
+	void ClaimExecute(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	virtual void ClaimExecute_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimExecuteWithInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input);
-	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) {}
+	void ClaimExecuteWithInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input);
+	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void OnActionMessage_Simple(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message);
-	void OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message);
+	void OnActionMessage_Simple(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message);
+	void OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message);
 };

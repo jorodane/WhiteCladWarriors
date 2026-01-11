@@ -15,36 +15,36 @@ void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNode
 	LinkedNodes.Add(ResultName, Destination);
 }
 
-void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, FName ResultName)
+void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName)
 {
 	FLinkedNodeInfo* Result = LinkedNodes.Find(ResultName);
 	if (Result)
 	{
 		FLinkedNodeInfo NodeInfo = *Result;
-		Executor->EnterNode(TargetComponent, NodeInfo.Node);
+		Executor->EnterNode(TargetComponent, ID, NodeInfo.Node);
 	}
-	else Executor->EndNode(TargetComponent, this);
+	else Executor->EndNode(TargetComponent, ID, this);
 }
 
-void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
+void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
-	if (IsValid(NextNode)) Executor->EnterNode(TargetComponent, NextNode);
-	else Executor->EndNode(TargetComponent, this);
+	if (IsValid(NextNode)) Executor->EnterNode(TargetComponent, ID, NextNode);
+	else Executor->EndNode(TargetComponent, ID, this);
 }
 
-void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
+void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
-	if (IsValid(CanceledNode)) Executor->EnterNode(TargetComponent, CanceledNode);
-	else Executor->EndNode(TargetComponent, this);
+	if (IsValid(CanceledNode)) Executor->EnterNode(TargetComponent, ID, CanceledNode);
+	else Executor->EndNode(TargetComponent, ID, this);
 }
 
-void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, bool bWantStopMovement)
+void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, bool bWantStopMovement)
 {
-	MoveExecutorToCancel(Executor, TargetComponent);
+	MoveExecutorToCancel(Executor, TargetComponent, ID);
 }
 
-void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FName& Message)
+void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message)
 {
 	if (!IsValid(Executor) || !IsValid(TargetComponent)) return;
-	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message)) Executor->EnterNode(TargetComponent, (*NodeFinder).Node);
+	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message)) Executor->EnterNode(TargetComponent, ID, (*NodeFinder).Node);
 }

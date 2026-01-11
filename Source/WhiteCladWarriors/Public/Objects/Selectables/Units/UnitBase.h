@@ -36,21 +36,9 @@ struct FMainActionInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsStopMovement = false;
 
-	void Clear()
-	{
-		Executor = nullptr;
-		Component = nullptr;
-		bIsCancelable = true;
-		bIsStopMovement = false;
-	}
+	void Clear();
 
-	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable = true, bool bWantIsStopMovement = false)
-	{
-		Executor = WantExecutor;
-		Component = WantComponent;
-		bIsCancelable = bWantIsCancelable;
-		bIsStopMovement = bWantIsStopMovement;
-	}
+	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable = true, bool bWantIsStopMovement = false);
 
 	void Clear(const UActionExecutor* OldExecutor);
 

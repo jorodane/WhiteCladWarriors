@@ -24,25 +24,25 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	bool OnReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input);
+	bool OnReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	bool OnCancelInput(UActionExecutor* Executor);
+	bool OnCancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	bool CompleteInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
-	bool CompleteInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	bool CompleteInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	bool CompleteInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void FailInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
-	void FailInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	void FailInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void FailInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool ReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, const FInputPackage& Input) { return OnReceiveInput(Executor, TargetComponent, Input); }
+	bool ReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input) { return OnReceiveInput(Executor, TargetComponent, ID, Input); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	bool CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction) const;

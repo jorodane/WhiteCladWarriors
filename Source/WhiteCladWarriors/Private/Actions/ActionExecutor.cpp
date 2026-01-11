@@ -8,22 +8,13 @@
 #include "Actions/ActionNode.h"
 
 
-void FActiveNodeInfo::SetNode(int ID, UActionNode* Node)
-{
-	CurrentNode = Node;
-	bIsMainNode = IsValid(Node) ? Node->bIsMainAction : false;
-}
+void FActiveNodeInfo::SetNode(UActionNode* Node, int ID) { NodeMap.FindOrAdd(ID, Node); }
+UActionNode* FActiveNodeInfo::GetNode(int ID) { return *NodeMap.Find(ID); }
 
-void UActionExecutor::SetActionMessage_Simple(UUnitActionComponent* From, FName Message)
+void UActionExecutor::SetActionMessage_Simple(UUnitActionComponent* From, int ID, FName Message)
 {
-	if (FActiveNodeInfo* ComponentInfo = CursorMap.Find(From))
-	{
-		if (ComponentInfo)
-		{
-			UActionNode* CurrentNode = ComponentInfo->CurrentNode;
-			if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(this, From, Message);
-		}
-	}
+	UActionNode* CurrentNode = GetNode(From, ID);
+	if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(this, From, ID, Message);
 }
 
 void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
@@ -80,55 +71,55 @@ TArray<AActor*> UActionExecutor::GetActorArray(FName WantTag) const
 	return Result;
 }
 
-bool UActionExecutor::SetInput(UUnitActionComponent* WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
+bool UActionExecutor::SetInput(UUnitActionComponent* WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
 {
 	if (FActiveNodeInfo* ComponentInfo = CursorMap.Find(WantComponent))
 	{
-		UActionSelectorNode* CurrentNode = Cast<UActionSelectorNode>(ComponentInfo->CurrentNode);
-		if (IsValid(CurrentNode) && CurrentNode == WantNode) return WantNode->ReceiveInput(this, WantComponent, WantInput);
+		UActionSelectorNode* CurrentNode = Cast<UActionSelectorNode>(GetNode(WantComponent));
+		if (IsValid(CurrentNode) && CurrentNode == WantNode) return WantNode->ReceiveInput(this, WantComponent, ID, WantInput);
 	}
 	return false;
 }
 
-bool UActionExecutor::SetInputArray(TArray<UUnitActionComponent*> WantComponent, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
+bool UActionExecutor::SetInputArray(TArray<UUnitActionComponent*> WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
 {
 	bool Result = false;
-	for (UUnitActionComponent* CurrentComponent : WantComponent) Result |= SetInput(CurrentComponent, WantNode, WantInput);
+	for (UUnitActionComponent* CurrentComponent : WantComponent) Result |= SetInput(CurrentComponent, ID, WantNode, WantInput);
 	return Result;
 }
 
 
-void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode, int RecursiveDepth)
+void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* TargetNode, int RecursiveDepth)
 {
 	bool bIsValidNode = IsValid(TargetNode);
 	bool bCanEnter = bIsValidNode ? TargetNode->GetCanEnter(this, TargetComponent) : false;
 	UActionNode* OriginNode = nullptr;
-	if (FActiveNodeInfo* CurrentInfo = CursorMap.Find(TargetComponent))
+	if (FActiveNodeInfo* CurrentInfo = GetCursor(TargetComponent))
 	{
-		OriginNode = CurrentInfo->CurrentNode;
+		OriginNode = CurrentInfo->GetNode(ID);
 		if (!bIsValidNode)
 		{
-			EndNode(TargetComponent, OriginNode);
+			EndNode(TargetComponent, ID, OriginNode);
 			return;
 		}
 		else if (!bCanEnter)
 		{
-			if (RecursiveDepth > 0) EnterNode(TargetComponent, TargetNode->BlockedNode, RecursiveDepth - 1);
-			else EndNode(TargetComponent, OriginNode);
+			if (RecursiveDepth > 0) EnterNode(TargetComponent, ID, TargetNode->BlockedNode, RecursiveDepth - 1);
+			else EndNode(TargetComponent, ID, OriginNode);
 			return;
 		}
 
-		CurrentInfo->SetNode(TargetNode);
+		CurrentInfo->SetNode(TargetNode, ID);
 	}
 	else
 	{
 		if (!bIsValidNode) return;
 		else if (!bCanEnter)
 		{
-			if (RecursiveDepth > 0) EnterNode(TargetComponent, TargetNode->BlockedNode, RecursiveDepth - 1);
+			if (RecursiveDepth > 0) EnterNode(TargetComponent, ID, TargetNode->BlockedNode, RecursiveDepth - 1);
 			return;
 		}
-		CursorMap.Add(TargetComponent, FActiveNodeInfo(TargetComponent, TargetNode));
+		CursorMap.Add(TargetComponent, TargetNode);
 	}
 
 	bool bIsMainAction = TargetNode->bIsMainAction;
@@ -136,10 +127,10 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, UActionNo
 	if (bIsMainAction) TargetComponent->TrySetMainAction(this, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
 	else if (bWasMainAction) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
 
-	TargetNode->ClaimExecute(this, TargetComponent);
+	TargetNode->ClaimExecute(this, TargetComponent, ID);
 }
 
-void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode* OldNode)
+void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* OldNode)
 {
 	if (!IsValid(TargetComponent)) return;
 	if (IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(this, OldNode->bIsStopMovementOnEnd);
@@ -147,23 +138,22 @@ void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, UActionNode
 	CheckCursorMap();
 }
 
-void UActionExecutor::CancelMainNode(UUnitActionComponent* TargetComponent)
-{
-	if (FActiveNodeInfo* Finder = CursorMap.Find(TargetComponent)) CancelNode(TargetComponent, Finder->CurrentNode);
-}
-
-void UActionExecutor::CancelNode(UUnitActionComponent* TargetComponent, UActionNode* WantNode)
+void UActionExecutor::CancelNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* WantNode)
 {
 	if (!(IsValid(TargetComponent) && IsValid(WantNode))) return;
-	WantNode->ClaimCancel(this, TargetComponent, WantNode->bIsStopMovementOnEnd);
+	WantNode->ClaimCancel(this, TargetComponent, ID, WantNode->bIsStopMovementOnEnd);
+}
+
+void UActionExecutor::CancelMainNode(UUnitActionComponent* TargetComponent)
+{
+	if (UActionNode* WantNode = GetNode(TargetComponent)) WantNode->ClaimCancel(this, TargetComponent, 0, WantNode->bIsStopMovementOnEnd);
 }
 
 void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)
 {
 	if (!IsValid(TargetComponent)) return;
 	TargetComponent->OnComponentRemoved.AddDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
-	FActiveNodeInfo NewInfo(TargetComponent, StartNode);
-	CursorMap.Add(TargetComponent, NewInfo);
+	CursorMap.Add(TargetComponent, StartNode);
 }
 
 void UActionExecutor::AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode) { AddComponentToMap(Cast<UUnitActionComponent>(TargetComponent), StartNode); }
@@ -177,9 +167,16 @@ void UActionExecutor::RemoveComponentFromMap(UUnitActionComponent* TargetCompone
 
 void UActionExecutor::RemoveComponentBaseFromMap(UUnitComponentBase* TargetComponent) { RemoveComponentFromMap(Cast<UUnitActionComponent>(TargetComponent)); }
 
-FActiveNodeInfo* UActionExecutor::FindCursor()
+FActiveNodeInfo* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent)
 {
-	
+	if (FActiveNodeInfo* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
+	else return nullptr;
+}
+
+UActionNode* UActionExecutor::GetNode(UUnitActionComponent* TargetComponent, int ID)
+{
+	if (FActiveNodeInfo* Finder = GetCursor(TargetComponent)) return Finder->GetNode(ID);
+	return nullptr;
 }
 
 void UActionExecutor::CheckCursorMap()

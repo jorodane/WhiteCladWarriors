@@ -57,6 +57,8 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TEnumAsByte<EMouseCursor::Type> TargetCursor;
 
+	int ID;
+
 	void Clear()
 	{
 		TargetComponentArray.SetNum(0);
@@ -65,5 +67,6 @@ struct FInputClaim
 		TargetExecutor = nullptr;
 		TargetDescription = FText::GetEmpty();
 		TargetCursor = EMouseCursor::Default;
+		ID = 0;
 	}
 };
