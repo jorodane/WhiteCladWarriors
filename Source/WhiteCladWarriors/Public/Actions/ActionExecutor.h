@@ -22,19 +22,15 @@ struct FActiveNodeInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TObjectPtr<UActionNode> CurrentNode;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TObjectPtr<UUnitActionComponent> CurrentComponent;
+	TMap<int, UActionNode*> CurrentNode;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	bool bIsMainNode;
 
-	void SetNode(UActionNode* Node);
+	void SetNode(int ID, UActionNode* Node);
 
 	FActiveNodeInfo() { }
-	FActiveNodeInfo(UUnitActionComponent* WantComponent) { CurrentComponent = WantComponent; }
-	FActiveNodeInfo(UUnitActionComponent* WantComponent, UActionNode* Node) { CurrentComponent = WantComponent; SetNode(Node); }
+	FActiveNodeInfo(UActionNode* Node) { SetNode(0, Node); }
 };
 
 
@@ -48,15 +44,10 @@ public:
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<UUnitActionComponent*, FActiveNodeInfo> ComponentMap;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TArray<FActiveNodeInfo> SubNodes;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<AActor*> CreatedActors;
 
 	TMap<FName, FVector> PositionMap;
+	TMap<UUnitActionComponent*, FActiveNodeInfo> CursorMap;
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
 
@@ -113,7 +104,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CancelMainNode(UUnitActionComponent* TargetComponent);
 
-
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
 
@@ -128,7 +118,9 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void CheckComponentMap();
+	void CheckCursorMap();
+
+	FActiveNodeInfo* FindCursor();
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
