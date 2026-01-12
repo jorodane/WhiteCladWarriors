@@ -24,6 +24,9 @@ struct FActiveNodeInfo
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<int, UActionNode*> NodeMap;
 
+	int nextID = 1;
+
+	int AddNode(UActionNode* Node);
 	inline void SetNode(UActionNode* Node, int ID);
 	inline UActionNode* GetNode(int ID);
 
@@ -94,6 +97,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* TargetNode, int RecursiveDepth = 12);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void CreateSubNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode, int RecursiveDepth = 12) { EnterNode(TargetComponent, -1, TargetNode, RecursiveDepth); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* OldNode);

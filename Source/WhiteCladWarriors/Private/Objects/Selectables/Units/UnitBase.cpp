@@ -180,7 +180,7 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement
 	MainAction.End(bIsStopMovement);
 }
 
-void AUnitBase::ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
+void AUnitBase::ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
 	const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
@@ -188,6 +188,7 @@ void AUnitBase::ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnit
 		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
 		{
 			AnimInstance->Montage_Play(MontageToPlay, PlayRate, EMontagePlayReturnType::MontageLength, StartingPosition);
+			RequestedID = ID;
 			MontageExecutor = (Executor);
 			MontageComponent = (Component);
 
@@ -213,7 +214,7 @@ void AUnitBase::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
 	if (MontageExecutor && MontageComponent)
 	{
-		OnMontageEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), bIsInterrupted);
+		OnMontageEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, bIsInterrupted);
 		MontageExecutor = nullptr;//.Reset();
 		MontageComponent = nullptr;//.Reset();
 	}
@@ -223,7 +224,7 @@ void AUnitBase::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotify
 {
 	if (MontageExecutor && MontageComponent)
 	{
-		OnMontageNotifyBegin.Execute(MontageExecutor.Get(), MontageComponent.Get(), NotifyName);
+		OnMontageNotifyBegin.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
 	}
 }
 
@@ -231,7 +232,7 @@ void AUnitBase::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPa
 {
 	if (MontageExecutor && MontageComponent)
 	{
-		OnMontageNotifyEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), NotifyName);
+		OnMontageNotifyEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
 	}
 }
 

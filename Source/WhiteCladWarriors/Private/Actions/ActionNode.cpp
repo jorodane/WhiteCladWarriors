@@ -46,5 +46,16 @@ void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitAct
 void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message)
 {
 	if (!IsValid(Executor) || !IsValid(TargetComponent)) return;
-	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message)) Executor->EnterNode(TargetComponent, ID, (*NodeFinder).Node);
+	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message)) 
+	{
+		FLinkedNodeInfo& NodeInfo = *NodeFinder;
+		if (NodeInfo.bIsSubNode)
+		{
+			Executor->CreateSubNode(TargetComponent, NodeInfo.Node);
+		}
+		else
+		{
+			Executor->EnterNode(TargetComponent, ID, NodeInfo.Node);
+		}
+	}
 }

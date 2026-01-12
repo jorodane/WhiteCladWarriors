@@ -17,8 +17,8 @@ struct FInputPackage;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStopMovement);
 
-DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, FName, NotifyName);
-DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, bool, bIsInterrupted);
+DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, FName, NotifyName);
+DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, bool, bIsInterrupted);
 
 USTRUCT(BlueprintType)
 struct FMainActionInfo
@@ -80,6 +80,8 @@ protected:
 	TObjectPtr<UActionExecutor> MontageExecutor;
 	TObjectPtr<UUnitActionComponent> MontageComponent;
 
+	int RequestedID;
+
 public:
 	AUnitBase();
 
@@ -110,9 +112,9 @@ public:
 	void EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void ClaimPlayMontage(UActionExecutor* Executor, UUnitActionComponent* Component, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition, 
+	void ClaimPlayMontage(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition, 
 		const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd);
-	void ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
+	void ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
 		const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")

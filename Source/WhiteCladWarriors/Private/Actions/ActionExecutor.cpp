@@ -8,7 +8,20 @@
 #include "Actions/ActionNode.h"
 
 
-void FActiveNodeInfo::SetNode(UActionNode* Node, int ID) { NodeMap.FindOrAdd(ID, Node); }
+int FActiveNodeInfo::AddNode(UActionNode* Node)
+{
+	while (NodeMap.Find(nextID++));
+	int Result = nextID - 1;
+	NodeMap.Add(Result, Node);
+	return Result;
+}
+
+void FActiveNodeInfo::SetNode(UActionNode* Node, int ID) 
+{ 
+	UActionNode** CurrentNodeFinder = NodeMap.Find(ID);
+	if (CurrentNodeFinder) *CurrentNodeFinder = Node;
+	else NodeMap.Add(ID, Node);
+}
 UActionNode* FActiveNodeInfo::GetNode(int ID) { return *NodeMap.Find(ID); }
 
 void UActionExecutor::SetActionMessage_Simple(UUnitActionComponent* From, int ID, FName Message)
@@ -88,7 +101,6 @@ bool UActionExecutor::SetInputArray(TArray<UUnitActionComponent*> WantComponent,
 	return Result;
 }
 
-
 void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* TargetNode, int RecursiveDepth)
 {
 	bool bIsValidNode = IsValid(TargetNode);
@@ -96,6 +108,7 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, int ID, U
 	UActionNode* OriginNode = nullptr;
 	if (FActiveNodeInfo* CurrentInfo = GetCursor(TargetComponent))
 	{
+		if (ID < 0) ID = CurrentInfo->AddNode(TargetNode);
 		OriginNode = CurrentInfo->GetNode(ID);
 		if (!bIsValidNode)
 		{
