@@ -30,6 +30,9 @@ struct FActiveNodeInfo
 	inline void SetNode(UActionNode* Node, int ID);
 	inline UActionNode* GetNode(int ID);
 
+	inline void RemoveID(int ID);
+	inline bool IsEmpty() { return NodeMap.Num() == 0; }
+
 	FActiveNodeInfo() { }
 	FActiveNodeInfo(UActionNode* Node) { SetNode(Node, 0); }
 };
@@ -64,6 +67,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetPosition(FName WantTag) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<UUnitActionComponent*> GetComponentArray() const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	bool HasPosition(FName WantTag) const;

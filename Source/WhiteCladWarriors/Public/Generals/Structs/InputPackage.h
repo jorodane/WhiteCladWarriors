@@ -42,8 +42,8 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TArray<UUnitActionComponent*> TargetComponentArray;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AActionBase> TargetAction;
+	//UPROPERTY(BlueprintReadWrite, Category = "Action")
+	//TObjectPtr<AActionBase> TargetAction;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode;
@@ -57,12 +57,13 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TEnumAsByte<EMouseCursor::Type> TargetCursor;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	int ID;
 
 	void Clear()
 	{
 		TargetComponentArray.SetNum(0);
-		TargetAction = nullptr;
+		//TargetAction = nullptr;
 		TargetNode = nullptr;
 		TargetExecutor = nullptr;
 		TargetDescription = FText::GetEmpty();

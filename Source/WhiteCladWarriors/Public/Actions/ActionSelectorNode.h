@@ -45,5 +45,5 @@ public:
 	bool CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
-	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction) const;
+	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction, UActionExecutor* Executor) const;
 };

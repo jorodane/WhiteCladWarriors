@@ -145,8 +145,9 @@ void AOperator::OnUpdateInput_Implementation()
 	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
-void AOperator::ClaimInput(AActionBase* ClaimAction, const FInputClaim& ClaimInfo)
+void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 {
+	if (IsValid(CurrentInputClaim.TargetNode) && !CurrentInputClaim.TargetNode->bIsCancelable) return;
 	CurrentInputClaim = ClaimInfo;
 	OnUpdateInput();
 }
@@ -219,14 +220,8 @@ void AOperator::ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActio
 
 	if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponent))
 	{
-		if (bIsStartImmediately)
-		{
-			TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
-		}
-		else
-		{
-			ClaimInput(TargetAction, ResultInput);
-		}
+		if (bIsStartImmediately) TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+		else ClaimInput(ResultInput);
 	}
 	else
 	{

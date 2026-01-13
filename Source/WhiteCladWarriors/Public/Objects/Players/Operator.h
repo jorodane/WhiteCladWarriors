@@ -156,7 +156,7 @@ public:
 	virtual void OnUpdateInput_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
-	void ClaimInput(AActionBase* ClaimAction, const FInputClaim& ClaimInfo);
+	void ClaimInput(const FInputClaim& ClaimInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ForceRemoveInputClaim();

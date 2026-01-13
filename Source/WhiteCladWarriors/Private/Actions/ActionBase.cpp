@@ -16,7 +16,7 @@ bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UU
 	UActionSelectorNode* RootSelector;
 	if (IsRootNodeSelector(RootSelector))
 	{
-		TriggerInput = RootSelector->GetInputClaim(TargetComponent, this);
+		TriggerInput = RootSelector->GetInputClaim(TargetComponent, this, nullptr);
 		return true;
 	}
 	return false;
