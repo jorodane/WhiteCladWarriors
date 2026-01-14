@@ -38,7 +38,10 @@ public:
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
 	AUnitBase* GetOwnerUnit();
-	AUnitBase* GetOwnerUnit_Implementation();
+	inline AUnitBase* GetOwnerUnit_Implementation();
+
+	UFUNCTION(BlueprintCallable, Category = "Variable", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	inline bool TryGetOwnerUnit(AUnitBase*& ResultUnit);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	bool GetMainActionCancelable();

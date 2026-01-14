@@ -63,11 +63,6 @@ bool FMainActionInfo::IsValid() const
 	return Executor.IsValid() && Component.IsValid();
 }
 
-AUnitBase::AUnitBase()
-{
-	
-}
-
 void AUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -160,7 +155,7 @@ bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* C
 	bool Result = MainAction.Cancel(bIsStopMovement);
 	if (Result)
 	{
-		if(bIsStopMovement) OnStopMovement.Broadcast();
+		if(bIsStopMovement) ClaimStopMovement();
 		MainAction.Set(Executor, Component, bIsCancelable);
 	}
 	return Result;
@@ -170,7 +165,7 @@ void AUnitBase::EndMainAction(bool bIsStopMovement)
 {
 	if (MainAction.IsValid())
 	{
-		if (bIsStopMovement) OnStopMovement.Broadcast();
+		if (bIsStopMovement) ClaimStopMovement();
 		MainAction.End(bIsStopMovement);
 	}
 }
@@ -209,6 +204,16 @@ void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 		}
 	}
 }
+
+void AUnitBase::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, int ID)
+{
+	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, Executor, ID);
+}
+void AUnitBase::ClaimStopMovement_Implementation()
+{
+	OnMovementStop.Broadcast();
+}
+
 
 void AUnitBase::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {

@@ -15,7 +15,8 @@ class UActionNode;
 struct FInputPackage;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStopMovement);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, UActionExecutor*, Executor, int, ID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
 DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, FName, NotifyName);
 DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, bool, bIsInterrupted);
@@ -61,7 +62,10 @@ public:
 	FOnUnitDie OnUnitDie;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
-	FOnStopMovement OnStopMovement;
+	FOnMovementStop OnMovementStop;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnMovementStart OnMovementStart;
 
 	FOnMontageNotify OnMontageNotifyBegin;
 	FOnMontageNotify OnMontageNotifyEnd;
@@ -81,9 +85,6 @@ protected:
 	TObjectPtr<UUnitActionComponent> MontageComponent;
 
 	int RequestedID;
-
-public:
-	AUnitBase();
 
 protected:
 	virtual void BeginPlay() override;
@@ -120,6 +121,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimStopMontage(UAnimMontage* WantMontage);
 	void ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	void ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, int ID);
+	void ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, int ID);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	void ClaimStopMovement();
+	void ClaimStopMovement_Implementation();
 
 	UFUNCTION()
 	void MontageEnded(UAnimMontage* Montage, bool bIsInterrupted);

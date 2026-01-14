@@ -27,6 +27,12 @@ FVector UUnitActionComponent::GetDirection_Implementation(FVector Destination, b
 
 AUnitBase* UUnitActionComponent::GetOwnerUnit_Implementation() { return Cast<AUnitBase>(GetOwner()); }
 
+bool UUnitActionComponent::TryGetOwnerUnit(AUnitBase*& ResultUnit)
+{
+	ResultUnit = GetOwnerUnit();
+	return IsValid(ResultUnit);
+}
+
 bool UUnitActionComponent::GetMainActionCancelable()
 {
 	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->GetMainActionCancelable();
