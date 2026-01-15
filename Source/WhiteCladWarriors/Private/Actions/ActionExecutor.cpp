@@ -172,10 +172,18 @@ void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, int ID, UAc
 	}
 }
 
-void UActionExecutor::CancelNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* WantNode)
+void UActionExecutor::CompleteNode(UUnitActionComponent* TargetComponent, int ID)
 {
-	if (!(IsValid(TargetComponent) && IsValid(WantNode))) return;
-	WantNode->ClaimCancel(this, TargetComponent, ID, WantNode->bIsStopMovementOnEnd);
+	UActionNode* WantNode = GetNode(TargetComponent, ID);
+	if (!IsValid(WantNode)) return;
+	WantNode->ClaimComplete(this, TargetComponent, ID);
+}
+
+void UActionExecutor::CancelNode(UUnitActionComponent* TargetComponent, int ID)
+{
+	UActionNode* WantNode = GetNode(TargetComponent, ID);
+	if (!IsValid(WantNode)) return;
+	WantNode->ClaimCancel(this, TargetComponent, ID);
 }
 
 void UActionExecutor::CancelMainNode(UUnitActionComponent* TargetComponent)

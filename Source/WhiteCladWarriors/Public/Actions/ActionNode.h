@@ -77,8 +77,13 @@ public:
 	virtual void MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, bool bWantStopMovement);
-	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, bool bWantStopMovement);
+	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void ClaimComplete(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	virtual void ClaimComplete_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecute(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);

@@ -111,7 +111,10 @@ public:
 	void EndNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* OldNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void CancelNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* WantNode);
+	void CompleteNode(UUnitActionComponent* TargetComponent, int ID);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void CancelNode(UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CancelMainNode(UUnitActionComponent* TargetComponent);

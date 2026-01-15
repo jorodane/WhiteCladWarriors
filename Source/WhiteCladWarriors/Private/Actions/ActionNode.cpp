@@ -38,10 +38,14 @@ void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor,
 	else Executor->EndNode(TargetComponent, ID, this);
 }
 
-void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, bool bWantStopMovement)
+
+
+void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
 	MoveExecutorToCancel(Executor, TargetComponent, ID);
 }
+
+void UActionNode::ClaimComplete_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message)
 {
