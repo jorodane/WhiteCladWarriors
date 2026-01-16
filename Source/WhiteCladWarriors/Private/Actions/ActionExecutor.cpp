@@ -188,7 +188,7 @@ void UActionExecutor::CancelNode(UUnitActionComponent* TargetComponent, int ID)
 
 void UActionExecutor::CancelMainNode(UUnitActionComponent* TargetComponent)
 {
-	if (UActionNode* WantNode = GetNode(TargetComponent)) WantNode->ClaimCancel(this, TargetComponent, 0, WantNode->bIsStopMovementOnEnd);
+	if (UActionNode* WantNode = GetNode(TargetComponent)) WantNode->ClaimCancel(this, TargetComponent, 0);
 }
 
 void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)

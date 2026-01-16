@@ -45,7 +45,10 @@ void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitAct
 	MoveExecutorToCancel(Executor, TargetComponent, ID);
 }
 
-void UActionNode::ClaimComplete_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+void UActionNode::ClaimComplete_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+{
+	MoveExecutorToNext(Executor, TargetComponent, ID);
+}
 
 void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message)
 {
