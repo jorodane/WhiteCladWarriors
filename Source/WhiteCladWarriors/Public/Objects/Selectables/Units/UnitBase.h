@@ -19,7 +19,55 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnMovementStart, const FVector&, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
 DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, FName, NotifyName);
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageStart, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID);
 DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, bool, bIsInterrupted);
+
+USTRUCT(BlueprintType)
+struct FMontageEventInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	TObjectPtr<UActionExecutor> MontageExecutor;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	TObjectPtr<UUnitActionComponent> MontageComponent;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	int RequestedID;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UAnimMontage* MontageToPlay;
+
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	float PlayRate;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	float StartingPosition;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FOnMontageNotify OnMontageNotifyBegin;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FOnMontageNotify OnMontageNotifyEnd;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FOnMontageStart OnMontageStart;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FOnMontageEnd OnMontageEnd;
+
+	bool bIsStarted = false;
+
+public:
+	bool ValidExecutor() const;
+	void Clear() {MontageExecutor = nullptr; MontageComponent = nullptr; bIsStarted = false;}
+	void MontageNotifyBegin(FName NotifyName);
+	void MontageNotifyEnd(FName NotifyName);
+	void MontageStart();
+	void MontageEnd(bool bIsInterrupted);
+};
 
 USTRUCT(BlueprintType)
 struct FMainActionInfo
@@ -67,10 +115,6 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnMovementStart OnMovementStart;
 
-	FOnMontageNotify OnMontageNotifyBegin;
-	FOnMontageNotify OnMontageNotifyEnd;
-	FOnMontageEnd OnMontageEnd;
-
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
 	FSlateBrush SelectedIcon;
@@ -81,10 +125,8 @@ protected:
 
 	FMainActionInfo MainAction;
 
-	TObjectPtr<UActionExecutor> MontageExecutor;
-	TObjectPtr<UUnitActionComponent> MontageComponent;
-
-	int RequestedID;
+	FMontageEventInfo ClaimedMontageEvent;
+	FMontageEventInfo QueuedMontageEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -113,10 +155,8 @@ public:
 	void EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void ClaimPlayMontage(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition, 
-		const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd);
-	void ClaimPlayMontage_Implementation(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, UAnimMontage* MontageToPlay, float PlayRate, float StartingPosition,
-		const FOnMontageNotify& MontageNotifyBegin, const FOnMontageNotify& MontageNotifyEnd, const FOnMontageEnd& MontageEnd);
+	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
+	void ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimStopMontage(UAnimMontage* WantMontage);
@@ -131,7 +171,11 @@ public:
 	void ClaimStopMovement_Implementation();
 
 	UFUNCTION()
+	void MontageStarted(UAnimMontage* Montage);
+
+	UFUNCTION()
 	void MontageEnded(UAnimMontage* Montage, bool bIsInterrupted);
+
 	UFUNCTION()
 	void MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
 	UFUNCTION()
