@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Actions/ActionValueClaimer.h"
 #include "ActionExecutor.generated.h"
 
 class AOperator;
@@ -27,11 +28,11 @@ struct FActiveNodeInfo
 	int nextID = 1;
 
 	int AddNode(UActionNode* Node);
+	inline UActionNode* GetNode(int ID) const;
 	inline void SetNode(UActionNode* Node, int ID);
-	inline UActionNode* GetNode(int ID);
 
 	inline void RemoveID(int ID);
-	inline bool IsEmpty() { return NodeMap.Num() == 0; }
+	inline bool IsEmpty() const { return NodeMap.Num() == 0; }
 
 	FActiveNodeInfo() { }
 	FActiveNodeInfo(UActionNode* Node) { SetNode(Node, 0); }
@@ -66,7 +67,7 @@ public:
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(FName WantTag) const;
+	FVector GetPosition(const FPositionClaimer& Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UUnitActionComponent*> GetComponentArray() const;
@@ -78,7 +79,7 @@ public:
 	void SetDirection(FName WantTag, UUnitActionComponent* WantComponent, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(FName WantTag, UUnitActionComponent* WantComponent) const;
+	FVector GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantComponent) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	bool HasDirection(FName WantTag, UUnitActionComponent* WantComponent) const;
@@ -90,10 +91,10 @@ public:
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(FName WantTag) const;
+	AActor* GetActor(const FActorClaimer& Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(FName WantTag) const;
+	TArray<AActor*> GetActorArray(const FActorArrayClaimer& Claimer) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetInput(UUnitActionComponent* WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
