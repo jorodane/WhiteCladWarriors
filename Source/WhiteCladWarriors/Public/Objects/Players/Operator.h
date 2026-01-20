@@ -129,6 +129,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Operator")
 	static AOperator* GetLocalOperator() { return LocalOperator; }
 
+	UFUNCTION(BlueprintPure, Category = "Operator")
+	static const FInputPackage& GetLocalInputPackage() { if (IsValid(LocalOperator)) return LocalOperator->CurrentInputPackage; else return FInputPackage::Input_None; }
+
 public:
 	void Tick(float DeltaSeconds) override;
 	void PossessedBy(AController* NewController) override;

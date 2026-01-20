@@ -19,13 +19,13 @@ struct FValueClaimer
 };
 
 UENUM(BlueprintType)
-enum EPositionGetterType
+enum class EPositionGetterType : uint8
 {
 	SavedPosition, WorldPosition, SelfPosition, ActorPosition, CursorPosition
 };
 
 UENUM(BlueprintType)
-enum EPositionSpaceType { Self, World };
+enum class EPositionSpaceType : uint8 { Self, World };
 
 USTRUCT(BlueprintType)
 struct FPositionClaimer : public FValueClaimer
@@ -36,10 +36,10 @@ struct FPositionClaimer : public FValueClaimer
 	FName PositionTag;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
-	TEnumAsByte<EPositionGetterType> PositionType;
+	EPositionGetterType PositionType;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
-	TEnumAsByte<EPositionSpaceType> AdditiveSpace;
+	EPositionSpaceType AdditiveSpace;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	FVector AdditivePosition;
@@ -48,6 +48,8 @@ struct FPositionClaimer : public FValueClaimer
 	bool bIsAdditive = false;
 
 	FVector GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+
+	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
 };
 
 UENUM(BlueprintType)

@@ -19,6 +19,7 @@
 
 TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
 FInputClaim FInputClaim::Claim_None;
+FInputPackage FInputPackage::Input_None;
 
 bool UActionTargetContainer::operator < (const UActionTargetContainer& Other) const
 {

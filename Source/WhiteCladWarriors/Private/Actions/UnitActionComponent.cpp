@@ -25,9 +25,9 @@ FVector UUnitActionComponent::GetDirection_Implementation(FVector Destination, b
 	return Result;
 };
 
-AUnitBase* UUnitActionComponent::GetOwnerUnit_Implementation() { return Cast<AUnitBase>(GetOwner()); }
+AUnitBase* UUnitActionComponent::GetOwnerUnit_Implementation() const { return Cast<AUnitBase>(GetOwner()); }
 
-bool UUnitActionComponent::TryGetOwnerUnit(AUnitBase*& ResultUnit)
+bool UUnitActionComponent::TryGetOwnerUnit(AUnitBase*& ResultUnit) const
 {
 	ResultUnit = GetOwnerUnit();
 	return IsValid(ResultUnit);

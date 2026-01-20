@@ -16,6 +16,8 @@ struct FInputPackage
 {
 	GENERATED_BODY()
 
+	static FInputPackage Input_None;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	FVector DragStartPosition;
 

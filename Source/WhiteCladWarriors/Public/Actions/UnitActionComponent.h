@@ -37,11 +37,11 @@ public:
 	FVector GetDirection_Implementation(FVector Destination, bool bIsIgnoreZ = false);
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
-	AUnitBase* GetOwnerUnit();
-	inline AUnitBase* GetOwnerUnit_Implementation();
+	AUnitBase* GetOwnerUnit() const;
+	inline AUnitBase* GetOwnerUnit_Implementation() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Variable", meta = (ExpandEnumAsExecs = "ReturnValue"))
-	inline bool TryGetOwnerUnit(AUnitBase*& ResultUnit);
+	inline bool TryGetOwnerUnit(AUnitBase*& ResultUnit) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	bool GetMainActionCancelable();
