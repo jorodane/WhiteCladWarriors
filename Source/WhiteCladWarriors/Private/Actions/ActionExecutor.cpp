@@ -42,9 +42,14 @@ void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 	Setter = WantPosition;
 }
 
-FVector UActionExecutor::GetPosition(const FPositionClaimer& Claimer) const
+FVector UActionExecutor::GetPosition(const FPositionClaimer& Claimer, const UUnitActionComponent* From, int ID) const
 {
-	const FVector* Result = PositionMap.Find(Claimer.ClaimTag);
+	return Claimer.GetPosition(this, From, ID);
+}
+
+FVector UActionExecutor::GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const
+{
+	const FVector* Result = PositionMap.Find(WantTag);
 	if (Result) return *Result;
 	else return FVector::ZeroVector;
 }
@@ -65,9 +70,14 @@ void UActionExecutor::SetDirection(FName WantTag, UUnitActionComponent* WantUUni
 	Setter = WantDirection;
 }
 
-FVector UActionExecutor::GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantUUnitActionComponent) const
+FVector UActionExecutor::GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantUUnitActionComponent, int ID) const
 {
-	const FVector* Result = DirectionMap.Find(TPair<UUnitActionComponent*, FName>(WantUUnitActionComponent, Claimer.ClaimTag));
+	return Claimer.GetDirection(this, WantUUnitActionComponent, ID);
+}
+
+FVector UActionExecutor::GetSavedDirection(FName WantTag, UUnitActionComponent* WantComponent, int ID) const
+{
+	const FVector* Result = DirectionMap.Find(TPair<UUnitActionComponent*, FName>(WantComponent, WantTag));
 	if (Result) return *Result;
 	else return FVector::ZeroVector;
 }
@@ -84,17 +94,27 @@ void UActionExecutor::RemoveActor(FName WantTag, AActor* WantActor)
 	ActorMultiMap.RemoveSingle(WantTag, WantActor);
 }
 
-AActor* UActionExecutor::GetActor(const FActorClaimer& Claimer) const
+AActor* UActionExecutor::GetActor(const FActorClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const
 {
-	AActor* const* Result = ActorMultiMap.Find(Claimer.ClaimTag);
+	return Claimer.GetActor(this, WantComponent, ID);
+}
+
+AActor* UActionExecutor::GetSavedActor(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const
+{
+	AActor* const* Result = ActorMultiMap.Find(WantTag);
 	if (Result) return *Result;
 	else return nullptr;
 }
 
-TArray<AActor*> UActionExecutor::GetActorArray(const FActorArrayClaimer& Claimer) const
+TArray<AActor*> UActionExecutor::GetActorArray(const FActorArrayClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const
+{
+	return Claimer.GetActorArray(this, WantComponent, ID);
+}
+
+TArray<AActor*> UActionExecutor::GetSavedActorArray(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const
 {
 	TArray<AActor*> Result;
-	ActorMultiMap.MultiFind(Claimer.ClaimTag, Result);
+	ActorMultiMap.MultiFind(WantTag, Result);
 	return Result;
 }
 

@@ -17,6 +17,7 @@ void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNode
 
 void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName)
 {
+	if (!IsValid(Executor)) return;
 	FLinkedNodeInfo* Result = LinkedNodes.Find(ResultName);
 	if (Result)
 	{
@@ -28,12 +29,14 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Execu
 
 void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
+	if (!IsValid(Executor)) return;
 	if (IsValid(NextNode)) Executor->EnterNode(TargetComponent, ID, NextNode);
 	else Executor->EndNode(TargetComponent, ID, this);
 }
 
 void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
+	if (!IsValid(Executor)) return;
 	if (IsValid(CanceledNode)) Executor->EnterNode(TargetComponent, ID, CanceledNode);
 	else Executor->EndNode(TargetComponent, ID, this);
 }

@@ -67,7 +67,10 @@ public:
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(const FPositionClaimer& Claimer) const;
+	FVector GetPosition(const FPositionClaimer& Claimer, const UUnitActionComponent* From, int ID) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	FVector GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UUnitActionComponent*> GetComponentArray() const;
@@ -79,7 +82,10 @@ public:
 	void SetDirection(FName WantTag, UUnitActionComponent* WantComponent, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantComponent) const;
+	FVector GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantComponent, int ID) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	FVector GetSavedDirection(FName WantTag, UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	bool HasDirection(FName WantTag, UUnitActionComponent* WantComponent) const;
@@ -91,10 +97,16 @@ public:
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(const FActorClaimer& Claimer) const;
+	AActor* GetActor(const FActorClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(const FActorArrayClaimer& Claimer) const;
+	AActor* GetSavedActor(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<AActor*> GetActorArray(const FActorArrayClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<AActor*> GetSavedActorArray(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetInput(UUnitActionComponent* WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
