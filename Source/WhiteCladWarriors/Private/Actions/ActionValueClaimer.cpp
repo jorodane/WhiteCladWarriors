@@ -55,12 +55,6 @@ FVector FPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Compon
 	return AdditivePosition;
 }
 
-FRotator FDirectionClaimer::GetRotator(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
-{
-	if(!IsValid(Executor)) return FRotator::ZeroRotator;
-	return Executor->GetSavedDirection(DirectionTag, Component, ID).ToOrientationRotator();
-}
-
 FVector FDirectionClaimer::GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
 {
 	if (!IsValid(Executor)) return FVector::ZeroVector;

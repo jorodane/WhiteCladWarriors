@@ -13,6 +13,46 @@ class UUnitActionComponent;
  * 
  */
 USTRUCT(BlueprintType)
+struct FVectorGetter
+{
+	GENERATED_BODY()
+
+	FVector Value;
+
+	virtual FVector GetValue() const { return Value; }
+};
+
+USTRUCT(BlueprintType)
+struct FVectorGetter_Simple : public FVectorGetter
+{
+	GENERATED_BODY()
+
+
+	FVectorGetter_Simple(){}
+	FVectorGetter_Simple(double Value)
+	{
+
+	}
+
+	FVectorGetter_Simple(FVector Value)
+	{
+
+	}
+
+	virtual FVector GetValue() const override { return Value; }
+};
+
+UCLASS()
+class UValueGetter : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static FVectorGetter MakeSimpleVector(FVector Value) { return FVectorGetter_Simple(Value); }
+};
+
+USTRUCT(BlueprintType)
 struct FValueClaimer
 {
 	GENERATED_BODY()
@@ -69,7 +109,6 @@ struct FDirectionClaimer : public FPositionClaimer
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TEnumAsByte<EDirectionGetterType> DirectionType;
 
-	FRotator GetRotator(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
 	FVector GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
 };
 

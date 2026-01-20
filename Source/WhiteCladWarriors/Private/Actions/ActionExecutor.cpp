@@ -47,6 +47,11 @@ FVector UActionExecutor::GetPosition(const FPositionClaimer& Claimer, const UUni
 	return Claimer.GetPosition(this, From, ID);
 }
 
+FVector UActionExecutor::GetStartPosition(const FDirectionClaimer& Claimer, const UUnitActionComponent* From, int ID) const
+{
+	return Claimer.GetPosition(this, From, ID);
+}
+
 FVector UActionExecutor::GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const
 {
 	const FVector* Result = PositionMap.Find(WantTag);

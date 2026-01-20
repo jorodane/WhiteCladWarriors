@@ -70,6 +70,9 @@ public:
 	FVector GetPosition(const FPositionClaimer& Claimer, const UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
+	FVector GetStartPosition(const FDirectionClaimer& Claimer, const UUnitActionComponent* From, int ID) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
@@ -92,7 +95,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddActor(FName WantTag, AActor* WantActor);
-
+	 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
