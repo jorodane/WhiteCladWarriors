@@ -67,10 +67,10 @@ public:
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(const FPositionClaimer& Claimer, const UUnitActionComponent* From, int ID) const;
+	FVector GetPosition(UPositionClaimer* Claimer, const UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetStartPosition(const FDirectionClaimer& Claimer, const UUnitActionComponent* From, int ID) const;
+	FVector GetStartPosition(UDirectionClaimer* Claimer, const UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const;
@@ -85,7 +85,7 @@ public:
 	void SetDirection(FName WantTag, UUnitActionComponent* WantComponent, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantComponent, int ID) const;
+	FVector GetDirection(UDirectionClaimer* Claimer, UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetSavedDirection(FName WantTag, UUnitActionComponent* WantComponent, int ID) const;
@@ -100,13 +100,13 @@ public:
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(const FActorClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const;
+	AActor* GetActor(UActorClaimer* Claimer, const UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	AActor* GetSavedActor(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(const FActorArrayClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const;
+	TArray<AActor*> GetActorArray(UActorArrayClaimer* Claimer, const UUnitActionComponent* WantComponent, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActor*> GetSavedActorArray(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const;

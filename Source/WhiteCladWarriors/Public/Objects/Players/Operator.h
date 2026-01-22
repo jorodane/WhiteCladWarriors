@@ -132,6 +132,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Operator")
 	static const FInputPackage& GetLocalInputPackage() { if (IsValid(LocalOperator)) return LocalOperator->CurrentInputPackage; else return FInputPackage::Input_None; }
 
+
 public:
 	void Tick(float DeltaSeconds) override;
 	void PossessedBy(AController* NewController) override;
@@ -169,6 +170,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Input")
 	bool IsInputClaimed();
+
+	UFUNCTION(BlueprintPure, Category = "Input")
+	const FInputPackage& GetInputPackage() { return CurrentInputPackage; }
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMove(FVector2D Direction, float Multiplier);

@@ -42,14 +42,16 @@ void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 	Setter = WantPosition;
 }
 
-FVector UActionExecutor::GetPosition(const FPositionClaimer& Claimer, const UUnitActionComponent* From, int ID) const
+FVector UActionExecutor::GetPosition(UPositionClaimer* Claimer, const UUnitActionComponent* From, int ID) const
 {
-	return Claimer.GetPosition(this, From, ID);
+	if (!IsValid(Claimer)) return FVector::ZeroVector;
+	return Claimer->GetPosition(this, From, ID);
 }
 
-FVector UActionExecutor::GetStartPosition(const FDirectionClaimer& Claimer, const UUnitActionComponent* From, int ID) const
+FVector UActionExecutor::GetStartPosition(UDirectionClaimer* Claimer, const UUnitActionComponent* From, int ID) const
 {
-	return Claimer.GetPosition(this, From, ID);
+	if (!IsValid(Claimer)) return FVector::ZeroVector;
+	return Claimer->GetPosition(this, From, ID);
 }
 
 FVector UActionExecutor::GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const
@@ -75,9 +77,10 @@ void UActionExecutor::SetDirection(FName WantTag, UUnitActionComponent* WantUUni
 	Setter = WantDirection;
 }
 
-FVector UActionExecutor::GetDirection(const FDirectionClaimer& Claimer, UUnitActionComponent* WantUUnitActionComponent, int ID) const
+FVector UActionExecutor::GetDirection(UDirectionClaimer* Claimer, UUnitActionComponent* WantUUnitActionComponent, int ID) const
 {
-	return Claimer.GetDirection(this, WantUUnitActionComponent, ID);
+	if (!IsValid(Claimer)) return FVector::ZeroVector;
+	return Claimer->GetDirection(this, WantUUnitActionComponent, ID);
 }
 
 FVector UActionExecutor::GetSavedDirection(FName WantTag, UUnitActionComponent* WantComponent, int ID) const
@@ -99,9 +102,10 @@ void UActionExecutor::RemoveActor(FName WantTag, AActor* WantActor)
 	ActorMultiMap.RemoveSingle(WantTag, WantActor);
 }
 
-AActor* UActionExecutor::GetActor(const FActorClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const
+AActor* UActionExecutor::GetActor(UActorClaimer* Claimer, const UUnitActionComponent* WantComponent, int ID) const
 {
-	return Claimer.GetActor(this, WantComponent, ID);
+	if (!IsValid(Claimer)) return nullptr;
+	return Claimer->GetActor(this, WantComponent, ID);
 }
 
 AActor* UActionExecutor::GetSavedActor(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const
@@ -111,9 +115,10 @@ AActor* UActionExecutor::GetSavedActor(FName WantTag, const UUnitActionComponent
 	else return nullptr;
 }
 
-TArray<AActor*> UActionExecutor::GetActorArray(const FActorArrayClaimer& Claimer, const UUnitActionComponent* WantComponent, int ID) const
+TArray<AActor*> UActionExecutor::GetActorArray(UActorArrayClaimer* Claimer, const UUnitActionComponent* WantComponent, int ID) const
 {
-	return Claimer.GetActorArray(this, WantComponent, ID);
+	if (!IsValid(Claimer)) return TArray<AActor*>();
+	return Claimer->GetActorArray(this, WantComponent, ID);
 }
 
 TArray<AActor*> UActionExecutor::GetSavedActorArray(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const
