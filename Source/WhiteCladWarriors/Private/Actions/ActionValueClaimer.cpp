@@ -54,7 +54,10 @@ FVector FPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Compon
 	}
 	return AdditivePosition;
 }
-
+FVector FDirectionClaimer::GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const
+{
+	return From.GetPosition(Executor, Component, ID);
+}
 FVector FDirectionClaimer::GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
 {
 	if (!IsValid(Executor)) return FVector::ZeroVector;

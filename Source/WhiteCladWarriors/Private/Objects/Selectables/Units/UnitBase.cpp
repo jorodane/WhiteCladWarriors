@@ -250,6 +250,12 @@ void AUnitBase::ClaimStopMovement_Implementation()
 	OnMovementStop.Broadcast();
 }
 
+bool AUnitBase::ClaimJump_Implementation()
+{
+	Jump();
+	return true;
+}
+
 void AUnitBase::MontageStarted(UAnimMontage* Montage)
 {
 	ClaimedMontageEvent.MontageStart();

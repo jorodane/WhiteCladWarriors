@@ -170,6 +170,10 @@ public:
 	void ClaimStopMovement();
 	void ClaimStopMovement_Implementation();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	bool ClaimJump();
+	bool ClaimJump_Implementation();
+
 	UFUNCTION()
 	void MontageStarted(UAnimMontage* Montage);
 

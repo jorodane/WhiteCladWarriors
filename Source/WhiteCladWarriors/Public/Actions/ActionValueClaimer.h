@@ -92,23 +92,21 @@ struct FPositionClaimer : public FValueClaimer
 	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
 };
 
-UENUM(BlueprintType)
-enum EDirectionGetterType
-{
-	SavedDirection, Forward_World, Forward_Self, Forward_Actor, CursorDirection
-};
-
 USTRUCT(BlueprintType)
-struct FDirectionClaimer : public FPositionClaimer
+struct FDirectionClaimer : public FValueClaimer
 {
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
-	FName DirectionTag;
+	FPositionClaimer From;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
-	TEnumAsByte<EDirectionGetterType> DirectionType;
+	FPositionClaimer To;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	FName DirectionTag;
+
+	FVector GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
 	FVector GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
 };
 
