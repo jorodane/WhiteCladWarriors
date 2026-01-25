@@ -202,7 +202,9 @@ public:
 		To = WantTo;
 		DirectionTag = WantTag;
 	}
-	FVector GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+	FVector GetPosition(const UPositionClaimer* Claimer, const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+	FVector GetStartPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { return GetPosition(From, Executor, Component, ID); }
+	FVector GetEndPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { return GetPosition(To, Executor, Component, ID); }
 	FVector GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
 };
 

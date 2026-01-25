@@ -51,7 +51,7 @@ FVector UActionExecutor::GetPosition(UPositionClaimer* Claimer, const UUnitActio
 FVector UActionExecutor::GetStartPosition(UDirectionClaimer* Claimer, const UUnitActionComponent* From, int ID) const
 {
 	if (!IsValid(Claimer)) return FVector::ZeroVector;
-	return Claimer->GetPosition(this, From, ID);
+	return Claimer->GetStartPosition(this, From, ID);
 }
 
 FVector UActionExecutor::GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const

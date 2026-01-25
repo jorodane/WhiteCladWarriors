@@ -62,14 +62,17 @@ FVector UPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Compon
 	}
 	return Result;
 }
-FVector UDirectionClaimer::GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const
+FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const
 {
-	return From->GetPosition(Executor, Component, ID);
+	if (!IsValid(Executor) || !IsValid(Component)) return FVector::ZeroVector;
+	if (!IsValid(Claimer)) if (AUnitBase* Unit = Component->GetOwnerUnit()) Unit->GetActorLocation(); else return FVector::ZeroVector;
+	return Claimer->GetPosition(Executor, Component, ID);
 }
 FVector UDirectionClaimer::GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
 {
 	if (!IsValid(Executor)) return FVector::ZeroVector;
-	return Executor->GetSavedDirection(DirectionTag, Component, ID);
+	if (!DirectionTag.IsNone()) return Executor->GetSavedDirection(DirectionTag, Component, ID);
+	else return (GetEndPosition(Executor, Component, ID) - GetStartPosition(Executor, Component, ID)).GetSafeNormal();
 }
 
 AActor* UActorClaimer::GetActor(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const
