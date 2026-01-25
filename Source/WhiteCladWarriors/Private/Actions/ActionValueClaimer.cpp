@@ -68,11 +68,27 @@ FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const UA
 	if (!IsValid(Claimer)) if (AUnitBase* Unit = Component->GetOwnerUnit()) Unit->GetActorLocation(); else return FVector::ZeroVector;
 	return Claimer->GetPosition(Executor, Component, ID);
 }
+
 FVector UDirectionClaimer::GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
 {
+	FVector Result = GetOriginDirection(Executor,Component,ID);
+	if (IsValid(AngleShift))
+	{
+		FRotator Rotator(0.0, AngleShift->GetValue(), 0.0);
+		Result = Rotator.RotateVector(Result);
+	}
+	return Result;
+}
+
+FVector UDirectionClaimer_ToPosition::GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
+{
 	if (!IsValid(Executor)) return FVector::ZeroVector;
-	if (!DirectionTag.IsNone()) return Executor->GetSavedDirection(DirectionTag, Component, ID);
 	else return (GetEndPosition(Executor, Component, ID) - GetStartPosition(Executor, Component, ID)).GetSafeNormal();
+}
+FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const
+{
+	if (IsValid(Executor) && DirectionTag.IsNone())return Executor->GetSavedDirection(DirectionTag, Component, ID);
+	else return FVector::ZeroVector;
 }
 
 AActor* UActorClaimer::GetActor(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const

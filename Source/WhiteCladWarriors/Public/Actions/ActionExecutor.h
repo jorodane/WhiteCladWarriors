@@ -70,7 +70,7 @@ public:
 	FVector GetPosition(UPositionClaimer* Claimer, const UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetStartPosition(UDirectionClaimer* Claimer, const UUnitActionComponent* From, int ID) const;
+	FVector GetStartPosition(UDirectionClaimer* Claimer, UUnitActionComponent* From, int ID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const;

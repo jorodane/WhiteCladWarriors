@@ -14,6 +14,50 @@ class UUnitActionComponent;
  * 
  */
 UCLASS(Abstract, BlueprintType)
+class UFloatGetter : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value", Meta = (ExposeOnSpawn = "true"))
+	float Value;
+
+	virtual float GetValue() const { return Value; }
+};
+
+UCLASS(BlueprintType)
+class UFloatGetter_Simple : public UFloatGetter
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void SetValueSingle(float WantValue) { Value = WantValue; }
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void SetValue(float WantValue) { Value = WantValue; }
+
+	virtual float GetValue() const override { return Value; }
+};
+
+UCLASS(BlueprintType)
+class UFloatGetter_Random : public UFloatGetter
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value", Meta = (ExposeOnSpawn = "true"))
+	float MaxValue;
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void SetValueSingle(double Min, double Max) { Value = Min; MaxValue = Max; }
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void SetValue(float Min, float Max) { Value = Min; MaxValue = Max; }
+
+	virtual float GetValue() const override { return FMath::RandRange(Value, MaxValue); }
+};
+
+UCLASS(Abstract, BlueprintType)
 class UVectorGetter : public UObject
 {
 	GENERATED_BODY()
@@ -94,6 +138,22 @@ class UValueGetterLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UFloatGetter* MakeSimpleFloat(UObject* Owner, float Value)
+	{
+		UFloatGetter_Simple* Result = NewObject<UFloatGetter_Simple>(Owner);
+		if (Result) Result->SetValue(Value);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UFloatGetter* MakeRandomFloat(UObject* Owner, float Min, float Max)
+	{
+		UFloatGetter_Random* Result = NewObject<UFloatGetter_Random>(Owner);
+		if (Result) Result->SetValue(Min, Max);
+		return Result;
+	}
+
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UVectorGetter* MakeSimpleVector(UObject* Owner, FVector Value) 
 	{ 
@@ -180,7 +240,7 @@ public:
 	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Abstract, BlueprintType)
 class UDirectionClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
@@ -190,22 +250,55 @@ public:
 	TObjectPtr<UPositionClaimer> From;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	TObjectPtr<UFloatGetter> AngleShift;
+
+	virtual FVector GetPosition(const UPositionClaimer* Claimer, const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const {return FVector::ZeroVector;};
+	inline virtual FVector GetStartPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const { return GetPosition(From, Executor, Component, ID); }
+	inline virtual FVector GetEndPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const { return GetStartPosition(Executor,Component,ID) + GetOriginDirection(Executor,Component,ID); }
+	virtual FVector GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
+};
+
+UCLASS(BlueprintType)
+class UDirectionClaimer_ToPosition : public UDirectionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TObjectPtr<UPositionClaimer> To;
 
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void Set(UPositionClaimer* WantFrom, UPositionClaimer* WantTo, UFloatGetter* WantAngleShift)
+	{
+		From = WantFrom;
+		To = WantTo;
+		AngleShift = WantAngleShift;
+	}
+	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override ;
+	inline virtual FVector GetStartPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override  { return GetPosition(From, Executor, Component, ID); }
+	inline virtual FVector GetEndPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override  { return GetPosition(To, Executor, Component, ID); }
+};
+
+UCLASS(BlueprintType)
+class UDirectionClaimer_SavedDirection : public UDirectionClaimer
+{
+	GENERATED_BODY()
+
+public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	FName DirectionTag;
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	void Set(UPositionClaimer* WantFrom, UPositionClaimer* WantTo, FName WantTag)
+	void Set(UPositionClaimer* WantFrom, FName WantTag, UFloatGetter* WantAngleShift)
 	{
 		From = WantFrom;
-		To = WantTo;
 		DirectionTag = WantTag;
+		AngleShift = WantAngleShift;
 	}
-	FVector GetPosition(const UPositionClaimer* Claimer, const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
-	FVector GetStartPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { return GetPosition(From, Executor, Component, ID); }
-	FVector GetEndPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { return GetPosition(To, Executor, Component, ID); }
-	FVector GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
+	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override;
+	inline virtual FVector GetStartPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override { return GetPosition(From, Executor, Component, ID); }
 };
 
 UCLASS(BlueprintType)
@@ -259,13 +352,20 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UDirectionClaimer* MakeDirectionClaimer(UObject* Owner, UPositionClaimer* WantFrom, UPositionClaimer* WantTo, FName WantTag)
+	static UDirectionClaimer_ToPosition* MakeDirectionClaimer_ToPosition(UObject* Owner, UPositionClaimer* WantFrom, UPositionClaimer* WantTo, UFloatGetter* WantAngleShift)
 	{
-		UDirectionClaimer* Result = NewObject<UDirectionClaimer>(Owner);
-		if (Result) Result->Set(WantFrom, WantTo, WantTag);
+		UDirectionClaimer_ToPosition* Result = NewObject<UDirectionClaimer_ToPosition>(Owner);
+		if (Result) Result->Set(WantFrom, WantTo, WantAngleShift);
 		return Result;
 	}
 
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UDirectionClaimer_SavedDirection* MakeDirectionClaimer_SavedDirection(UObject* Owner, UPositionClaimer* WantFrom, FName WantTag, UFloatGetter* WantAngleShift)
+	{
+		UDirectionClaimer_SavedDirection* Result = NewObject<UDirectionClaimer_SavedDirection>(Owner);
+		if (Result) Result->Set(WantFrom, WantTag, WantAngleShift);
+		return Result;
+	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UActorClaimer* MakeActorClaimer(UObject* Owner, FName WantTag)
