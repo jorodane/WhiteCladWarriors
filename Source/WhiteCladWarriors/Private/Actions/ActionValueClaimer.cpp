@@ -103,63 +103,51 @@ TArray<AActor*> UActorArrayClaimer::GetActorArray(const UActionExecutor* Executo
 	return Executor->GetSavedActorArray(ActorArrayTag, Component, ID);
 }
 
-
-TObjectPtr<UVectorGetter_Simple> UValueGetterLibrary::ForwardVector;
-TObjectPtr<UVectorGetter_Simple> UValueGetterLibrary::BackwardVector;
-TObjectPtr<UVectorGetter_Simple> UValueGetterLibrary::RightVector;
-TObjectPtr<UVectorGetter_Simple> UValueGetterLibrary::LeftVector;
-TObjectPtr<UVectorGetter_Simple> UValueGetterLibrary::UpVector;
-TObjectPtr<UVectorGetter_Simple> UValueGetterLibrary::DownVector;
-
-UValueGetterLibrary::UValueGetterLibrary()
+void UValueGetterLibrary::InitSample()
 {
-	ForwardVector = CreateDefaultSubobject<UVectorGetter_Simple>("ForwardVector");
+	if (IsValid(ForwardVector)) return;
+
+	ForwardVector = NewObject<UVectorGetter_Simple>(this, TEXT("ForwardVector"));
 	ForwardVector->SetValue(FVector::ForwardVector);
-	
-	BackwardVector = CreateDefaultSubobject<UVectorGetter_Simple>("BackwardVector");
+
+	BackwardVector = NewObject<UVectorGetter_Simple>(this, TEXT("BackwardVector"));
 	BackwardVector->SetValue(FVector::BackwardVector);
-	
-	RightVector = CreateDefaultSubobject<UVectorGetter_Simple>("RightVector");
+
+	RightVector = NewObject<UVectorGetter_Simple>(this, TEXT("RightVector"));
 	RightVector->SetValue(FVector::RightVector);
-	
-	LeftVector = CreateDefaultSubobject<UVectorGetter_Simple>("LeftVector");
+
+	LeftVector = NewObject<UVectorGetter_Simple>(this, TEXT("LeftVector"));
 	LeftVector->SetValue(FVector::LeftVector);
-	
-	UpVector = CreateDefaultSubobject<UVectorGetter_Simple>("UpVector");
+
+	UpVector = NewObject<UVectorGetter_Simple>(this, TEXT("UpVector"));
 	UpVector->SetValue(FVector::UpVector);
-	
-	DownVector = CreateDefaultSubobject<UVectorGetter_Simple>("DownVector");
+
+	DownVector = NewObject<UVectorGetter_Simple>(this, TEXT("DownVector"));
 	DownVector->SetValue(FVector::DownVector);
 }
 
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfPosition;
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfForwardPosition;
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfBackwardPosition;
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfRightPosition;
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfLeftPosition;
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfUpPosition;
-TObjectPtr<UPositionClaimer> UValueClaimerLibrary::SelfDownPosition;
-
-UValueClaimerLibrary::UValueClaimerLibrary()
+void UValueClaimerLibrary::InitSample()
 {
-	SelfPosition = CreateDefaultSubobject<UPositionClaimer>("SelfPosition");
+	if (IsValid(SelfPosition)) return;
+
+	SelfPosition = NewObject<UPositionClaimer>(this, TEXT("SelfPosition"));
 	SelfPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::World, nullptr);
 
-	SelfForwardPosition = CreateDefaultSubobject<UPositionClaimer>("SelfForwardPosition");
+	SelfForwardPosition = NewObject<UPositionClaimer>(this, TEXT("SelfForwardPosition"));
 	SelfForwardPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleForwardVector());
 
-	SelfBackwardPosition = CreateDefaultSubobject<UPositionClaimer>("SelfBackwardPosition");
+	SelfBackwardPosition = NewObject<UPositionClaimer>(this, TEXT("SelfBackwardPosition"));
 	SelfBackwardPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleBackwardVector());
 
-	SelfRightPosition = CreateDefaultSubobject<UPositionClaimer>("SelfRightPosition");
+	SelfRightPosition = NewObject<UPositionClaimer>(this, TEXT("SelfRightPosition"));
 	SelfRightPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleRightVector());
 
-	SelfLeftPosition = CreateDefaultSubobject<UPositionClaimer>("SelfLeftPosition");
+	SelfLeftPosition = NewObject<UPositionClaimer>(this, TEXT("SelfLeftPosition"));
 	SelfLeftPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleLeftVector());
 
-	SelfUpPosition = CreateDefaultSubobject<UPositionClaimer>("SelfUpPosition");
+	SelfUpPosition = NewObject<UPositionClaimer>(this, TEXT("SelfUpPosition"));
 	SelfUpPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleUpVector());
 
-	SelfDownPosition = CreateDefaultSubobject<UPositionClaimer>("SelfDownPosition");
+	SelfDownPosition = NewObject<UPositionClaimer>(this, TEXT("SelfDownPosition"));
 	SelfDownPosition->Set(NAME_None, EPositionGetterType::SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleDownVector());
 }

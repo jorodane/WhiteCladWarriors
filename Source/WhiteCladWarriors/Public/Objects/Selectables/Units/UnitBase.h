@@ -39,7 +39,6 @@ struct FMontageEventInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	UAnimMontage* MontageToPlay;
 
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	float PlayRate;
 
@@ -157,6 +156,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
 	void ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	void NotifyMontageNodePassed(UActionExecutor* MontageExecutor, int RequestedID);
+	void NotifyMontageNodePassed_Implementation(UActionExecutor* MontageExecutor, int RequestedID);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimStopMontage(UAnimMontage* WantMontage);

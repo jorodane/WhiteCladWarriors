@@ -229,6 +229,14 @@ void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& Montage
 	}
 }
 
+void AUnitBase::NotifyMontageNodePassed_Implementation(UActionExecutor* MontageExecutor, int RequestedID)
+{
+	if (ClaimedMontageEvent.MontageExecutor == MontageExecutor && ClaimedMontageEvent.RequestedID == RequestedID)
+	{
+		ClaimedMontageEvent.MontageToPlay = nullptr;
+	}
+}
+
 void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())

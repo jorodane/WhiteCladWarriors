@@ -132,20 +132,28 @@ public:
 	}
 };
 
-UCLASS(BlueprintType)
+UCLASS()
 class UValueGetterLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	static TObjectPtr<UVectorGetter_Simple> ForwardVector;
-	static TObjectPtr<UVectorGetter_Simple> BackwardVector;
-	static TObjectPtr<UVectorGetter_Simple> RightVector;
-	static TObjectPtr<UVectorGetter_Simple> LeftVector;
-	static TObjectPtr<UVectorGetter_Simple> UpVector;
-	static TObjectPtr<UVectorGetter_Simple> DownVector;
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> ForwardVector;
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> BackwardVector;
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> RightVector;
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> LeftVector;
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> UpVector;
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> DownVector;
+
 
 public:
-	UValueGetterLibrary();
+	void InitSample();
+
+	static inline UValueGetterLibrary* Get()
+	{
+		UValueGetterLibrary* Result = GetMutableDefault<UValueGetterLibrary>();
+		Result->InitSample();
+		return Result;
+	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UFloatGetter* MakeSimpleFloat(UObject* Owner, float Value)
@@ -188,18 +196,28 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UVectorGetter* GetSimpleForwardVector() { return ForwardVector;}
+	static UVectorGetter* GetSimpleForwardVector() { return Get()->ForwardVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UVectorGetter* GetSimpleBackwardVector() { return BackwardVector;}
+	static UVectorGetter* GetSimpleBackwardVector() { return Get()->BackwardVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UVectorGetter* GetSimpleRightVector() { return RightVector;}
+	static UVectorGetter* GetSimpleRightVector() { return Get()->RightVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UVectorGetter* GetSimpleLeftVector() { return LeftVector;}
+	static UVectorGetter* GetSimpleLeftVector() { return Get()->LeftVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UVectorGetter* GetSimpleUpVector() { return UpVector;}
+	static UVectorGetter* GetSimpleUpVector() { return Get()->UpVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UVectorGetter* GetSimpleDownVector() { return DownVector;}
+	static UVectorGetter* GetSimpleDownVector() { return Get()->DownVector;}
 };
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -432,36 +450,42 @@ public:
 	}
 };
 
-UCLASS(BlueprintType)
+UCLASS()
 class UValueClaimerLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	static TObjectPtr<UPositionClaimer> SelfPosition;
-	static TObjectPtr<UPositionClaimer> SelfForwardPosition;
-	static TObjectPtr<UPositionClaimer> SelfBackwardPosition;
-	static TObjectPtr<UPositionClaimer> SelfRightPosition;
-	static TObjectPtr<UPositionClaimer> SelfLeftPosition;
-	static TObjectPtr<UPositionClaimer> SelfUpPosition;
-	static TObjectPtr<UPositionClaimer> SelfDownPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfForwardPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfBackwardPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfRightPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfLeftPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfUpPosition;
+	UPROPERTY() TObjectPtr<UPositionClaimer> SelfDownPosition;
 
 public:
-	UValueClaimerLibrary();
+	void InitSample();
+	static inline UValueClaimerLibrary* Get() 
+	{ 
+		UValueClaimerLibrary* Result = GetMutableDefault<UValueClaimerLibrary>();
+		Result->InitSample();
+		return Result;
+	}
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfPosition() { return SelfPosition; };
+	static UPositionClaimer* ClaimSelfPosition() { return Get()->SelfPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfForwardPosition() { return SelfForwardPosition; };
+	static UPositionClaimer* ClaimSelfForwardPosition() { return Get()->SelfForwardPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfBackwardPosition() { return SelfBackwardPosition; };
+	static UPositionClaimer* ClaimSelfBackwardPosition() { return Get()->SelfBackwardPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfRightPosition() { return SelfRightPosition; };
+	static UPositionClaimer* ClaimSelfRightPosition() { return Get()->SelfRightPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfLeftPosition() { return SelfLeftPosition; };
+	static UPositionClaimer* ClaimSelfLeftPosition() { return Get()->SelfLeftPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfUpPosition() { return SelfUpPosition; };
+	static UPositionClaimer* ClaimSelfUpPosition() { return Get()->SelfUpPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer* ClaimSelfDownPosition() { return SelfDownPosition; };
+	static UPositionClaimer* ClaimSelfDownPosition() { return Get()->SelfDownPosition; };
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UPositionClaimer* MakePositionClaimer(UObject* Owner, FName WantPositionTag, EPositionGetterType WantPositionType, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
