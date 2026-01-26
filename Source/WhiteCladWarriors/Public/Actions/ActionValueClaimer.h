@@ -337,6 +337,54 @@ public:
 	TArray<AActor*> GetActorArray(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
 };
 
+UENUM(BlueprintType)
+enum class EActorPositionResult : uint8
+{
+	Position, Actor
+};
+
+UCLASS(BlueprintType)
+class UActorOrPositionClaimer : public UValueClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	TObjectPtr<UPositionClaimer> PositionClaimer;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	TObjectPtr<UActorClaimer> ActorClaimer;
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void Set(UPositionClaimer* WantPosition, UActorClaimer* WantActor)
+	{
+		PositionClaimer = WantPosition;
+		ActorClaimer = WantActor;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	inline FVector GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { if (IsValid(PositionClaimer)) return PositionClaimer->GetPosition(Executor, Component, ID); return FVector::ZeroVector; };
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	inline AActor* GetActor(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { if (IsValid(ActorClaimer)) return ActorClaimer->GetActor(Executor, Component, ID); return nullptr; };
+
+	UFUNCTION(BlueprintCallable, Category = "Value", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	EActorPositionResult TryGetActorOrPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID, FVector& ResultPosition, AActor*& ResultAsActor) const
+	{
+		ResultAsActor = GetActor(Executor, Component, ID);
+		if (ResultAsActor)
+		{
+			ResultPosition = ResultAsActor->GetActorLocation();
+			return EActorPositionResult::Actor;
+		}
+		else
+		{
+			ResultPosition = GetPosition(Executor, Component, ID);
+			return EActorPositionResult::Position;
+		}
+	}
+};
+
 UCLASS(BlueprintType)
 class UValueClaimerLibrary : public UBlueprintFunctionLibrary
 {
@@ -380,6 +428,14 @@ public:
 	{
 		UActorArrayClaimer* Result = NewObject<UActorArrayClaimer>(Owner);
 		if (Result) Result->Set(WantTag);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UActorOrPositionClaimer* MakeActorOrPositionClaimer(UObject* Owner, UPositionClaimer* WantPosition, UActorClaimer* WantActor)
+	{
+		UActorOrPositionClaimer* Result = NewObject<UActorOrPositionClaimer>(Owner);
+		if (Result) Result->Set(WantPosition, WantActor);
 		return Result;
 	}
 };
