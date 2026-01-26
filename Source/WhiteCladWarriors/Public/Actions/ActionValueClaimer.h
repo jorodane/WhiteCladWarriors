@@ -137,7 +137,16 @@ class UValueGetterLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+	static TObjectPtr<UVectorGetter_Simple> ForwardVector;
+	static TObjectPtr<UVectorGetter_Simple> BackwardVector;
+	static TObjectPtr<UVectorGetter_Simple> RightVector;
+	static TObjectPtr<UVectorGetter_Simple> LeftVector;
+	static TObjectPtr<UVectorGetter_Simple> UpVector;
+	static TObjectPtr<UVectorGetter_Simple> DownVector;
+
 public:
+	UValueGetterLibrary();
+
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UFloatGetter* MakeSimpleFloat(UObject* Owner, float Value)
 	{
@@ -177,6 +186,19 @@ public:
 		if (Result) Result->SetValue(Center, Bound);
 		return Result;
 	}
+
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleForwardVector() { return ForwardVector;}
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleBackwardVector() { return BackwardVector;}
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleRightVector() { return RightVector;}
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleLeftVector() { return LeftVector;}
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleUpVector() { return UpVector;}
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleDownVector() { return DownVector;}
 };
 
 
@@ -277,8 +299,34 @@ public:
 		AngleShift = WantAngleShift;
 	}
 	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override ;
-	inline virtual FVector GetStartPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override  { return GetPosition(From, Executor, Component, ID); }
 	inline virtual FVector GetEndPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override  { return GetPosition(To, Executor, Component, ID); }
+};
+
+UCLASS(BlueprintType)
+class UDirectionClaimer_SimpleDirection : public UDirectionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	EPositionSpaceType DirectionSpace;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	TObjectPtr<UVectorGetter> DirectionTo;
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void Set(UPositionClaimer* WantFrom, EPositionSpaceType WantSpace, UVectorGetter* WantDirection, UFloatGetter* WantAngleShift)
+	{
+		From = WantFrom;
+		DirectionSpace = WantSpace;
+		DirectionTo = WantDirection;
+		AngleShift = WantAngleShift;
+	}
+	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override 
+	{
+		if(IsValid(DirectionTo)) return DirectionTo->GetValue();
+		else return FVector::ZeroVector;
+	}
 };
 
 UCLASS(BlueprintType)
@@ -298,7 +346,6 @@ public:
 		AngleShift = WantAngleShift;
 	}
 	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override;
-	inline virtual FVector GetStartPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override { return GetPosition(From, Executor, Component, ID); }
 };
 
 UCLASS(BlueprintType)
@@ -390,7 +437,32 @@ class UValueClaimerLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+	static TObjectPtr<UPositionClaimer> SelfPosition;
+	static TObjectPtr<UPositionClaimer> SelfForwardPosition;
+	static TObjectPtr<UPositionClaimer> SelfBackwardPosition;
+	static TObjectPtr<UPositionClaimer> SelfRightPosition;
+	static TObjectPtr<UPositionClaimer> SelfLeftPosition;
+	static TObjectPtr<UPositionClaimer> SelfUpPosition;
+	static TObjectPtr<UPositionClaimer> SelfDownPosition;
+
 public:
+	UValueClaimerLibrary();
+
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfPosition() { return SelfPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfForwardPosition() { return SelfForwardPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfBackwardPosition() { return SelfBackwardPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfRightPosition() { return SelfRightPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfLeftPosition() { return SelfLeftPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfUpPosition() { return SelfUpPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UPositionClaimer* ClaimSelfDownPosition() { return SelfDownPosition; };
+
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UPositionClaimer* MakePositionClaimer(UObject* Owner, FName WantPositionTag, EPositionGetterType WantPositionType, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
