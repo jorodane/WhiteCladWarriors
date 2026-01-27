@@ -15,7 +15,7 @@ class UActionNode;
 struct FInputPackage;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, UActionExecutor*, Executor, int, ID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
 DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, FName, NotifyName);
@@ -166,8 +166,8 @@ public:
 	void ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	void ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, int ID);
-	void ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, int ID);
+	void ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	void ClaimStopMovement();

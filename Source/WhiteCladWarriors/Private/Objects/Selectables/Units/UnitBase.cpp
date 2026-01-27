@@ -248,9 +248,9 @@ void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 	}
 }
 
-void AUnitBase::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, int ID)
+void AUnitBase::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
-	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, Executor, ID);
+	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, Executor, TargetComponent, ID);
 }
 
 void AUnitBase::ClaimStopMovement_Implementation()
