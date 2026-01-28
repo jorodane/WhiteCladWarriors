@@ -23,9 +23,34 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageStart, UActionExecutor*, Executor
 DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, bool, bIsInterrupted);
 
 USTRUCT(BlueprintType)
+struct FActionReservator
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	AOperator* Operator;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	TArray<UUnitActionComponent*> Components;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	FInputPackage Input;
+
+	FActionReservator() {};
+	FActionReservator(AOperator* TargetOperator, TArray<UUnitActionComponent*>& TargetComponents, FInputPackage& TargetInput)
+	{
+		Operator = TargetOperator;
+		Components = TargetComponents;
+		Input = TargetInput;
+	}
+};
+
+USTRUCT(BlueprintType)
 struct FMontageEventInfo
 {
 	GENERATED_BODY()
+
+	TQueue<FInputPackage> ActionQueue;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TObjectPtr<UActionExecutor> MontageExecutor;
