@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Generals/Structs/InputPackage.h"
 #include "GameFramework/Character.h"
 #include "Styling/SlateBrush.h"
 #include "Interfaces/Selectable.h"
@@ -28,19 +29,19 @@ struct FActionReservator
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	AOperator* Operator;
+	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	TArray<UUnitActionComponent*> Components;
+	TObjectPtr<AActionBase> Action;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	FInputPackage Input;
 
 	FActionReservator() {};
-	FActionReservator(AOperator* TargetOperator, TArray<UUnitActionComponent*>& TargetComponents, FInputPackage& TargetInput)
+	FActionReservator(AOperator* TargetOperator, TObjectPtr<AActionBase>& TargetAction, FInputPackage& TargetInput)
 	{
 		Operator = TargetOperator;
-		Components = TargetComponents;
+		Action = TargetAction;
 		Input = TargetInput;
 	}
 };
@@ -49,8 +50,6 @@ USTRUCT(BlueprintType)
 struct FMontageEventInfo
 {
 	GENERATED_BODY()
-
-	TQueue<FInputPackage> ActionQueue;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TObjectPtr<UActionExecutor> MontageExecutor;
@@ -145,6 +144,9 @@ protected:
 
 	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
 
+	TQueue<FActionReservator> ActionQueue;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Select")
 	TArray<UUnitActionComponent*> ActionComponentArray;
 
 	FMainActionInfo MainAction;
