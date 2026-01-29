@@ -206,8 +206,19 @@ void AUnitBase::EndMainAction(bool bIsStopMovement)
 
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement)
 {
-	MainAction.End(bIsStopMovement);
+	EndMainAction(bIsStopMovement);
 }
+
+void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
+{
+	ActionQueue.Enqueue(Reservation);
+};
+
+void AUnitBase::ReservationClear()
+{
+	ActionQueue.Empty();
+};
+
 
 void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {

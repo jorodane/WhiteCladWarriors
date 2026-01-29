@@ -122,6 +122,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsSelectAllMode;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
+	bool bIsReservationAllMode;
+
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
 	static bool IsVisibleOnCamera(FMatrix Matrix, AActor* Target);

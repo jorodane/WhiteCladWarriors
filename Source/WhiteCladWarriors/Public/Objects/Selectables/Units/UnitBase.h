@@ -180,6 +180,12 @@ public:
 	void EndMainAction(bool bIsStopMovement);
 	void EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement);
 
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ReservationEnqueue(const FActionReservator& Reservation);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ReservationClear();
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
 	void ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
