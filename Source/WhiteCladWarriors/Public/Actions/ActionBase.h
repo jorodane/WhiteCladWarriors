@@ -125,11 +125,11 @@ public:
 	inline UActionSelectorNode*		RootNodeAsSelector() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
-	void ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
+	UActionExecutor* ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
+	UActionExecutor* ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
-	void ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
+	UActionExecutor* ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
+	UActionExecutor* ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
 
 };

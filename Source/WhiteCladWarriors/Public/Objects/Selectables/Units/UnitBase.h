@@ -28,11 +28,17 @@ struct FActionReservator
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
 	TObjectPtr<AOperator> Operator;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
 	TObjectPtr<AActionBase> Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
+	TObjectPtr<UActionExecutor> Executor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
+	TArray<UUnitActionComponent*> RunningComponents;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	FInputPackage Input;
@@ -43,6 +49,19 @@ struct FActionReservator
 		Operator = TargetOperator;
 		Action = TargetAction;
 		Input = TargetInput;
+	}
+
+	inline bool Run(TArray<UUnitActionComponent*> StartComponents)
+	{
+		if(!IsValid(Action)) return false;
+		return Executor = Action->ExecuteActionWithInput(Operator, RunningComponents = StartComponents, Input);
+	}
+
+	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+	{
+		if(!IsValid(EndExecutor) || Executor != EndExecutor) return false;
+		RunningComponents.Remove(EndComponent);
+		return RunningComponents.Num() == 0;
 	}
 };
 
@@ -146,6 +165,8 @@ protected:
 
 	TQueue<FActionReservator> ActionQueue;
 
+	FActionReservator* CurrentReservatedAction;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Select")
 	TArray<UUnitActionComponent*> ActionComponentArray;
 
@@ -185,6 +206,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ReservationClear();
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ReservationNext();
+
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	void NotifyExecutorEnded(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+	void NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);

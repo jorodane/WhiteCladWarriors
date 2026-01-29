@@ -28,13 +28,15 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 	return Cast<UActionSelectorNode>(RootNode);
 }
 
-void AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
+UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
 {
 	UActionExecutor* NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
 	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecute(NewExecutor, CurrentComponent, 0);
+	return NewExecutor;
 }
-void AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
+UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
 {
 	UActionExecutor* NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
 	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecuteWithInput(NewExecutor, CurrentComponent, 0, Input);
+	return NewExecutor;
 }

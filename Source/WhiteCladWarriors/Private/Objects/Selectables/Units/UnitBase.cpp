@@ -219,6 +219,21 @@ void AUnitBase::ReservationClear()
 	ActionQueue.Empty();
 };
 
+void AUnitBase::ReservationNext()
+{
+
+}
+
+void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+{
+	if (FActionReservator* CurrentReservator = ActionQueue.Peek())
+	{
+		if (CurrentReservator->SetEnd(EndExecutor, EndComponent))
+		{
+			ReservationNext();
+		}
+	}
+}
 
 void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
@@ -247,6 +262,7 @@ void AUnitBase::NotifyMontageNodePassed_Implementation(UActionExecutor* MontageE
 		ClaimedMontageEvent.MontageToPlay = nullptr;
 	}
 }
+
 
 void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 {
