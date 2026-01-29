@@ -30,15 +30,13 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Execu
 void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
 	if (!IsValid(Executor)) return;
-	if (IsValid(NextNode)) Executor->EnterNode(TargetComponent, ID, NextNode);
-	else Executor->EndNode(TargetComponent, ID, this);
+	Executor->EnterNode(TargetComponent, ID, NextNode);
 }
 
 void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
 {
 	if (!IsValid(Executor)) return;
-	if (IsValid(CanceledNode)) Executor->EnterNode(TargetComponent, ID, CanceledNode);
-	else Executor->EndNode(TargetComponent, ID, this);
+	Executor->EnterNode(TargetComponent, ID, CanceledNode);
 }
 
 

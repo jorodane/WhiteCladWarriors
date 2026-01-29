@@ -8,6 +8,21 @@
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
 
+bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
+{
+	if (!IsValid(Action)) return false;
+	bIsValid = IsValid(Executor = Action->ExecuteActionWithInput(Operator, RunningComponents = StartComponents, Input));
+	return bIsValid;
+}
+
+bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+{
+	if (!IsValid(EndExecutor) || Executor != EndExecutor) return false;
+	RunningComponents.Remove(EndComponent);
+	bIsValid = RunningComponents.Num() > 0;
+	return !bIsValid;
+}
+
 bool FMontageEventInfo::ValidExecutor() const 
 {
 	return IsValid(MontageExecutor) && IsValid(MontageComponent);
@@ -128,6 +143,11 @@ TArray<AActionBase*> AUnitBase::GetActionList() const
 	return Result;
 }
 
+TArray<UUnitActionComponent*> AUnitBase::GetComponentsWithAction(AActionBase* TargetAction) const
+{
+	if (const TArray<UUnitActionComponent*>* Result = ActionMap.Find(TargetAction)) return *Result;
+	else return TArray<UUnitActionComponent*>();
+}
 
 bool AUnitBase::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*& OutAction, TArray<UUnitActionComponent*>& OutComponents) const
 {
@@ -211,7 +231,15 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement
 
 void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 {
-	ActionQueue.Enqueue(Reservation);
+	if (ActionQueue.IsEmpty() && !CurrentReservatedAction.bIsValid)
+	{
+		CurrentReservatedAction = Reservation;
+		CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action));
+	}
+	else
+	{
+		ActionQueue.Enqueue(Reservation);
+	}
 };
 
 void AUnitBase::ReservationClear()
@@ -221,14 +249,21 @@ void AUnitBase::ReservationClear()
 
 void AUnitBase::ReservationNext()
 {
-
+	if (ActionQueue.Dequeue(CurrentReservatedAction))
+	{
+		CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action));
+	}
+	else
+	{
+		CurrentReservatedAction.bIsValid = false;
+	}
 }
 
 void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
-	if (FActionReservator* CurrentReservator = ActionQueue.Peek())
+	if (CurrentReservatedAction.bIsValid)
 	{
-		if (CurrentReservator->SetEnd(EndExecutor, EndComponent))
+		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent))
 		{
 			ReservationNext();
 		}

@@ -43,26 +43,19 @@ struct FActionReservator
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	FInputPackage Input;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Valid")
+	bool bIsValid = false;
+
 	FActionReservator() {};
-	FActionReservator(AOperator* TargetOperator, TObjectPtr<AActionBase>& TargetAction, FInputPackage& TargetInput)
+	FActionReservator(AOperator* TargetOperator, AActionBase* TargetAction, const FInputPackage& TargetInput)
 	{
 		Operator = TargetOperator;
 		Action = TargetAction;
 		Input = TargetInput;
 	}
 
-	inline bool Run(TArray<UUnitActionComponent*> StartComponents)
-	{
-		if(!IsValid(Action)) return false;
-		return Executor = Action->ExecuteActionWithInput(Operator, RunningComponents = StartComponents, Input);
-	}
-
-	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
-	{
-		if(!IsValid(EndExecutor) || Executor != EndExecutor) return false;
-		RunningComponents.Remove(EndComponent);
-		return RunningComponents.Num() == 0;
-	}
+	bool Run(TArray<UUnitActionComponent*> StartComponents);
+	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 };
 
 USTRUCT(BlueprintType)
@@ -165,7 +158,7 @@ protected:
 
 	TQueue<FActionReservator> ActionQueue;
 
-	FActionReservator* CurrentReservatedAction;
+	FActionReservator CurrentReservatedAction;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select")
 	TArray<UUnitActionComponent*> ActionComponentArray;
@@ -182,6 +175,9 @@ protected:
 public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionList() const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<UUnitActionComponent*> GetComponentsWithAction(AActionBase* TargetAction) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*& OutAction, TArray<UUnitActionComponent*>& OutComponents) const;

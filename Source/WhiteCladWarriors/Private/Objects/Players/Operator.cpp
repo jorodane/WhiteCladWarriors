@@ -85,9 +85,16 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
 	if (IsInputClaimed())
 	{
-		if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode);
-		bool bIsInputComplete = CurrentInputClaim.TargetExecutor ? CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.ID, CurrentInputClaim.TargetNode, CurrentInputPackage) : true;
-		if(bIsInputComplete) ForceRemoveInputClaim();
+		if (bIsReservationMode) 
+		{
+			ReservationAction(CurrentInputClaim.TargetAction, CurrentInputPackage.SelectedActors, CurrentInputPackage);
+		}
+		else
+		{
+			if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode);
+			bool bIsInputComplete = CurrentInputClaim.TargetExecutor ? CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.ID, CurrentInputClaim.TargetNode, CurrentInputPackage) : true;
+			if(bIsInputComplete) ForceRemoveInputClaim();
+		}
 	}
 	else if(bIsMapClick)
 	{
@@ -440,7 +447,8 @@ void AOperator::ActorRemoveFromActionList(AActor* Target)
 
 void AOperator::SimpleAction(const FInputPackage& Input)
 {
-	TMap<AActionBase*, TSet<UUnitActionComponent*>> ExecuteActionMap;
+	TMap<AActionBase*, TSet<UUnitActionComponent*>> ExecuteActionComponentMap;
+	TMap<AActionBase*, TSet<AActor*>> ExecuteActionActorMap;
 
 	for (AActor* CurrentActor : Input.SelectedActors)
 	{
@@ -449,19 +457,55 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 		AActionBase* ResultAction = nullptr;
 		TArray<UUnitActionComponent*> ResultComponents;
 		if (!CurrentAsUnit->GetSimpleAction(Input, ResultAction, ResultComponents)) continue;
-		if (!IsValid(ResultAction) || ResultComponents.Num() == 0) continue;
-		TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionMap.FindOrAdd(ResultAction);
-		ResultComponentList.Append(ResultComponents);
+		if (!IsValid(ResultAction)) continue;
+		if (bIsReservationMode)
+		{
+			TSet<AActor*>& ResultActorList = ExecuteActionActorMap.FindOrAdd(ResultAction);
+			ResultActorList.Add(CurrentActor);
+		}
+		else
+		{
+			if (ResultComponents.Num() == 0) continue;
+			TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionComponentMap.FindOrAdd(ResultAction);
+			ResultComponentList.Append(ResultComponents);
+		}
 	}
 
-	for (auto& CurrentPair : ExecuteActionMap)
+	if (bIsReservationMode)
 	{
-		AActionBase* CurrentAction = CurrentPair.Key;
-		TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
-		if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
-		const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
+		for (auto& CurrentPair : ExecuteActionActorMap)
+		{
+			AActionBase* CurrentAction = CurrentPair.Key;
+			TSet<AActor*>& CurrentList = CurrentPair.Value;
+			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
+			const TArray<AActor*> ResultArray = CurrentList.Array();
 
-		ExecuteAction(CurrentAction, ResultArray, true);
+			ReservationAction(CurrentAction, ResultArray, CurrentInputPackage);
+		}
+	}
+	else
+	{
+		for (auto& CurrentPair : ExecuteActionComponentMap)
+		{
+			AActionBase* CurrentAction = CurrentPair.Key;
+			TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
+			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
+			const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
+
+			ExecuteAction(CurrentAction, ResultArray, true);
+		}
+	}
+}
+
+void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input)
+{
+	FActionReservator Reservator(this, TargetAction, Input);
+	for (AActor* CurrentActor : TargetActors)
+	{
+		if (AUnitBase* AsUnit = Cast<AUnitBase>(CurrentActor))
+		{
+			AsUnit->ReservationEnqueue(Reservator);
+		};
 	}
 }
 

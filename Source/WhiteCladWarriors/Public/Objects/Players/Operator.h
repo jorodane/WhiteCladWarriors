@@ -123,7 +123,7 @@ protected:
 	bool bIsSelectAllMode;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
-	bool bIsReservationAllMode;
+	bool bIsReservationMode;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -274,6 +274,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SimpleAction(const FInputPackage& Input);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input);
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);

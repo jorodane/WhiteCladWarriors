@@ -4,6 +4,7 @@
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/UnitActionComponent.h"
+#include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Players/Operator.h"
 #include "Actions/ActionNode.h"
 
@@ -16,7 +17,11 @@ int FActiveNodeInfo::AddNode(UActionNode* Node)
 	return Result;
 }
 
-UActionNode* FActiveNodeInfo::GetNode(int ID) const { return *NodeMap.Find(ID); }
+UActionNode* FActiveNodeInfo::GetNode(int ID) const 
+{ 
+	if (UActionNode* const* Result = NodeMap.Find(ID)) return *Result;
+	else return nullptr;
+}
 
 void FActiveNodeInfo::SetNode(UActionNode* Node, int ID) 
 { 
@@ -197,6 +202,7 @@ void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, int ID, UAc
 		Cursor.RemoveID(ID);
 		if (Cursor.IsEmpty())
 		{
+			if (AUnitBase* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(this, TargetComponent);
 			CursorMap.Remove(TargetComponent);
 			CheckCursorMap();
 		}
