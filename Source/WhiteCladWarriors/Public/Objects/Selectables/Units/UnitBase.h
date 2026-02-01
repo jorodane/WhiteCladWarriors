@@ -197,8 +197,7 @@ public:
 	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, bool bIsCancelable = true, bool bIsStopMovement = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction(bool bIsStopMovement);
-	void EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement);
+	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ReservationEnqueue(const FActionReservator& Reservation);

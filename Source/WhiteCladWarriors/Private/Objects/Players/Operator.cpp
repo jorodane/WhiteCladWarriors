@@ -91,9 +91,18 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		}
 		else
 		{
-			if (!IsValid(CurrentInputClaim.TargetExecutor)) CurrentInputClaim.TargetExecutor = UActionExecutor::CreateExecutor(this, CurrentInputClaim.TargetComponentArray, CurrentInputClaim.TargetNode);
-			bool bIsInputComplete = CurrentInputClaim.TargetExecutor ? CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.ID, CurrentInputClaim.TargetNode, CurrentInputPackage) : true;
-			if(bIsInputComplete) ForceRemoveInputClaim();
+			if (!IsValid(CurrentInputClaim.TargetExecutor))
+			{
+				CommandAction(CurrentInputClaim.TargetAction, CurrentInputClaim.TargetComponentArray, true);
+				//CurrentInputClaim.TargetExecutor = CurrentInputClaim.TargetAction->ExecuteActionWithInput(this, CurrentInputClaim.TargetComponentArray, GetInputPackage());
+				ForceRemoveInputClaim();
+			}
+			else
+			{
+				bool bIsInputComplete =  CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.ID, CurrentInputClaim.TargetNode, CurrentInputPackage);
+				if (bIsInputComplete) ForceRemoveInputClaim();
+				for (UUnitActionComponent* CurrentComponent : CurrentInputClaim.TargetComponentArray) if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
+			}
 		}
 	}
 	else if(bIsMapClick)
@@ -112,14 +121,14 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		if (GetFocusActors(bIsClick, bIsDoubleClick, bIsSelectAllMode, OutResultArray, OutResultSingle, OutAllSame, OutOnlySingle))
 		{
 			if (!bIsAdditive) DeselectActors();
-			else if(bIsClick && !(bIsSelectAll || bIsDoubleClick))
+			if(bIsClick && !(bIsSelectAll || bIsDoubleClick))
 			{
 				SelectToggle(OutResultSingle);
 				return;
 			}
 			SelectActors(OutResultArray, OutOnlySingle);
 		}
-		else if(!bIsAdditive) DeselectActors();
+		//else if(!bIsAdditive) DeselectActors(); Remove All On Ground Click
 	}
 }
 
@@ -220,7 +229,7 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 	CameraMove(Result, Multiplier);
 };
 
-void AOperator::ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately)
+void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately)
 {
 	if(!IsValid(TargetAction)) return;
 
@@ -228,13 +237,21 @@ void AOperator::ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActio
 
 	if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponent))
 	{
-		if (bIsStartImmediately) TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
-		else ClaimInput(ResultInput);
+		if (bIsStartImmediately)
+		{
+			TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+		}
+		else
+		{
+			ClaimInput(ResultInput);
+			return;
+		}
 	}
 	else
 	{
 		TargetAction->ExecuteAction(this, TargetComponent);
 	}
+	for (UUnitActionComponent* CurrentComponent : TargetComponent) if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 }
 
 TArray<UActionTargetContainer*> AOperator::GetAvailableActionList()
@@ -458,12 +475,9 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 		TArray<UUnitActionComponent*> ResultComponents;
 		if (!CurrentAsUnit->GetSimpleAction(Input, ResultAction, ResultComponents)) continue;
 		if (!IsValid(ResultAction)) continue;
-		if (bIsReservationMode)
-		{
-			TSet<AActor*>& ResultActorList = ExecuteActionActorMap.FindOrAdd(ResultAction);
-			ResultActorList.Add(CurrentActor);
-		}
-		else
+		TSet<AActor*>& ResultActorList = ExecuteActionActorMap.FindOrAdd(ResultAction);
+		ResultActorList.Add(CurrentActor);
+		if (!bIsReservationMode)
 		{
 			if (ResultComponents.Num() == 0) continue;
 			TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionComponentMap.FindOrAdd(ResultAction);
@@ -491,8 +505,7 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 			TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
 			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
 			const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
-
-			ExecuteAction(CurrentAction, ResultArray, true);
+			CommandAction(CurrentAction, ResultArray, true);
 		}
 	}
 }

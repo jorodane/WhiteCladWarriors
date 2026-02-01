@@ -262,7 +262,7 @@ void UActionExecutor::CheckCursorMap()
 {
 	if (CursorMap.Num() == 0 && CreatedActors.Num() == 0)
 	{
-		ConditionalBeginDestroy();
+		DestroyExecutor(this);
 	}
 }
 
@@ -284,4 +284,9 @@ UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArr
 	return Result;
 
 	return nullptr;
+}
+
+void UActionExecutor::DestroyExecutor(UActionExecutor* TargetExecutor)
+{
+	if(IsValid(TargetExecutor))	TargetExecutor->ConditionalBeginDestroy();
 }

@@ -216,19 +216,17 @@ bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* C
 	return Result;
 }
 
-void AUnitBase::EndMainAction(bool bIsStopMovement)
+void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
 {
 	if (MainAction.IsValid())
 	{
 		if (bIsStopMovement) ClaimStopMovement();
 		MainAction.End(bIsStopMovement);
-		ReservationNext();
+		if (CurrentReservatedAction.bIsValid)
+		{
+			if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) ReservationNext();
+		}
 	}
-}
-
-void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, bool bIsStopMovement)
-{
-	EndMainAction(bIsStopMovement);
 }
 
 void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
@@ -265,12 +263,10 @@ void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor,
 {
 	if (CurrentReservatedAction.bIsValid)
 	{
-		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent))
-		{
-			ReservationNext();
-		}
+		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent)) ReservationNext();
 	}
 }
+
 
 void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {

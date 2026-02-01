@@ -157,4 +157,7 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static UActionExecutor* CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void DestroyExecutor(UActionExecutor* TargetExecutor);
 };

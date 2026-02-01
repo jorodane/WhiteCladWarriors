@@ -28,15 +28,29 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 	return Cast<UActionSelectorNode>(RootNode);
 }
 
-UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
+UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents) const
 {
-	UActionExecutor* NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
-	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecute(NewExecutor, CurrentComponent, 0);
+	UActionExecutor* NewExecutor = nullptr;
+	if (IsValid(RootNode))
+	{
+		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
+		for (UUnitActionComponent* CurrentComponent : TargetComponents)
+		{
+			RootNode->ClaimExecute(NewExecutor, CurrentComponent, 0);
+		}
+	}
 	return NewExecutor;
 }
-UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
+UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input) const
 {
-	UActionExecutor* NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
-	if (IsValid(RootNode)) for (UUnitActionComponent* CurrentComponent : TargetComponents) RootNode->ClaimExecuteWithInput(NewExecutor, CurrentComponent, 0, Input);
+	UActionExecutor* NewExecutor = nullptr;
+	if (IsValid(RootNode))
+	{
+		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
+		for (UUnitActionComponent* CurrentComponent : TargetComponents)
+		{
+			RootNode->ClaimExecuteWithInput(NewExecutor, CurrentComponent, 0, Input);
+		}
+	}
 	return NewExecutor;
 }

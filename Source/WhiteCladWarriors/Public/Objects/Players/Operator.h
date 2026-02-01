@@ -195,7 +195,7 @@ public:
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ExecuteAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately);
+	void CommandAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UActionTargetContainer*> GetAvailableActionList();
