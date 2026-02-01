@@ -64,10 +64,11 @@ void FMainActionInfo::Clear()
 	bIsStopMovement = false;
 }
 
-void FMainActionInfo::Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable, bool bWantIsStopMovement)
+void FMainActionInfo::Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bWantIsCancelable, bool bWantIsStopMovement)
 {
 	Executor = WantExecutor;
 	Component = WantComponent;
+	ID = WantID;
 	bIsCancelable = bWantIsCancelable;
 	bIsStopMovement = bWantIsStopMovement;
 }
@@ -197,20 +198,20 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 
 bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
-	if(Info.IsValid()) return SetMainAction(Info.Executor.Get(), Info.Component.Get(), Info.bIsCancelable);
-	else return SetMainAction(nullptr, nullptr);
+	if(Info.IsValid()) return SetMainAction(Info.Executor.Get(), Info.Component.Get(), Info.ID, Info.bIsCancelable);
+	else return SetMainAction(nullptr, nullptr, 0);
 }
 
 bool AUnitBase::GetMainActionCancelable_Implementation() const 
 { return MainAction.bIsCancelable; };
 
-bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable, bool bIsStopMovement)
+bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, bool bIsCancelable, bool bIsStopMovement)
 {
 	bool Result = MainAction.Cancel(bIsStopMovement);
 	if (Result)
 	{
 		if(bIsStopMovement) ClaimStopMovement();
-		MainAction.Set(Executor, Component, bIsCancelable);
+		MainAction.Set(Executor, Component, ID, bIsCancelable);
 	}
 	return Result;
 }
@@ -221,6 +222,7 @@ void AUnitBase::EndMainAction(bool bIsStopMovement)
 	{
 		if (bIsStopMovement) ClaimStopMovement();
 		MainAction.End(bIsStopMovement);
+		ReservationNext();
 	}
 }
 

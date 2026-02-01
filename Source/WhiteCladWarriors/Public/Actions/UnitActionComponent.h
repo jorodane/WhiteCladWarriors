@@ -47,8 +47,8 @@ public:
 	bool GetMainActionCancelable();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	bool TrySetMainAction(UActionExecutor* Executor, bool bIsCancelable, bool bIsStopMovement);
-	bool TrySetMainAction_Implementation(UActionExecutor* Executor, bool bIsCancelable, bool bIsStopMovement);
+	bool TrySetMainAction(UActionExecutor* Executor, int ID, bool bIsCancelable, bool bIsStopMovement);
+	bool TrySetMainAction_Implementation(UActionExecutor* Executor, int ID, bool bIsCancelable, bool bIsStopMovement);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(UActionExecutor* Executor, bool bIsStopMovement);

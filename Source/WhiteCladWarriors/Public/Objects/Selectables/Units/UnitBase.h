@@ -115,6 +115,9 @@ struct FMainActionInfo
 	TWeakObjectPtr<UUnitActionComponent> Component;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	int ID;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsCancelable = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
@@ -122,7 +125,7 @@ struct FMainActionInfo
 
 	void Clear();
 
-	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, bool bWantIsCancelable = true, bool bWantIsStopMovement = false);
+	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bWantIsCancelable = true, bool bWantIsStopMovement = false);
 
 	void Clear(const UActionExecutor* OldExecutor);
 
@@ -191,7 +194,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
-	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, bool bIsCancelable = true, bool bIsStopMovement = false);
+	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, bool bIsCancelable = true, bool bIsStopMovement = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(bool bIsStopMovement);
