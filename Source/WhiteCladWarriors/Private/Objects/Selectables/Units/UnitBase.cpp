@@ -110,7 +110,7 @@ void FMainActionInfo::End(bool bWantStopMovement)
 
 bool FMainActionInfo::IsValid() const
 {
-	return Executor.IsValid() && Component.IsValid();
+	return (Executor != nullptr && Executor.IsValid()) && (Component != nullptr && Component.IsValid());
 }
 
 void AUnitBase::BeginPlay()
@@ -223,28 +223,28 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 	{
 		if (bIsStopMovement) ClaimStopMovement();
 		MainAction.End(bIsStopMovement);
-
-		if (CurrentReservatedAction.bIsValid)
-		{
-			if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) ReservationNext();
-		}
-		else
-		{
-			ReservationNext();
-		}
+	}
+	if (CurrentReservatedAction.bIsValid)
+	{
+		//if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) 
+		ReservationNext();
+	}
+	else
+	{
+		ReservationNext();
 	}
 }
 
 void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 {
-	if (ActionQueue.IsEmpty() && !CurrentReservatedAction.bIsValid)
+	if (MainAction.IsValid() || CurrentReservatedAction.bIsValid)
 	{
-		CurrentReservatedAction = Reservation;
-		CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action));
+		ActionQueue.Enqueue(Reservation);
 	}
 	else
 	{
-		ActionQueue.Enqueue(Reservation);
+		CurrentReservatedAction = Reservation;
+		CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action));
 	}
 };
 
@@ -269,7 +269,8 @@ void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor,
 {
 	if (CurrentReservatedAction.bIsValid)
 	{
-		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent)) ReservationNext();
+		//if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent)) 
+		ReservationNext();
 	}
 }
 
