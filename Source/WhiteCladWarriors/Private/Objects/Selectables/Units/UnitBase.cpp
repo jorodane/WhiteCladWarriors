@@ -10,7 +10,7 @@
 
 bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 {
-	if (!IsValid(Action)) return false;
+	if (!IsValid(Action)) return bIsValid = false;
 	bIsValid = IsValid(Executor = Action->ExecuteActionWithInput(Operator, RunningComponents = StartComponents, Input));
 	return bIsValid;
 }
@@ -21,6 +21,7 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 	RunningComponents.Remove(EndComponent);
 	bIsValid = RunningComponents.Num() > 0;
 	return !bIsValid;
+
 }
 
 bool FMontageEventInfo::ValidExecutor() const 
@@ -222,9 +223,14 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 	{
 		if (bIsStopMovement) ClaimStopMovement();
 		MainAction.End(bIsStopMovement);
+
 		if (CurrentReservatedAction.bIsValid)
 		{
 			if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) ReservationNext();
+		}
+		else
+		{
+			ReservationNext();
 		}
 	}
 }
