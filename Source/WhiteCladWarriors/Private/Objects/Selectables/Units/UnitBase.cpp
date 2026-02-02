@@ -17,6 +17,11 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 
 bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
+	if (!IsValid(Executor))
+	{
+		bIsValid = false;
+		return !bIsValid;
+	}
 	if (!IsValid(EndExecutor) || Executor != EndExecutor) return false;
 	RunningComponents.Remove(EndComponent);
 	bIsValid = RunningComponents.Num() > 0;
@@ -26,33 +31,33 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 
 bool FMontageEventInfo::ValidExecutor() const 
 {
-	return IsValid(MontageExecutor) && IsValid(MontageComponent);
+	return IsValid(MontageExecutor) && IsValid(MontageComponent) && IsValid(MontageToPlay);
 }
 
 
 void FMontageEventInfo::MontageNotifyBegin(FName NotifyName)
 {
 	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageNotifyBegin.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
+	OnMontageNotifyBegin.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
 }
 
 void FMontageEventInfo::MontageNotifyEnd(FName NotifyName)
 {
 	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageNotifyEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
+	OnMontageNotifyEnd.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
 }
 
 void FMontageEventInfo::MontageStart()
 {
-	if(!ValidExecutor() || bIsStarted) return;
-	OnMontageStart.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID);
+	if (!ValidExecutor() || bIsStarted) return;
 	bIsStarted = true;
+	OnMontageStart.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID);
 }
 
 void FMontageEventInfo::MontageEnd(bool bIsInterrupted)
 {
-	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageEnd.Execute(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, bIsInterrupted);
+	if (!ValidExecutor() || !bIsStarted) return;
+	OnMontageEnd.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, bIsInterrupted);
 	Clear();
 }
 
@@ -92,7 +97,7 @@ bool FMainActionInfo::Cancel(bool bWantStopMovement)
 	if (UUnitActionComponent* TargetComponent = Component.Get())
 	{
 		Executor->CancelMainNode(TargetComponent);
-		TargetComponent->OnEndMainAction(Executor.Get(), bWantStopMovement);
+		//TargetComponent->OnEndMainAction(Executor.Get(), bWantStopMovement);
 	}
 	Clear();
 	return true;
@@ -219,15 +224,14 @@ bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* C
 
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
 {
-	if (MainAction.IsValid())
-	{
-		if (bIsStopMovement) ClaimStopMovement();
-		MainAction.End(bIsStopMovement);
-	}
+	if (!MainAction.IsValid() || MainAction.Executor.Get() != OldExecutor|| MainAction.Component.Get() != OldComponent) return;
+
+	if (bIsStopMovement) ClaimStopMovement();
+	MainAction.End(bIsStopMovement);
+
 	if (CurrentReservatedAction.bIsValid)
 	{
-		//if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) 
-		ReservationNext();
+		if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) ReservationNext();
 	}
 	else
 	{
@@ -244,7 +248,10 @@ void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 	else
 	{
 		CurrentReservatedAction = Reservation;
-		CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action));
+		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action)))
+		{
+			ReservationNext();
+		}
 	}
 };
 
@@ -269,8 +276,7 @@ void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor,
 {
 	if (CurrentReservatedAction.bIsValid)
 	{
-		//if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent)) 
-		ReservationNext();
+		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent)) ReservationNext();
 	}
 }
 

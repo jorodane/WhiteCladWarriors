@@ -186,8 +186,8 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, int ID, U
 
 	bool bIsMainAction = TargetNode->bIsMainAction;
 	bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
-	if (bIsMainAction) TargetComponent->TrySetMainAction(this, ID, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
-	else if (bWasMainAction) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
+	if (bWasMainAction) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
+	else if (bIsMainAction) TargetComponent->TrySetMainAction(this, ID, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
 
 	TargetNode->ClaimExecute(this, TargetComponent, ID);
 }
