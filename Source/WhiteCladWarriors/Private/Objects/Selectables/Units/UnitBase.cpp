@@ -264,7 +264,10 @@ void AUnitBase::ReservationNext()
 {
 	if (ActionQueue.Dequeue(CurrentReservatedAction))
 	{
-		CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action));
+		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action)))
+		{
+			ReservationNext();
+		}
 	}
 	else
 	{

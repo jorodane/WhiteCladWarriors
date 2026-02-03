@@ -91,7 +91,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecuteWithInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input);
-	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input) {}
+	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input) { ClaimExecute(Executor, TargetComponent, ID); }
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void OnActionMessage_Simple(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message);
