@@ -2,6 +2,7 @@
 
 
 #include "Actions/ActionBase.h"
+#include "Actions/UnitActionComponent.h"
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/ActionExecutor.h"
 
@@ -22,6 +23,29 @@ bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UU
 	return false;
 }
 
+bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent) const
+{
+	int amount = TargetComponent.Num();
+	int index = 0;
+	bool Result = false;
+	if (amount == 0) return Result;
+
+	ResultEachComponent = TArray<bool>(&Result, amount);
+	for (UUnitActionComponent* CurrentComponent : TargetComponent)
+	{
+		if (IsValid(CurrentComponent))
+		{
+			if (UActionSelectorNode* RootSelector = RootNodeAsSelector())
+			{
+				EInputType TypeResult;
+				FText ReasonResult;
+				Result |= ResultEachComponent[index] = RootSelector->CheckInput(nullptr, CurrentComponent, 0, Input, TypeResult, ReasonResult);
+			}
+		}
+		index++;
+	}
+	return Result;
+}
 
 UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 {

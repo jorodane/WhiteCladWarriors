@@ -513,11 +513,16 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input)
 {
 	FActionReservator Reservator(this, TargetAction, Input);
+
 	for (AActor* CurrentActor : TargetActors)
 	{
 		if (AUnitBase* AsUnit = Cast<AUnitBase>(CurrentActor))
 		{
-			AsUnit->ReservationEnqueue(Reservator);
+			TArray<bool> ComponentResult;
+			if (TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult))
+			{
+				AsUnit->ReservationEnqueue(Reservator);
+			}
 		};
 	}
 }

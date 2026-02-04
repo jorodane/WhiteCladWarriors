@@ -55,7 +55,10 @@ struct FActionReservator
 	}
 
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
+	bool Run(AUnitBase* StartActor);
 	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+
+
 };
 
 USTRUCT(BlueprintType)

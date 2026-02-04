@@ -119,6 +119,9 @@ public:
 	bool			IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
+	bool	IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent) const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
 	inline TArray<UUnitActionComponent*> GetExecutableArray(const TArray<UUnitActionComponent*>& TargetComponents) const { return TargetComponents; };
 
 	UFUNCTION(BlueprintPure, Category = "Action")
