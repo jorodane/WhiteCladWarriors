@@ -12,16 +12,13 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 {
 	if (!IsValid(Action)) return bIsValid = false;
 	RunningComponents = StartComponents;
-	GEngine->AddOnScreenDebugMessage(-1,3,FColor::Red, L"Run");
 	Executor = Action->ExecuteActionWithInput(Operator, RunningComponents, Input);
-	GEngine->AddOnScreenDebugMessage(-1,3,FColor::Red, L"Execute");
 	bIsValid = IsValid(Executor);
 	return bIsValid;
 }
 
 bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"End");
 	if (!bIsValid) return true;
 	if (!IsValid(Executor))
 	{
@@ -33,7 +30,6 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 	RunningComponents.Remove(EndComponent);
 	bIsValid = RunningComponents.Num() > 0;
 	return !bIsValid;
-
 }
 
 bool FMontageEventInfo::ValidExecutor() const 
@@ -285,7 +281,6 @@ void AUnitBase::ReservationNext()
 
 void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"EndExecutor");
 	if (CurrentReservatedAction.bIsValid)
 	{
 		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent))

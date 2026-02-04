@@ -95,6 +95,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
 	void SetValueSingle(double Min, double Max) { Value.X = Value.Y = Value.Z = Min; MaxValue.X = MaxValue.Y = MaxValue.Z = Max; }
+
 	UFUNCTION(BlueprintCallable, Category = "Value")
 	void SetValue(FVector Min, FVector Max) { Value = Min; MaxValue = Max; }
 
