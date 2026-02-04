@@ -88,6 +88,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		if (bIsReservationMode) 
 		{
 			ReservationAction(CurrentInputClaim.TargetAction, CurrentInputPackage.SelectedActors, CurrentInputPackage);
+			ForceRemoveInputClaim();
 		}
 		else
 		{
@@ -235,11 +236,23 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 
 	FInputClaim ResultInput;
 
+
+	TArray<bool> ComponentResult;
+	EInputType TypeResult;
+	FText ReasonResult;
+
+
+
 	if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponent))
 	{
 		if (bIsStartImmediately)
 		{
-			TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+			bool CheckResult = TargetAction->IsValidInputForStart(CurrentInputPackage, this, TargetComponent, ComponentResult, TypeResult, ReasonResult);
+			if (CheckResult)
+			{
+				TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+			}
+			TargetAction->SpawnCheckEffect(CheckResult, this, CurrentInputPackage, TypeResult, ReasonResult);
 		}
 		else
 		{
@@ -518,11 +531,15 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 	{
 		if (AUnitBase* AsUnit = Cast<AUnitBase>(CurrentActor))
 		{
+			EInputType TypeResult;
+			FText ReasonResult;
 			TArray<bool> ComponentResult;
-			if (TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult))
+			bool CheckResult = TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult, TypeResult, ReasonResult);
+			if (CheckResult)
 			{
 				AsUnit->ReservationEnqueue(Reservator);
 			}
+			TargetAction->SpawnCheckEffect(CheckResult, this, Input, TypeResult, ReasonResult);
 		};
 	}
 }

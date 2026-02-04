@@ -23,8 +23,9 @@ bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UU
 	return false;
 }
 
-bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent) const
+bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult) const
 {
+	
 	int amount = TargetComponent.Num();
 	int index = 0;
 	bool Result = false;
@@ -37,8 +38,6 @@ bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Op
 		{
 			if (UActionSelectorNode* RootSelector = RootNodeAsSelector())
 			{
-				EInputType TypeResult;
-				FText ReasonResult;
 				Result |= ResultEachComponent[index] = RootSelector->CheckInput(nullptr, CurrentComponent, 0, Input, TypeResult, ReasonResult);
 			}
 		}

@@ -12,26 +12,8 @@ struct FInputClaim;
 /**
  * 
  */
-UENUM(BlueprintType)
-enum class EInputType : uint8
-{
-	Position, Direction, SingleTarget, MultiTarget,
-};
 
-USTRUCT(BlueprintType)
-struct FSelectorInput
-{
-	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	EInputType Type;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	FName Tag;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	UActionNode* OnInputAccepted;
-};
 
 UCLASS()
 class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
@@ -60,9 +42,6 @@ protected:
 
 	//UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 	//bool OnReceiveActorArray(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& TargetTag, TArray<AActor*> TargetActors);
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	void OnCheckEffectSpawn(bool Result, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input, const EInputType& ResultType, const FText& FailReason);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
 	bool CheckPosition(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& TargetTag, const FVector& TargetPosition);

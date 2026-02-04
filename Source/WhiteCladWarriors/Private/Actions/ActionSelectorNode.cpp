@@ -49,6 +49,7 @@ bool UActionSelectorNode::ReceiveInput(UActionExecutor* Executor, UUnitActionCom
 			//Result = OnReceiveActorArray(Executor, TargetComponent, ID, CurrentTag, Input.SelectedActors);
 			break;
 		}
+
 		if (Result)
 		{
 			Executor->EnterNode(TargetComponent, ID, CurrentInputType.OnInputAccepted);
@@ -92,8 +93,5 @@ bool UActionSelectorNode::CheckInput(UActionExecutor* Executor, UUnitActionCompo
 			break;
 		}
 	}
-
-	OnCheckEffectSpawn(Result, Executor, TargetComponent, ID, Input, ResultType, FailReason);
-
 	return Result;
 }

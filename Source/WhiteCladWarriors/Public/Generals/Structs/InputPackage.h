@@ -7,9 +7,31 @@
 
 
 class AActionBase;
+class UActionNode;
 class UActionSelectorNode;
 class UActionExecutor;
 class UUnitActionComponent;
+
+UENUM(BlueprintType)
+enum class EInputType : uint8
+{
+	Position, Direction, SingleTarget, MultiTarget,
+};
+
+USTRUCT(BlueprintType)
+struct FSelectorInput
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	EInputType Type;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	FName Tag;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	UActionNode* OnInputAccepted;
+};
 
 USTRUCT(BlueprintType)
 struct FInputPackage

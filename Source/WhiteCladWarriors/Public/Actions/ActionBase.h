@@ -55,6 +55,10 @@ protected:
 	bool bShowHotKey = false;
 
 public:
+	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	void SpawnCheckEffect(bool Result, AOperator* Operator, const FInputPackage& Input, EInputType ResultType, const FText& FailReason) const;
+
+
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline FKey		GetHotKey() { return ActionHotKey; }
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -119,7 +123,7 @@ public:
 	bool			IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool	IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent) const;
+	bool	IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline TArray<UUnitActionComponent*> GetExecutableArray(const TArray<UUnitActionComponent*>& TargetComponents) const { return TargetComponents; };
