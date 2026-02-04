@@ -123,6 +123,9 @@ public:
 	bool			IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
+	bool			IsNeedInputForStartCheck() const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
 	bool	IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")

@@ -234,14 +234,12 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 {
 	if(!IsValid(TargetAction)) return;
 
+	for (UUnitActionComponent* CurrentComponent : TargetComponent) if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
+
 	FInputClaim ResultInput;
-
-
 	TArray<bool> ComponentResult;
 	EInputType TypeResult;
 	FText ReasonResult;
-
-
 
 	if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponent))
 	{
@@ -264,7 +262,6 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 	{
 		TargetAction->ExecuteAction(this, TargetComponent);
 	}
-	for (UUnitActionComponent* CurrentComponent : TargetComponent) if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 }
 
 TArray<UActionTargetContainer*> AOperator::GetAvailableActionList()
@@ -531,15 +528,23 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 	{
 		if (AUnitBase* AsUnit = Cast<AUnitBase>(CurrentActor))
 		{
-			EInputType TypeResult;
-			FText ReasonResult;
-			TArray<bool> ComponentResult;
-			bool CheckResult = TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult, TypeResult, ReasonResult);
-			if (CheckResult)
+			TArray<UUnitActionComponent*> TargetComponents;
+			if (TargetAction->IsNeedInputForStartCheck())
+			{
+				EInputType TypeResult;
+				FText ReasonResult;
+				TArray<bool> ComponentResult;
+				bool CheckResult = TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult, TypeResult, ReasonResult);
+				if (CheckResult)
+				{
+					AsUnit->ReservationEnqueue(Reservator);
+				}
+				TargetAction->SpawnCheckEffect(CheckResult, this, Input, TypeResult, ReasonResult);
+			}
+			else
 			{
 				AsUnit->ReservationEnqueue(Reservator);
 			}
-			TargetAction->SpawnCheckEffect(CheckResult, this, Input, TypeResult, ReasonResult);
 		};
 	}
 }

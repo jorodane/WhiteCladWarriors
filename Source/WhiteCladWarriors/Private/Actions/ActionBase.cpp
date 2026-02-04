@@ -23,6 +23,11 @@ bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UU
 	return false;
 }
 
+bool AActionBase::IsNeedInputForStartCheck() const
+{
+	return IsValid(RootNodeAsSelector());
+}
+
 bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult) const
 {
 	
@@ -64,6 +69,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 	}
 	return NewExecutor;
 }
+
 UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input) const
 {
 	UActionExecutor* NewExecutor = nullptr;
