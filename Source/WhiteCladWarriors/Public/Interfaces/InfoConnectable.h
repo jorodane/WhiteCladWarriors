@@ -14,7 +14,7 @@ struct FGenericWidgetClaimer
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	int UIOrder;
+	int UIOrder = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
 	FName ClaimWidgetType;

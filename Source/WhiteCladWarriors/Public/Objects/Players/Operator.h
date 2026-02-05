@@ -54,7 +54,7 @@ struct FActionBinder
 
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AActionBase> Action;
+	TObjectPtr<AActionBase> Action = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TArray<UUnitActionComponent*> Components;
@@ -63,7 +63,7 @@ public:
 	FFunctionForSimpleAction Function;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	int Order;
+	int Order = 0;
 };
 
 

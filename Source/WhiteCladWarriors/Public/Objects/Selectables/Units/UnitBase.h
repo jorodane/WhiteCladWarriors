@@ -29,13 +29,13 @@ struct FActionReservator
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AOperator> Operator;
+	TObjectPtr<AOperator> Operator = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AActionBase> Action;
+	TObjectPtr<AActionBase> Action = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionExecutor> Executor;
+	TObjectPtr<UActionExecutor> Executor = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
 	TArray<UUnitActionComponent*> RunningComponents;
@@ -67,22 +67,22 @@ struct FMontageEventInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TObjectPtr<UActionExecutor> MontageExecutor;
+	TObjectPtr<UActionExecutor> MontageExecutor = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TObjectPtr<UUnitActionComponent> MontageComponent;
+	TObjectPtr<UUnitActionComponent> MontageComponent = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	int RequestedID;
+	int RequestedID = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	UAnimMontage* MontageToPlay;
+	TObjectPtr<UAnimMontage> MontageToPlay = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	float PlayRate;
+	float PlayRate = 1.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	float StartingPosition;
+	float StartingPosition = 0.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	FOnMontageNotify OnMontageNotifyBegin;
@@ -118,7 +118,7 @@ struct FMainActionInfo
 	TWeakObjectPtr<UUnitActionComponent> Component;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	int ID;
+	int ID = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsCancelable = true;
