@@ -3,95 +3,56 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputPackage.generated.h"
+#include "ActionStructures.generated.h"
 
 
 class AActionBase;
+class AOperator;
 class UActionNode;
 class UActionSelectorNode;
 class UActionExecutor;
 class UUnitActionComponent;
 
-UENUM(BlueprintType)
-enum class EInputType : uint8
-{
-	Position, Direction, SingleTarget, MultiTarget,
-};
-
 USTRUCT(BlueprintType)
-struct FSelectorInput
+struct FActionCursorFinder
 {
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	EInputType Type = EInputType::Position;
+	TObjectPtr<AActionBase> CurrentAction = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	FName Tag = NAME_None;
+	TObjectPtr<AOperator> CurrentOperator = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	UActionNode* OnInputAccepted = nullptr;
-};
+	TObjectPtr<UActionExecutor> CurrentExecutor = nullptr;
 
-USTRUCT(BlueprintType)
-struct FInputPackage
-{
-	GENERATED_BODY()
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TObjectPtr<UUnitActionComponent> CurrentComponent = nullptr;
 
-	static FInputPackage Input_None;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	int CurrentID = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	FVector DragStartPosition = FVector::ZeroVector;
+	FActionCursorFinder(){}
+	FActionCursorFinder(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID) 
+	{Set(WantAction, WantOperator, WantExecutor, WantComponent, WantID);}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	FVector MouseTerrainPosition = FVector::ZeroVector;
+	void Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID)
+	{
+		CurrentAction = WantAction;
+		CurrentOperator = WantOperator;
+		CurrentExecutor = WantExecutor;
+		CurrentComponent = WantComponent;
+		CurrentID = WantID;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	TObjectPtr<AActor> MouseHitActor = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	TObjectPtr<AActor> MouseClickActor = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	TArray<AActor*> SelectedActors;
-};
-
-USTRUCT(BlueprintType)
-struct FInputClaim
-{
-	GENERATED_BODY()
-
-	static FInputClaim Claim_None;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TArray<UUnitActionComponent*> TargetComponentArray;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AActionBase> TargetAction = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionSelectorNode> TargetNode = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionExecutor> TargetExecutor = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	FText TargetDescription;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TEnumAsByte<EMouseCursor::Type> TargetCursor = EMouseCursor::Type::Default;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	int ID = 0;
+	}
 
 	void Clear()
 	{
-		TargetComponentArray.SetNum(0);
-		TargetAction = nullptr;
-		TargetNode = nullptr;
-		TargetExecutor = nullptr;
-		TargetDescription = FText::GetEmpty();
-		TargetCursor = EMouseCursor::Default;
-		ID = 0;
+		CurrentAction = nullptr;
+		CurrentOperator = nullptr;
+		CurrentExecutor = nullptr;
+		CurrentComponent = nullptr;
+		CurrentID = 0;
 	}
 };

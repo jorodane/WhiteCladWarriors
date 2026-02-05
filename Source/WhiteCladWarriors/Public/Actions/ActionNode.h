@@ -57,43 +57,43 @@ public:
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
-	bool GetCanEnter(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
-	virtual bool GetCanEnter_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent);
+	bool GetCanEnter(UActionExecutor* Executor, const FActionCursorFinder& WantCursor);
+	virtual bool GetCanEnter_Implementation(UActionExecutor* Executor, const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void AddNodeLink(FName ResultName, const FLinkedNodeInfo& Destination);
 	virtual void AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToLinkedNode(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName);
-	virtual void MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName);
+	void MoveExecutorToLinkedNode(const FActionCursorFinder& WantCursor, FName ResultName);
+	virtual void MoveExecutorToLinkedNode_Implementation(const FActionCursorFinder& WantCursor, FName ResultName);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToNext(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
-	virtual void MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void MoveExecutorToNext(const FActionCursorFinder& WantCursor);
+	virtual void MoveExecutorToNext_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void MoveExecutorToCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
-	virtual void MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void MoveExecutorToCancel(const FActionCursorFinder& WantCursor);
+	virtual void MoveExecutorToCancel_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimCancel(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
-	virtual void ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void ClaimCancel(const FActionCursorFinder& WantCursor);
+	virtual void ClaimCancel_Implementation(const FActionCursorFinder& WantCursor);
 
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimComplete(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
-	virtual void ClaimComplete_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void ClaimComplete(const FActionCursorFinder& WantCursor);
+	virtual void ClaimComplete_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimExecute(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
-	virtual void ClaimExecute_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID) {}
+	void ClaimExecute(const FActionCursorFinder& WantCursor);
+	virtual void ClaimExecute_Implementation(const FActionCursorFinder& WantCursor) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimExecuteWithInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input);
-	virtual void ClaimExecuteWithInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input) { ClaimExecute(Executor, TargetComponent, ID); }
+	void ClaimExecuteWithInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input);
+	virtual void ClaimExecuteWithInput_Implementation(const FActionCursorFinder& WantCursor, const FInputPackage& Input) { ClaimExecute(Executor, TargetComponent, ID); }
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void OnActionMessage_Simple(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message);
-	void OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message);
+	void OnActionMessage_Simple(const FActionCursorFinder& WantCursor, const FName& Message);
+	void OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message);
 };

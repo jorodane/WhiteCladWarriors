@@ -3,7 +3,7 @@
 
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionSelectorNode.h"
-#include "Actions/UnitActionComponent.h"
+#include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Players/Operator.h"
 #include "Actions/ActionNode.h"

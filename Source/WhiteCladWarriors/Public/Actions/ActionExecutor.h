@@ -61,19 +61,19 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetActionMessage_Simple(UUnitActionComponent* From, int ID, FName Message);
+	void SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(UPositionClaimer* Claimer, const UUnitActionComponent* From, int ID) const;
+	FVector GetPosition(UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetStartPosition(UDirectionClaimer* Claimer, UUnitActionComponent* From, int ID) const;
+	FVector GetStartPosition(UDirectionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetSavedPosition(FName WantTag, const UUnitActionComponent* From, int ID) const;
+	FVector GetSavedPosition(FName WantTag, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UUnitActionComponent*> GetComponentArray() const;
@@ -82,16 +82,16 @@ public:
 	bool HasPosition(FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetDirection(FName WantTag, UUnitActionComponent* WantComponent, const FVector& WantDirection);
+	void SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(UDirectionClaimer* Claimer, UUnitActionComponent* WantComponent, int ID) const;
+	FVector GetDirection(UDirectionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetSavedDirection(FName WantTag, UUnitActionComponent* WantComponent, int ID) const;
+	FVector GetSavedDirection(FName WantTag, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasDirection(FName WantTag, UUnitActionComponent* WantComponent) const;
+	bool HasDirection(FName WantTag, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddActor(FName WantTag, AActor* WantActor);
@@ -100,37 +100,37 @@ public:
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(UActorClaimer* Claimer, const UUnitActionComponent* WantComponent, int ID) const;
+	AActor* GetActor(UActorClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetSavedActor(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const;
+	AActor* GetSavedActor(FName WantTag, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(UActorArrayClaimer* Claimer, const UUnitActionComponent* WantComponent, int ID) const;
+	TArray<AActor*> GetActorArray(UActorArrayClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetSavedActorArray(FName WantTag, const UUnitActionComponent* WantComponent, int ID) const;
+	TArray<AActor*> GetSavedActorArray(FName WantTag, const FActionCursorFinder& WantCursor) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool SetInput(UUnitActionComponent* WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
+	bool SetInput(const FActionCursorFinder& WantCursor, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetInputArray(TArray<UUnitActionComponent*> WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EnterNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* TargetNode, int RecursiveDepth = 12);
+	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CreateSubNode(UUnitActionComponent* TargetComponent, UActionNode* TargetNode, int RecursiveDepth = 12) { EnterNode(TargetComponent, -1, TargetNode, RecursiveDepth); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* OldNode);
+	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void CompleteNode(UUnitActionComponent* TargetComponent, int ID);
+	void CompleteNode(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void CancelNode(UUnitActionComponent* TargetComponent, int ID);
+	void CancelNode(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CancelMainNode(UUnitActionComponent* TargetComponent);

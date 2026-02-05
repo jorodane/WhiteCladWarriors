@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Generals/Structs/InputPackage.h"
+#include "Generals/Structs/ActionStructures.h"
 #include "GameFramework/Character.h"
 #include "Styling/SlateBrush.h"
 #include "Interfaces/Selectable.h"
@@ -19,43 +20,35 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
-DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageNotify, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, FName, NotifyName);
-DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnMontageStart, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID);
-DECLARE_DYNAMIC_DELEGATE_FourParams(FOnMontageEnd, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID, bool, bIsInterrupted);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageNotify, const FActionCursorFinder&, Cursor, FName, NotifyName);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnMontageStart, const FActionCursorFinder&, Cursor);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageEnd, const FActionCursorFinder&, Cursor, bool, bIsInterrupted);
 
 USTRUCT(BlueprintType)
 struct FActionReservator
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AOperator> Operator = nullptr;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FActionCursorFinder Cursor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AActionBase> Action = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionExecutor> Executor = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Action")
-	TArray<UUnitActionComponent*> RunningComponents;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
 	FInputPackage Input;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	TArray<UUnitActionComponent*> RunningComponents;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Valid")
 	bool bIsValid = false;
 
 	FActionReservator() {};
-	FActionReservator(AOperator* TargetOperator, AActionBase* TargetAction, const FInputPackage& TargetInput)
+	FActionReservator(const FActionCursorFinder& NewCursor, AActionBase* TargetAction, const FInputPackage& TargetInput)
 	{
-		Operator = TargetOperator;
-		Action = TargetAction;
+		Cursor = NewCursor;
 		Input = TargetInput;
 	}
 
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
-	bool Run(AUnitBase* StartActor);
 	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 
@@ -67,13 +60,7 @@ struct FMontageEventInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TObjectPtr<UActionExecutor> MontageExecutor = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TObjectPtr<UUnitActionComponent> MontageComponent = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	int RequestedID = 0;
+	FActionCursorFinder Cursor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> MontageToPlay = nullptr;
@@ -100,7 +87,7 @@ struct FMontageEventInfo
 
 public:
 	bool ValidExecutor() const;
-	void Clear() {MontageExecutor = nullptr; MontageComponent = nullptr; bIsStarted = false;}
+	void Clear() { Cursor.Clear(); bIsStarted = false;}
 	void MontageNotifyBegin(FName NotifyName);
 	void MontageNotifyEnd(FName NotifyName);
 	void MontageStart();
@@ -112,13 +99,8 @@ struct FMainActionInfo
 {
 	GENERATED_BODY()
 
-	TWeakObjectPtr<UActionExecutor> Executor;
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	TWeakObjectPtr<UUnitActionComponent> Component;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	int ID = 0;
+	FActionCursorFinder Cursor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsCancelable = true;
@@ -128,7 +110,7 @@ struct FMainActionInfo
 
 	void Clear();
 
-	void Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bWantIsCancelable = true, bool bWantIsStopMovement = false);
+	void Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable = true, bool bWantIsStopMovement = false);
 
 	void Clear(const UActionExecutor* OldExecutor);
 
@@ -197,12 +179,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
-	bool SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, bool bIsCancelable = true, bool bIsStopMovement = false);
+	bool SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable = true, bool bIsStopMovement = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement);
 
-	UFUNCTION(BlueprintCallable, Category = "Action")
+	UFUNCTION(BlueprintCallable, Category = "Action") 
 	void ReservationEnqueue(const FActionReservator& Reservation);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -213,24 +195,24 @@ public:
 
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void NotifyExecutorEnded(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
-	void NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+	void NotifyExecutorEnded(const FActionCursorFinder& WantCursor);
+	void NotifyExecutorEnded_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
 	void ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void NotifyMontageNodePassed(UActionExecutor* MontageExecutor, int RequestedID);
-	void NotifyMontageNodePassed_Implementation(UActionExecutor* MontageExecutor, int RequestedID);
+	void NotifyMontageNodePassed(const FActionCursorFinder& WantCursor);
+	void NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimStopMontage(UAnimMontage* WantMontage);
 	void ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	void ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
-	void ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID);
+	void ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
+	void ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	void ClaimStopMovement();

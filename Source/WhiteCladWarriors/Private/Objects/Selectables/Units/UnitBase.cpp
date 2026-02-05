@@ -2,30 +2,30 @@
 
 
 #include "Objects/Selectables/Units/UnitBase.h"
+#include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Generals/ReservedActionMessage.h"
-#include "Actions/UnitActionComponent.h"
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
 
 bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 {
-	if (!IsValid(Action)) return bIsValid = false;
+	if (!IsValid(Cursor.CurrentAction)) return bIsValid = false;
 	RunningComponents = StartComponents;
-	Executor = Action->ExecuteActionWithInput(Operator, RunningComponents, Input);
-	bIsValid = IsValid(Executor);
+	Cursor.CurrentExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, Input);
+	bIsValid = IsValid(Cursor.CurrentExecutor);
 	return bIsValid;
 }
 
 bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
 	if (!bIsValid) return true;
-	if (!IsValid(Executor))
+	if (!IsValid(Cursor.CurrentExecutor))
 	{
 		bIsValid = false;
 		return !bIsValid;
 	}
-	if (!IsValid(EndExecutor) || Executor != EndExecutor) return false;
+	if (!IsValid(EndExecutor) || Cursor.CurrentExecutor != EndExecutor) return false;
 
 	RunningComponents.Remove(EndComponent);
 	bIsValid = RunningComponents.Num() > 0;
@@ -34,33 +34,33 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 
 bool FMontageEventInfo::ValidExecutor() const 
 {
-	return IsValid(MontageExecutor) && IsValid(MontageComponent) && IsValid(MontageToPlay);
+	return IsValid(Cursor.CurrentExecutor) && IsValid(Cursor.CurrentComponent) && IsValid(MontageToPlay);
 }
 
 
 void FMontageEventInfo::MontageNotifyBegin(FName NotifyName)
 {
 	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageNotifyBegin.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
+	OnMontageNotifyBegin.ExecuteIfBound(Cursor, NotifyName);
 }
 
 void FMontageEventInfo::MontageNotifyEnd(FName NotifyName)
 {
 	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageNotifyEnd.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, NotifyName);
+	OnMontageNotifyEnd.ExecuteIfBound(Cursor, NotifyName);
 }
 
 void FMontageEventInfo::MontageStart()
 {
 	if (!ValidExecutor() || bIsStarted) return;
 	bIsStarted = true;
-	OnMontageStart.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID);
+	OnMontageStart.ExecuteIfBound(Cursor);
 }
 
 void FMontageEventInfo::MontageEnd(bool bIsInterrupted)
 {
 	if (!ValidExecutor() || !bIsStarted) return;
-	OnMontageEnd.ExecuteIfBound(MontageExecutor.Get(), MontageComponent.Get(), RequestedID, bIsInterrupted);
+	OnMontageEnd.ExecuteIfBound(Cursor, bIsInterrupted);
 	Clear();
 }
 
@@ -73,11 +73,9 @@ void FMainActionInfo::Clear()
 	bIsStopMovement = false;
 }
 
-void FMainActionInfo::Set(UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bWantIsCancelable, bool bWantIsStopMovement)
+void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable, bool bWantIsStopMovement)
 {
-	Executor = WantExecutor;
-	Component = WantComponent;
-	ID = WantID;
+	Cursor = WantCursor;
 	bIsCancelable = bWantIsCancelable;
 	bIsStopMovement = bWantIsStopMovement;
 }
