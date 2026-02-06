@@ -49,7 +49,7 @@ struct FActionReservator
 	}
 
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
-	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+	bool SetEnd(const FActionCursorFinder& WantCursor);
 
 
 };

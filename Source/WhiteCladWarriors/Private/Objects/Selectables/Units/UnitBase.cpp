@@ -17,7 +17,7 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 	return bIsValid;
 }
 
-bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+bool FActionReservator::SetEnd(const FActionCursorFinder& WantCursor)
 {
 	if (!bIsValid) return true;
 	if (!IsValid(Cursor.CurrentExecutor))
@@ -205,20 +205,20 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 
 bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
-	if(Info.IsValid()) return SetMainAction(Info.Executor.Get(), Info.Component.Get(), Info.ID, Info.bIsCancelable);
-	else return SetMainAction(nullptr, nullptr, 0);
+	if(Info.IsValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
+	else return SetMainAction(FActionCursorFinder::None);
 }
 
 bool AUnitBase::GetMainActionCancelable_Implementation() const 
 { return MainAction.bIsCancelable; };
 
-bool AUnitBase::SetMainAction(UActionExecutor* Executor, UUnitActionComponent* Component, int ID, bool bIsCancelable, bool bIsStopMovement)
+bool AUnitBase::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement)
 {
 	bool Result = MainAction.Cancel(bIsStopMovement);
 	if (Result)
 	{
 		if(bIsStopMovement) ClaimStopMovement();
-		MainAction.Set(Executor, Component, ID, bIsCancelable);
+		MainAction.Set(WantCursor, bIsCancelable, bIsStopMovement);
 	}
 	return Result;
 }
@@ -277,7 +277,7 @@ void AUnitBase::ReservationNext()
 	}
 }
 
-void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+void AUnitBase::NotifyExecutorEnded_Implementation(const FActionCursorFinder& WantCursor)
 {
 	if (CurrentReservatedAction.bIsValid)
 	{

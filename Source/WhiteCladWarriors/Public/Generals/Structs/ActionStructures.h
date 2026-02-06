@@ -18,6 +18,8 @@ struct FActionCursorFinder
 {
 	GENERATED_BODY();
 
+	const static FActionCursorFinder None;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	TObjectPtr<AActionBase> CurrentAction = nullptr;
 
@@ -37,6 +39,11 @@ struct FActionCursorFinder
 	FActionCursorFinder(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID) 
 	{Set(WantAction, WantOperator, WantExecutor, WantComponent, WantID);}
 
+	bool CheckValid();
+	bool CheckExecutor(UActionExecutor* WantExecutor);
+	bool CheckOperator(AOperator* WantOperator);
+	bool CheckAction(AActionBase* WantAction);
+
 	void Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID)
 	{
 		CurrentAction = WantAction;
@@ -44,7 +51,6 @@ struct FActionCursorFinder
 		CurrentExecutor = WantExecutor;
 		CurrentComponent = WantComponent;
 		CurrentID = WantID;
-
 	}
 
 	void Clear()
