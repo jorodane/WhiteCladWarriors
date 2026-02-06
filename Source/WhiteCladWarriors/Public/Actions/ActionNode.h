@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Generals/Structs/InputPackage.h"
+#include "Generals/Structs/ActionStructures.h"
 #include "ActionNode.generated.h"
 
 class UActionExecutor;

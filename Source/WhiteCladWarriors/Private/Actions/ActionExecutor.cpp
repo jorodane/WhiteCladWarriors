@@ -157,8 +157,7 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, int ID, U
 	UActionNode* OriginNode = nullptr;
 	if (FActiveNodeInfo* CurrentInfo = GetCursor(TargetComponent))
 	{
-		if (ID < 0) ID = CurrentInfo->AddNode(TargetNode);
-		OriginNode = CurrentInfo->GetNode(ID);
+		if (ID < 0) OriginNode = CreateSubNode(*CurrentInfo, TargetNode, ID);
 		if (!bIsValidNode)
 		{
 			EndNode(TargetComponent, ID, OriginNode);
@@ -190,6 +189,13 @@ void UActionExecutor::EnterNode(UUnitActionComponent* TargetComponent, int ID, U
 	else if (bIsMainAction) TargetComponent->TrySetMainAction(this, ID, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
 
 	TargetNode->ClaimExecute(this, TargetComponent, ID);
+}
+
+UActionNode* UActionExecutor::CreateSubNode(FActiveNodeInfo& TargetInfo, UActionNode* TargetNode, int& ResultID)
+{ 
+	ResultID = TargetInfo.AddNode(TargetNode);
+	UActionNode* Result = TargetInfo.GetNode(ResultID);
+	return Result;
 }
 
 void UActionExecutor::EndNode(UUnitActionComponent* TargetComponent, int ID, UActionNode* OldNode)
