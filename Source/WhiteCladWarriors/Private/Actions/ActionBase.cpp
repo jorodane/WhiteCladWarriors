@@ -4,7 +4,7 @@
 #include "Actions/ActionBase.h"
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/ActionExecutor.h"
-
+#include "Generals/Structs/ActionInputStructures.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
 bool AActionBase::IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const
@@ -29,7 +29,7 @@ bool AActionBase::IsNeedInputForStartCheck() const
 	return IsValid(RootNodeAsSelector());
 }
 
-bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult) const
+bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult)
 {
 	
 	int amount = TargetComponent.Num();
@@ -58,7 +58,7 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 	return Cast<UActionSelectorNode>(RootNode);
 }
 
-UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents) const
+UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
 {
 	UActionExecutor* NewExecutor = nullptr;
 	if (IsValid(RootNode))
@@ -66,14 +66,14 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
 		for (UUnitActionComponent* CurrentComponent : TargetComponents)
 		{
-			FActionCursorFinder MainFinder(this, TargetOperator, nullptr, CurrentComponent, 0);
+			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
 			RootNode->ClaimExecute(MainFinder);
 		}
 	}
 	return NewExecutor;
 }
 
-UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input) const
+UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
 {
 	UActionExecutor* NewExecutor = nullptr;
 	if (IsValid(RootNode))
@@ -81,7 +81,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
 		for (UUnitActionComponent* CurrentComponent : TargetComponents)
 		{
-			FActionCursorFinder MainFinder(this, TargetOperator, nullptr, CurrentComponent, 0);
+			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
 			RootNode->ClaimExecuteWithInput(MainFinder, Input);
 		}
 	}

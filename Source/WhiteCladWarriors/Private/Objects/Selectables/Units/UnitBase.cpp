@@ -87,12 +87,12 @@ void FMainActionInfo::Clear(const UActionExecutor* OldExecutor)
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
-	if (IsValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
+	if (CheckValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
 }
 
 bool FMainActionInfo::Cancel(bool bWantStopMovement)
 {
-	if(!IsValid()) return true;
+	if(!CheckValid()) return true;
 	if (!bIsCancelable) return false;
 
 	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
@@ -106,7 +106,7 @@ bool FMainActionInfo::Cancel(bool bWantStopMovement)
 
 void FMainActionInfo::End(bool bWantStopMovement)
 {
-	if (IsValid())
+	if (CheckValid())
 	{
 		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor, bWantStopMovement);
 		Clear();
@@ -114,9 +114,9 @@ void FMainActionInfo::End(bool bWantStopMovement)
 }
 
 
-bool FMainActionInfo::IsValid() const
+bool FMainActionInfo::CheckValid() const
 {
-	return Cursor.IsValid();
+	return Cursor.CheckValid();
 }
 
 void AUnitBase::BeginPlay()
@@ -205,7 +205,7 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 
 bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
-	if(Info.IsValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
+	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
 	else return SetMainAction(FActionCursorFinder::None);
 }
 
@@ -226,7 +226,7 @@ bool AUnitBase::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCan
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"EndMainAction");
-	if (!MainAction.IsValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
+	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
 	if (bIsStopMovement) ClaimStopMovement();
 	MainAction.End(bIsStopMovement);
@@ -243,7 +243,7 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 
 void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 {
-	if (MainAction.IsValid() || CurrentReservatedAction.bIsValid)
+	if (MainAction.CheckValid() || CurrentReservatedAction.bIsValid)
 	{
 		ActionQueue.Enqueue(Reservation);
 	}

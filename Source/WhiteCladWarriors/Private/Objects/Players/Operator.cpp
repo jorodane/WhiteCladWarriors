@@ -100,7 +100,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 			}
 			else
 			{
-				TSet<FActionCursorFinder> FinderArray;
+				TArray<FActionCursorFinder> FinderArray;
 				for (UUnitActionComponent* CurrentComponent : CurrentInputClaim.TargetComponentArray)
 				{
 					FActionCursorFinder NewFinder(CurrentInputClaim.TargetActionCursor);
@@ -108,7 +108,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 					FinderArray.Add(NewFinder);
 					if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 				}
-				bool bIsInputComplete =  CurrentInputClaim.TargetActionCursor.CurrentExecutor->SetInputArray(FinderArray.Array(), CurrentInputClaim.TargetNode, CurrentInputPackage);
+				bool bIsInputComplete =  CurrentInputClaim.TargetActionCursor.CurrentExecutor->SetInputArray(FinderArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
 				if (bIsInputComplete) ForceRemoveInputClaim();
 			}
 		}

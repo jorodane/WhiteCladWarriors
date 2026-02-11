@@ -120,7 +120,7 @@ struct FMainActionInfo
 
 	void End(bool bWantStopMovement);
 
-	bool IsValid() const;
+	bool CheckValid() const;
 };
 
 UCLASS()

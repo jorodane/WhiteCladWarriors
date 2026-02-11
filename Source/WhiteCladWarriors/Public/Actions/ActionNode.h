@@ -82,10 +82,6 @@ public:
 	virtual void ClaimCancel_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimCancelMainNode(UUnitActionComponent* TargetComponent);
-	virtual void ClaimCancelMainNode_Implementation(UUnitActionComponent* TargetComponent);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimComplete(const FActionCursorFinder& WantCursor);
 	virtual void ClaimComplete_Implementation(const FActionCursorFinder& WantCursor);
 

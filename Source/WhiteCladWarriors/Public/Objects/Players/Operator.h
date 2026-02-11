@@ -7,6 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "Interfaces/PlayerConnectable.h"
 #include "Generals/Structs/InputPackage.h"
+#include "Generals/Structs/ActionInputStructures.h"
 #include "GenericPlatform/ICursor.h"
 #include "Operator.generated.h"
 
