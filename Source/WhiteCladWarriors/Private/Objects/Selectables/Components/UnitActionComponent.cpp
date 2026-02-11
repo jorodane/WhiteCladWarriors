@@ -39,9 +39,9 @@ bool UUnitActionComponent::GetMainActionCancelable()
 	return false;
 }
 
-bool UUnitActionComponent::TrySetMainAction_Implementation(UActionExecutor* Executor, int ID, bool bIsCancelable, bool bIsStopMovement)
+bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement)
 {
-	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->SetMainAction(Executor, this, ID, bIsCancelable, bIsStopMovement);
+	if (AUnitBase* OwnerUnit = GetOwnerUnit()) return OwnerUnit->SetMainAction(WantCursor, bIsCancelable, bIsStopMovement);
 	return false;
 }
 

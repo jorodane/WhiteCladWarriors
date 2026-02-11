@@ -36,15 +36,16 @@ bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Op
 	int index = 0;
 	bool Result = false;
 	if (amount == 0) return Result;
-
 	ResultEachComponent = TArray<bool>(&Result, amount);
 	for (UUnitActionComponent* CurrentComponent : TargetComponent)
 	{
 		if (IsValid(CurrentComponent))
 		{
+			FActionCursorFinder MainFinder(this, Operator, nullptr, CurrentComponent, 0);
+
 			if (UActionSelectorNode* RootSelector = RootNodeAsSelector())
 			{
-				Result |= ResultEachComponent[index] = RootSelector->CheckInput(nullptr, CurrentComponent, 0, Input, TypeResult, ReasonResult);
+				Result |= ResultEachComponent[index] = RootSelector->CheckInput(MainFinder, Input, TypeResult, ReasonResult);
 			}
 		}
 		index++;
@@ -65,7 +66,8 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
 		for (UUnitActionComponent* CurrentComponent : TargetComponents)
 		{
-			RootNode->ClaimExecute(NewExecutor, CurrentComponent, 0);
+			FActionCursorFinder MainFinder(this, TargetOperator, nullptr, CurrentComponent, 0);
+			RootNode->ClaimExecute(MainFinder);
 		}
 	}
 	return NewExecutor;
@@ -79,7 +81,8 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
 		for (UUnitActionComponent* CurrentComponent : TargetComponents)
 		{
-			RootNode->ClaimExecuteWithInput(NewExecutor, CurrentComponent, 0, Input);
+			FActionCursorFinder MainFinder(this, TargetOperator, nullptr, CurrentComponent, 0);
+			RootNode->ClaimExecuteWithInput(MainFinder, Input);
 		}
 	}
 	return NewExecutor;

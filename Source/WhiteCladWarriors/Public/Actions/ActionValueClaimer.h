@@ -276,7 +276,7 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
-	FVector GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+	FVector GetPosition(const FActionCursorFinder& WantCursor) const;
 
 	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
 };
@@ -293,11 +293,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TObjectPtr<UFloatGetter> AngleShift;
 
-	virtual FVector GetPosition(const UPositionClaimer* Claimer, const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
-	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const {return FVector::ZeroVector;};
-	inline virtual FVector GetStartPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const { return GetPosition(From, Executor, Component, ID); }
-	inline virtual FVector GetEndPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const { return GetStartPosition(Executor,Component,ID) + GetOriginDirection(Executor,Component,ID); }
-	virtual FVector GetDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const;
+	virtual FVector GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor) const { return FVector::ZeroVector; };
+	inline virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor) const { return GetPosition(From, WantCursor); }
+	inline virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor) const { return GetStartPosition(WantCursor) + GetOriginDirection(WantCursor); }
+	virtual FVector GetDirection(const FActionCursorFinder& WantCursor) const;
 };
 
 UCLASS(BlueprintType)
@@ -317,8 +317,8 @@ public:
 		To = WantTo;
 		AngleShift = WantAngleShift;
 	}
-	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override ;
-	inline virtual FVector GetEndPosition(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override  { return GetPosition(To, Executor, Component, ID); }
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor) const override;
+	inline virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor) const override { return GetPosition(To, WantCursor); }
 };
 
 UCLASS(BlueprintType)
@@ -341,9 +341,9 @@ public:
 		DirectionTo = WantDirection;
 		AngleShift = WantAngleShift;
 	}
-	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override 
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor) const override
 	{
-		if(IsValid(DirectionTo)) return DirectionTo->GetValue();
+		if (IsValid(DirectionTo)) return DirectionTo->GetValue();
 		else return FVector::ZeroVector;
 	}
 };
@@ -364,7 +364,7 @@ public:
 		DirectionTag = WantTag;
 		AngleShift = WantAngleShift;
 	}
-	virtual FVector GetOriginDirection(const UActionExecutor* Executor, UUnitActionComponent* Component, const int ID) const override;
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor) const override;
 };
 
 UCLASS(BlueprintType)
@@ -382,7 +382,7 @@ public:
 		ActorTag = WantTag;
 	}
 
-	AActor* GetActor(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+	AActor* GetActor(const FActionCursorFinder& WantCursor) const;
 };
 
 UCLASS(BlueprintType)
@@ -400,7 +400,7 @@ public:
 		ActorArrayTag = WantTag;
 	}
 
-	TArray<AActor*> GetActorArray(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const;
+	TArray<AActor*> GetActorArray(const FActionCursorFinder& WantCursor) const;
 };
 
 UENUM(BlueprintType)
@@ -429,15 +429,15 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	inline FVector GetPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { if (IsValid(PositionClaimer)) return PositionClaimer->GetPosition(Executor, Component, ID); return FVector::ZeroVector; };
+	inline FVector GetPosition(const FActionCursorFinder& WantCursor) const { if (IsValid(PositionClaimer)) return PositionClaimer->GetPosition(WantCursor); return FVector::ZeroVector; };
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	inline AActor* GetActor(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID) const { if (IsValid(ActorClaimer)) return ActorClaimer->GetActor(Executor, Component, ID); return nullptr; };
+	inline AActor* GetActor(const FActionCursorFinder& WantCursor) const { if (IsValid(ActorClaimer)) return ActorClaimer->GetActor(WantCursor); return nullptr; };
 
 	UFUNCTION(BlueprintCallable, Category = "Value", meta = (ExpandEnumAsExecs = "ReturnValue"))
-	EActorPositionResult TryGetActorOrPosition(const UActionExecutor* Executor, const UUnitActionComponent* Component, const int ID, FVector& ResultPosition, AActor*& ResultAsActor) const
+	EActorPositionResult TryGetActorOrPosition(const FActionCursorFinder& WantCursor, FVector& ResultPosition, AActor*& ResultAsActor) const
 	{
-		ResultAsActor = GetActor(Executor, Component, ID);
+		ResultAsActor = GetActor(WantCursor);
 		if (ResultAsActor)
 		{
 			ResultPosition = ResultAsActor->GetActorLocation();
@@ -445,7 +445,7 @@ public:
 		}
 		else
 		{
-			ResultPosition = GetPosition(Executor, Component, ID);
+			ResultPosition = GetPosition(WantCursor);
 			return EActorPositionResult::Position;
 		}
 	}

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Generals/Structs/ActionStructures.h"
 #include "InputPackage.generated.h"
 
 
@@ -64,34 +65,25 @@ struct FInputClaim
 	static FInputClaim Claim_None;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TArray<UUnitActionComponent*> TargetComponentArray;
+	FActionCursorFinder TargetActionCursor;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<AActionBase> TargetAction = nullptr;
+	TArray<UUnitActionComponent*> TargetComponentArray;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionSelectorNode> TargetNode = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TObjectPtr<UActionExecutor> TargetExecutor = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	FText TargetDescription;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TEnumAsByte<EMouseCursor::Type> TargetCursor = EMouseCursor::Type::Default;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	int ID = 0;
+	TEnumAsByte<EMouseCursor::Type> TargetCursorType = EMouseCursor::Type::Default;
 
 	void Clear()
 	{
+		TargetActionCursor.Clear();
 		TargetComponentArray.SetNum(0);
-		TargetAction = nullptr;
-		TargetNode = nullptr;
-		TargetExecutor = nullptr;
 		TargetDescription = FText::GetEmpty();
-		TargetCursor = EMouseCursor::Default;
-		ID = 0;
+		TargetCursorType = EMouseCursor::Default;
 	}
 };

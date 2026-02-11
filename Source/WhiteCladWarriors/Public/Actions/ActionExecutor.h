@@ -67,13 +67,13 @@ public:
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	FVector GetPosition(const FActionCursorFinder& WantCursor, UPositionClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetStartPosition(UDirectionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	FVector GetStartPosition(const FActionCursorFinder& WantCursor, UDirectionClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetSavedPosition(FName WantTag, const FActionCursorFinder& WantCursor) const;
+	FVector GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UUnitActionComponent*> GetComponentArray() const;
@@ -85,37 +85,37 @@ public:
 	void SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(UDirectionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	FVector GetDirection(const FActionCursorFinder& WantCursor, UDirectionClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetSavedDirection(FName WantTag, const FActionCursorFinder& WantCursor) const;
+	FVector GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasDirection(FName WantTag, const FActionCursorFinder& WantCursor) const;
+	bool HasDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddActor(FName WantTag, AActor* WantActor);
-	 
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(UActorClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	AActor* GetActor(const FActionCursorFinder& WantCursor, UActorClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetSavedActor(FName WantTag, const FActionCursorFinder& WantCursor) const;
+	AActor* GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(UActorArrayClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	TArray<AActor*> GetActorArray(const FActionCursorFinder& WantCursor, UActorArrayClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetSavedActorArray(FName WantTag, const FActionCursorFinder& WantCursor) const;
+	TArray<AActor*> GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetInput(const FActionCursorFinder& WantCursor, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool SetInputArray(TArray<UUnitActionComponent*> WantComponent, int ID, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
+	bool SetInputArray(TArray<FActionCursorFinder> CursorArray, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
@@ -131,9 +131,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CancelNode(const FActionCursorFinder& WantCursor);
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	void CancelMainNode(UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
@@ -152,7 +149,8 @@ public:
 	void CheckCursorMap();
 
 	FActiveNodeInfo* GetCursor(UUnitActionComponent* TargetComponent);
-	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int ID = 0);
+	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
+	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int TargetID = 0);
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")

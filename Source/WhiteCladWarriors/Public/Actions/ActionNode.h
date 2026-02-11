@@ -58,8 +58,8 @@ public:
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
-	bool GetCanEnter(UActionExecutor* Executor, const FActionCursorFinder& WantCursor);
-	virtual bool GetCanEnter_Implementation(UActionExecutor* Executor, const FActionCursorFinder& WantCursor);
+	bool GetCanEnter(const FActionCursorFinder& WantCursor);
+	virtual bool GetCanEnter_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void AddNodeLink(FName ResultName, const FLinkedNodeInfo& Destination);
@@ -81,6 +81,9 @@ public:
 	void ClaimCancel(const FActionCursorFinder& WantCursor);
 	virtual void ClaimCancel_Implementation(const FActionCursorFinder& WantCursor);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void ClaimCancelMainNode(UUnitActionComponent* TargetComponent);
+	virtual void ClaimCancelMainNode_Implementation(UUnitActionComponent* TargetComponent);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimComplete(const FActionCursorFinder& WantCursor);
@@ -92,7 +95,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecuteWithInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input);
-	virtual void ClaimExecuteWithInput_Implementation(const FActionCursorFinder& WantCursor, const FInputPackage& Input) { ClaimExecute(Executor, TargetComponent, ID); }
+	virtual void ClaimExecuteWithInput_Implementation(const FActionCursorFinder& WantCursor, const FInputPackage& Input) { ClaimExecute(WantCursor); }
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void OnActionMessage_Simple(const FActionCursorFinder& WantCursor, const FName& Message);

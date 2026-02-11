@@ -14,10 +14,9 @@ class AActionBase;
 class UUnitActionComponent;
 class UActionExecutor;
 class UActionNode;
-struct FInputPackage;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, UActionExecutor*, Executor, UUnitActionComponent*, TargetComponent, int, ID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageNotify, const FActionCursorFinder&, Cursor, FName, NotifyName);
@@ -29,7 +28,7 @@ struct FActionReservator
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	FActionCursorFinder Cursor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Input")
@@ -42,14 +41,15 @@ struct FActionReservator
 	bool bIsValid = false;
 
 	FActionReservator() {};
-	FActionReservator(const FActionCursorFinder& NewCursor, AActionBase* TargetAction, const FInputPackage& TargetInput)
+	FActionReservator(AOperator* TargetOperator, AActionBase* TargetAction, const FInputPackage& TargetInput)
 	{
-		Cursor = NewCursor;
+		Cursor.CurrentOperator = TargetOperator;
+		Cursor.CurrentAction = TargetAction;
 		Input = TargetInput;
 	}
 
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
-	bool SetEnd(const FActionCursorFinder& WantCursor);
+	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 
 };
@@ -195,8 +195,8 @@ public:
 
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void NotifyExecutorEnded(const FActionCursorFinder& WantCursor);
-	void NotifyExecutorEnded_Implementation(const FActionCursorFinder& WantCursor);
+	void NotifyExecutorEnded(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+	void NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);

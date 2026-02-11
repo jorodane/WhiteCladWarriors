@@ -17,7 +17,7 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 	return bIsValid;
 }
 
-bool FActionReservator::SetEnd(const FActionCursorFinder& WantCursor)
+bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
 	if (!bIsValid) return true;
 	if (!IsValid(Cursor.CurrentExecutor))
@@ -25,6 +25,7 @@ bool FActionReservator::SetEnd(const FActionCursorFinder& WantCursor)
 		bIsValid = false;
 		return !bIsValid;
 	}
+
 	if (!IsValid(EndExecutor) || Cursor.CurrentExecutor != EndExecutor) return false;
 
 	RunningComponents.Remove(EndComponent);
@@ -67,8 +68,7 @@ void FMontageEventInfo::MontageEnd(bool bIsInterrupted)
 
 void FMainActionInfo::Clear()
 {
-	Executor = nullptr;
-	Component = nullptr;
+	Cursor.Clear();
 	bIsCancelable = true;
 	bIsStopMovement = false;
 }
@@ -82,12 +82,12 @@ void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, bool bWantIsCan
 
 void FMainActionInfo::Clear(const UActionExecutor* OldExecutor) 
 { 
-	if (!Executor.IsValid() || Executor.Get() == OldExecutor) Clear();
+	if (Cursor.CheckExecutor(OldExecutor)) Clear();
 }
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
-	if (IsValid()) Executor.Get()->SetActionMessage_Simple(Component.Get(), 0, Message);
+	if (IsValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
 }
 
 bool FMainActionInfo::Cancel(bool bWantStopMovement)
@@ -95,10 +95,10 @@ bool FMainActionInfo::Cancel(bool bWantStopMovement)
 	if(!IsValid()) return true;
 	if (!bIsCancelable) return false;
 
-	if (UUnitActionComponent* TargetComponent = Component.Get())
+	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
 	{
-		Executor->CancelMainNode(TargetComponent);
-		//TargetComponent->OnEndMainAction(Executor.Get(), bWantStopMovement);
+		Cursor.CurrentExecutor->CancelNode(Cursor);
+		//TargetComponent->OnEndMainAction(Executor, bWantStopMovement);
 	}
 	Clear();
 	return true;
@@ -108,7 +108,7 @@ void FMainActionInfo::End(bool bWantStopMovement)
 {
 	if (IsValid())
 	{
-		Component.Get()->OnEndMainAction(Executor.Get(), bWantStopMovement);
+		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor, bWantStopMovement);
 		Clear();
 	}
 }
@@ -116,7 +116,7 @@ void FMainActionInfo::End(bool bWantStopMovement)
 
 bool FMainActionInfo::IsValid() const
 {
-	return (Executor != nullptr && Executor.IsValid()) && (Component != nullptr && Component.IsValid());
+	return Cursor.IsValid();
 }
 
 void AUnitBase::BeginPlay()
@@ -226,7 +226,7 @@ bool AUnitBase::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCan
 void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"EndMainAction");
-	if (!MainAction.IsValid() || MainAction.Executor.Get() != OldExecutor|| MainAction.Component.Get() != OldComponent) return;
+	if (!MainAction.IsValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
 	if (bIsStopMovement) ClaimStopMovement();
 	MainAction.End(bIsStopMovement);
@@ -250,7 +250,7 @@ void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 	else
 	{
 		CurrentReservatedAction = Reservation;
-		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action)))
+		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Cursor.CurrentAction)))
 		{
 			ReservationNext();
 		}
@@ -266,7 +266,7 @@ void AUnitBase::ReservationNext()
 {
 	if (ActionQueue.Dequeue(CurrentReservatedAction))
 	{
-		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Action)))
+		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Cursor.CurrentAction)))
 		{
 			ReservationNext();
 		}
@@ -277,7 +277,7 @@ void AUnitBase::ReservationNext()
 	}
 }
 
-void AUnitBase::NotifyExecutorEnded_Implementation(const FActionCursorFinder& WantCursor)
+void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
 	if (CurrentReservatedAction.bIsValid)
 	{
@@ -309,9 +309,9 @@ void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& Montage
 	}
 }
 
-void AUnitBase::NotifyMontageNodePassed_Implementation(UActionExecutor* MontageExecutor, int RequestedID)
+void AUnitBase::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
 {
-	if (ClaimedMontageEvent.MontageExecutor == MontageExecutor && ClaimedMontageEvent.RequestedID == RequestedID)
+	if (WantCursor.CheckExecutor(ClaimedMontageEvent.Cursor.CurrentExecutor) && ClaimedMontageEvent.Cursor.CurrentID == WantCursor.CurrentID)
 	{
 		ClaimedMontageEvent.MontageToPlay = nullptr;
 	}
@@ -329,9 +329,9 @@ void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 	}
 }
 
-void AUnitBase::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+void AUnitBase::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor)
 {
-	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, Executor, TargetComponent, ID);
+	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, WantCursor);
 }
 
 void AUnitBase::ClaimStopMovement_Implementation()

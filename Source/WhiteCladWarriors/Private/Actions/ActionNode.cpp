@@ -5,9 +5,9 @@
 #include "Actions/ActionExecutor.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
-bool UActionNode::GetCanEnter_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent)
+bool UActionNode::GetCanEnter_Implementation(const FActionCursorFinder& WantCursor)
 {
-	return !(bIsMainAction && !TargetComponent->GetMainActionCancelable());
+	return !(bIsMainAction && !WantCursor.CurrentComponent->GetMainActionCancelable());
 }
 
 void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination)
@@ -15,55 +15,64 @@ void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNode
 	LinkedNodes.Add(ResultName, Destination);
 }
 
-void UActionNode::MoveExecutorToLinkedNode_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, FName ResultName)
+void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFinder& WantCursor, FName ResultName)
 {
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return;
 	FLinkedNodeInfo* Result = LinkedNodes.Find(ResultName);
 	if (Result)
 	{
 		FLinkedNodeInfo NodeInfo = *Result;
-		Executor->EnterNode(TargetComponent, ID, NodeInfo.Node);
+		Executor->EnterNode(WantCursor, NodeInfo.Node);
 	}
-	else Executor->EndNode(TargetComponent, ID, this);
+	else Executor->EndNode(WantCursor, this);
 }
 
-void UActionNode::MoveExecutorToNext_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+void UActionNode::MoveExecutorToNext_Implementation(const FActionCursorFinder& WantCursor)
 {
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return;
-	Executor->EnterNode(TargetComponent, ID, NextNode);
+	Executor->EnterNode(WantCursor, NextNode);
 }
 
-void UActionNode::MoveExecutorToCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+void UActionNode::MoveExecutorToCancel_Implementation(const FActionCursorFinder& WantCursor)
 {
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return;
-	Executor->EnterNode(TargetComponent, ID, CanceledNode);
+	Executor->EnterNode(WantCursor, CanceledNode);
 }
 
-
-
-void UActionNode::ClaimCancel_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+void UActionNode::ClaimCancel_Implementation(const FActionCursorFinder& WantCursor)
 {
-	MoveExecutorToCancel(Executor, TargetComponent, ID);
+	MoveExecutorToCancel(WantCursor);
 }
 
-void UActionNode::ClaimComplete_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+void UActionNode::ClaimComplete_Implementation(const FActionCursorFinder& WantCursor)
 {
-	MoveExecutorToNext(Executor, TargetComponent, ID);
+	MoveExecutorToNext(WantCursor);
 }
 
-void UActionNode::OnActionMessage_Simple_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FName& Message)
+void UActionNode::OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message)
 {
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
+
 	if (!IsValid(Executor) || !IsValid(TargetComponent)) return;
-	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message)) 
+	if (FLinkedNodeInfo* NodeFinder = LinkedNodes.Find(Message))
 	{
 		FLinkedNodeInfo& NodeInfo = *NodeFinder;
+
 		if (NodeInfo.bIsSubNode)
 		{
-			Executor->CreateSubNode(TargetComponent, NodeInfo.Node);
+			int ResultID;
+			if (FActiveNodeInfo* ResultInfo = WantCursor.CurrentExecutor->GetCursor(TargetComponent))
+			{
+				Executor->CreateSubNode(*ResultInfo, NodeInfo.Node, ResultID);
+			}
 		}
 		else
 		{
-			Executor->EnterNode(TargetComponent, ID, NodeInfo.Node);
+			Executor->EnterNode(WantCursor, NodeInfo.Node);
 		}
 	}
 }

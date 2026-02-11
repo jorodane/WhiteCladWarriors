@@ -4,32 +4,36 @@
 #include "Actions/ActionSelectorNode.h"
 #include "Actions/ActionExecutor.h"
 
-bool UActionSelectorNode::CompleteInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+bool UActionSelectorNode::CompleteInput_Implementation(const FActionCursorFinder& WantCursor)
 {
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return true;
-	MoveExecutorToNext(Executor, TargetComponent, ID);
+	MoveExecutorToNext(WantCursor);
 	return true;
 }
 
-void UActionSelectorNode::FailInput_Implementation(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+void UActionSelectorNode::FailInput_Implementation(const FActionCursorFinder& WantCursor)
 {
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return;
-	Executor->EnterNode(TargetComponent, ID, BlockedNode);
+	Executor->EnterNode(WantCursor, BlockedNode);
 }
 
-bool UActionSelectorNode::CancelInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID)
+bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
 { 
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return true;
 	if (bIsCancelable)
 	{
-		OnCancelInput(Executor, TargetComponent, ID);
-		Executor->EnterNode(TargetComponent, ID, CanceledNode);
+		OnCancelInput(WantCursor);
+		Executor->EnterNode(WantCursor, CanceledNode);
 	}
 	return bIsCancelable;
 }
 
-bool UActionSelectorNode::ReceiveInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input)
+bool UActionSelectorNode::ReceiveInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input)
 { 
+	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	bool Result = false;
 	for (const FSelectorInput& CurrentInputType : InputTypes)
 	{
@@ -37,32 +41,32 @@ bool UActionSelectorNode::ReceiveInput(UActionExecutor* Executor, UUnitActionCom
 		switch (CurrentInputType.Type)
 		{
 		case EInputType::Position:
-			Result = OnReceivePosition(Executor, TargetComponent, ID, CurrentTag, Input.MouseTerrainPosition);
+			Result = OnReceivePosition(WantCursor, CurrentTag, Input.MouseTerrainPosition);
 			break;
 		case EInputType::Direction:
-			Result = OnReceiveDirection(Executor, TargetComponent, ID, CurrentTag, Input.MouseTerrainPosition);
+			Result = OnReceiveDirection(WantCursor, CurrentTag, Input.MouseTerrainPosition);
 			break;
 		case EInputType::SingleTarget:
-			Result = OnReceiveActor(Executor, TargetComponent, ID, CurrentTag, Input.MouseHitActor);
+			Result = OnReceiveActor(WantCursor, CurrentTag, Input.MouseHitActor);
 			break;
 		case EInputType::MultiTarget:
-			//Result = OnReceiveActorArray(Executor, TargetComponent, ID, CurrentTag, Input.SelectedActors);
+			//Result = OnReceiveActorArray(WantCursor, CurrentTag, Input.SelectedActors);
 			break;
 		}
 
 		if (Result)
 		{
-			Executor->EnterNode(TargetComponent, ID, CurrentInputType.OnInputAccepted);
+			Executor->EnterNode(WantCursor, CurrentInputType.OnInputAccepted);
 			break;
 		}
 	}
 
-	Result |= OnReceiveInput(Executor, TargetComponent, ID, Input);
+	Result |= OnReceiveInput(WantCursor, Input);
 
 	return Result;
 }
 
-bool UActionSelectorNode::CheckInput(UActionExecutor* Executor, UUnitActionComponent* TargetComponent, int ID, const FInputPackage& Input, EInputType& ResultType, FText& FailReason)
+bool UActionSelectorNode::CheckInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input, EInputType& ResultType, FText& FailReason)
 {
 	bool Result = false;
 	FailReason = InputFailReason;
@@ -74,16 +78,16 @@ bool UActionSelectorNode::CheckInput(UActionExecutor* Executor, UUnitActionCompo
 		switch (CurrentInputType.Type)
 		{
 		case EInputType::Position:
-			Result = CheckPosition(Executor, TargetComponent, ID, CurrentTag, Input.MouseTerrainPosition);
+			Result = CheckPosition(WantCursor, CurrentTag, Input.MouseTerrainPosition);
 			break;
 		case EInputType::Direction:
-			Result = CheckDirection(Executor, TargetComponent, ID, CurrentTag, Input.MouseTerrainPosition);
+			Result = CheckDirection(WantCursor, CurrentTag, Input.MouseTerrainPosition);
 			break;
 		case EInputType::SingleTarget:
-			Result = CheckActor(Executor, TargetComponent, ID, CurrentTag, Input.MouseHitActor);
+			Result = CheckActor(WantCursor, CurrentTag, Input.MouseHitActor);
 			break;
 		case EInputType::MultiTarget:
-			//Result = OnReceiveActorArray(Executor, TargetComponent, ID, CurrentTag, Input.SelectedActors);
+			//Result = OnReceiveActorArray(WantCursor, CurrentTag, Input.SelectedActors);
 			break;
 		}
 

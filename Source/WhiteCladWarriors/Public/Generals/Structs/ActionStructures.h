@@ -39,26 +39,12 @@ struct FActionCursorFinder
 	FActionCursorFinder(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID) 
 	{Set(WantAction, WantOperator, WantExecutor, WantComponent, WantID);}
 
-	bool CheckValid();
-	bool CheckExecutor(UActionExecutor* WantExecutor);
-	bool CheckOperator(AOperator* WantOperator);
-	bool CheckAction(AActionBase* WantAction);
+	bool IsValid() const;
+	bool CheckExecutor(const UActionExecutor* WantExecutor) const;
+	bool CheckOperator(const AOperator* WantOperator) const;
+	bool CheckAction(const AActionBase* WantAction) const;
 
-	void Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID)
-	{
-		CurrentAction = WantAction;
-		CurrentOperator = WantOperator;
-		CurrentExecutor = WantExecutor;
-		CurrentComponent = WantComponent;
-		CurrentID = WantID;
-	}
+	void Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID);
 
-	void Clear()
-	{
-		CurrentAction = nullptr;
-		CurrentOperator = nullptr;
-		CurrentExecutor = nullptr;
-		CurrentComponent = nullptr;
-		CurrentID = 0;
-	}
+	void Clear();
 };

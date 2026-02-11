@@ -87,22 +87,29 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	{
 		if (bIsReservationMode) 
 		{
-			ReservationAction(CurrentInputClaim.TargetAction, CurrentInputPackage.SelectedActors, CurrentInputPackage);
+			ReservationAction(CurrentInputClaim.TargetActionCursor.CurrentAction, CurrentInputPackage.SelectedActors, CurrentInputPackage);
 			ForceRemoveInputClaim();
 		}
 		else
 		{
-			if (!IsValid(CurrentInputClaim.TargetExecutor))
+			if (!IsValid(CurrentInputClaim.TargetActionCursor.CurrentExecutor))
 			{
-				CommandAction(CurrentInputClaim.TargetAction, CurrentInputClaim.TargetComponentArray, true);
+				CommandAction(CurrentInputClaim.TargetActionCursor.CurrentAction, CurrentInputClaim.TargetComponentArray, true);
 				//CurrentInputClaim.TargetExecutor = CurrentInputClaim.TargetAction->ExecuteActionWithInput(this, CurrentInputClaim.TargetComponentArray, GetInputPackage());
 				ForceRemoveInputClaim();
 			}
 			else
 			{
-				bool bIsInputComplete =  CurrentInputClaim.TargetExecutor->SetInputArray(CurrentInputClaim.TargetComponentArray, CurrentInputClaim.ID, CurrentInputClaim.TargetNode, CurrentInputPackage);
+				TSet<FActionCursorFinder> FinderArray;
+				for (UUnitActionComponent* CurrentComponent : CurrentInputClaim.TargetComponentArray)
+				{
+					FActionCursorFinder NewFinder(CurrentInputClaim.TargetActionCursor);
+					NewFinder.CurrentComponent = CurrentComponent;
+					FinderArray.Add(NewFinder);
+					if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
+				}
+				bool bIsInputComplete =  CurrentInputClaim.TargetActionCursor.CurrentExecutor->SetInputArray(FinderArray.Array(), CurrentInputClaim.TargetNode, CurrentInputPackage);
 				if (bIsInputComplete) ForceRemoveInputClaim();
-				for (UUnitActionComponent* CurrentComponent : CurrentInputClaim.TargetComponentArray) if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 			}
 		}
 	}
@@ -159,7 +166,7 @@ void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocati
 
 void AOperator::OnUpdateInput_Implementation()
 {
-	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursor);
+	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursorType);
 	OnInputClaimChanged.Broadcast(CurrentInputClaim);
 }
 
@@ -181,7 +188,7 @@ void AOperator::CancelInputClaim()
 	if (!IsInputClaimed() || CurrentInputClaim.TargetNode == nullptr) return;
 	for (auto CurrentComponent : CurrentInputClaim.TargetComponentArray)
 	{
-		if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetExecutor, CurrentComponent, CurrentInputClaim.ID)) ForceRemoveInputClaim();
+		if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetActionCursor)) ForceRemoveInputClaim();
 	}
 }
 
