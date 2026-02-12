@@ -254,7 +254,8 @@ void UActionExecutor::RemoveComponentBaseFromMap(UUnitComponentBase* TargetCompo
 
 FActiveNodeInfo* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent)
 {
-	if (FActiveNodeInfo* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
+	if (&CursorMap == nullptr || CursorMap.Num() == 0) return nullptr;
+	else if (FActiveNodeInfo* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
 	else return nullptr;
 }
 

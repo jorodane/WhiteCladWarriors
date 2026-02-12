@@ -205,6 +205,7 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 
 bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"SetMainAction");
 	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
 	else return SetMainAction(FActionCursorFinder::None);
 }
@@ -219,6 +220,7 @@ bool AUnitBase::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCan
 	{
 		if(bIsStopMovement) ClaimStopMovement();
 		MainAction.Set(WantCursor, bIsCancelable, bIsStopMovement);
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"SetMainAction");
 	}
 	return Result;
 }
@@ -227,12 +229,14 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"EndMainAction");
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"Passed");
 
 	if (bIsStopMovement) ClaimStopMovement();
 	MainAction.End(bIsStopMovement);
 
 	if (CurrentReservatedAction.bIsValid)
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"TryEnd");
 		if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) ReservationNext();
 	}
 	else
@@ -243,12 +247,14 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 
 void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"Enqueue");
 	if (MainAction.CheckValid() || CurrentReservatedAction.bIsValid)
 	{
 		ActionQueue.Enqueue(Reservation);
 	}
 	else
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"Start");
 		CurrentReservatedAction = Reservation;
 		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Cursor.CurrentAction)))
 		{
@@ -264,6 +270,7 @@ void AUnitBase::ReservationClear()
 
 void AUnitBase::ReservationNext()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"ResNext");
 	if (ActionQueue.Dequeue(CurrentReservatedAction))
 	{
 		if (!CurrentReservatedAction.Run(GetComponentsWithAction(CurrentReservatedAction.Cursor.CurrentAction)))
@@ -279,6 +286,7 @@ void AUnitBase::ReservationNext()
 
 void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"EndExecutor");
 	if (CurrentReservatedAction.bIsValid)
 	{
 		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent))
