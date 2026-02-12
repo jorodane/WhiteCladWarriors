@@ -87,7 +87,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	{
 		if (bIsReservationMode) 
 		{
-			ReservationAction(CurrentInputClaim.TargetActionCursor.CurrentAction, CurrentInputPackage.SelectedActors, CurrentInputPackage);
+			ReservationAction(CurrentInputClaim.TargetActionCursor.CurrentAction, CurrentInputPackage.SelectedActors, CurrentInputPackage, true);
 			ForceRemoveInputClaim();
 		}
 		else
@@ -511,7 +511,7 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
 			const TArray<AActor*> ResultArray = CurrentList.Array();
 
-			ReservationAction(CurrentAction, ResultArray, CurrentInputPackage);
+			ReservationAction(CurrentAction, ResultArray, CurrentInputPackage, true);
 		}
 	}
 	else
@@ -527,7 +527,7 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 	}
 }
 
-void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input)
+void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately)
 {
 	FActionReservator Reservator(this, TargetAction, Input);
 
@@ -536,17 +536,27 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 		if (AUnitBase* AsUnit = Cast<AUnitBase>(CurrentActor))
 		{
 			TArray<UUnitActionComponent*> TargetComponents;
-			if (TargetAction->IsNeedInputForStartCheck())
+			FInputClaim ResultInput;
+
+			if (TargetAction->IsNeedInputForStart(ResultInput, TargetComponents))
 			{
-				EInputType TypeResult;
-				FText ReasonResult;
-				TArray<bool> ComponentResult;
-				bool CheckResult = TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult, TypeResult, ReasonResult);
-				if (CheckResult)
+				if (bIsStartImmediately)
 				{
-					AsUnit->ReservationEnqueue(Reservator);
+					EInputType TypeResult;
+					FText ReasonResult;
+					TArray<bool> ComponentResult;
+					bool CheckResult = TargetAction->IsValidInputForStart(Input, this, AsUnit->GetComponentsWithAction(TargetAction), ComponentResult, TypeResult, ReasonResult);
+					if (CheckResult)
+					{
+						AsUnit->ReservationEnqueue(Reservator);
+					}
+					TargetAction->SpawnCheckEffect(CheckResult, this, Input, TypeResult, ReasonResult);
 				}
-				TargetAction->SpawnCheckEffect(CheckResult, this, Input, TypeResult, ReasonResult);
+				else
+				{
+					ClaimInput(ResultInput);
+					return;
+				}
 			}
 			else
 			{

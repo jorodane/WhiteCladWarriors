@@ -277,7 +277,7 @@ public:
 	void SimpleAction(const FInputPackage& Input);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input);
+	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately);
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
