@@ -159,7 +159,8 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	UActionNode* OriginNode = nullptr;
 	if (FActiveNodeInfo* CurrentInfo = GetCursor(TargetComponent))
 	{
-		if (ID < 0) OriginNode = CreateSubNode(*CurrentInfo, TargetNode, ID);
+		OriginNode = CurrentInfo->GetNode(ID);
+
 		if (!bIsValidNode)
 		{
 			EndNode(WantCursor, OriginNode);
@@ -170,6 +171,10 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, RecursiveDepth - 1);
 			else EndNode(WantCursor, OriginNode);
 			return;
+		}
+		else if (ID < 0)
+		{
+			OriginNode = CreateSubNode(*CurrentInfo, TargetNode, ID);
 		}
 
 		CurrentInfo->SetNode(TargetNode, ID);
@@ -206,7 +211,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(this, OldNode->bIsStopMovementOnEnd);
+	if (IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(Executor, OldNode->bIsStopMovementOnEnd);
 	if (FActiveNodeInfo* CursorFinder = GetCursor(TargetComponent))
 	{
 		FActiveNodeInfo& Cursor = *CursorFinder;

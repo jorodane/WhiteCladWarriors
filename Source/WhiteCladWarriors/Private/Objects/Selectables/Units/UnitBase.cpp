@@ -26,10 +26,11 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 		return !bIsValid;
 	}
 
+	if(Cursor.CurrentExecutor != EndExecutor) GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"Invalid Executor");
 	if (!IsValid(EndExecutor) || Cursor.CurrentExecutor != EndExecutor) return false;
-
+	
 	RunningComponents.Remove(EndComponent);
-	bIsValid = RunningComponents.Num() > 0;
+	bIsValid = !RunningComponents.IsEmpty();
 	return !bIsValid;
 }
 
@@ -205,7 +206,6 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 
 bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"SetMainAction");
 	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
 	else return SetMainAction(FActionCursorFinder::None);
 }
@@ -229,7 +229,6 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"EndMainAction");
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, L"Passed");
 
 	if (bIsStopMovement) ClaimStopMovement();
 	MainAction.End(bIsStopMovement);
@@ -293,6 +292,10 @@ void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor,
 		{
 			ReservationNext();
 		}
+	}
+	else
+	{
+		ReservationNext();
 	}
 }
 
