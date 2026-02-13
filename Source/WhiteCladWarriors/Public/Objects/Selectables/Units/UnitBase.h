@@ -48,6 +48,8 @@ struct FActionReservator
 		Input = TargetInput;
 	}
 
+	void Clear();
+	bool CheckValid();
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
 	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 

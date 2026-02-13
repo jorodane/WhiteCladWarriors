@@ -60,11 +60,13 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 
 UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
 {
+	const TArray<UUnitActionComponent*>& ClaimedComponents = TargetComponents;
 	UActionExecutor* NewExecutor = nullptr;
+	if (ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
-		for (UUnitActionComponent* CurrentComponent : TargetComponents)
+		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, ClaimedComponents, RootNode);
+		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
 			RootNode->ClaimExecute(MainFinder);
@@ -75,14 +77,17 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 
 UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
 {
+	const TArray<UUnitActionComponent*>& ClaimedComponents = TargetComponents;
+	const FInputPackage& ClaimedInput = Input;
 	UActionExecutor* NewExecutor = nullptr;
+	if(ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, TargetComponents, RootNode);
-		for (UUnitActionComponent* CurrentComponent : TargetComponents)
+		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, ClaimedComponents, RootNode);
+		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
-			RootNode->ClaimExecuteWithInput(MainFinder, Input);
+			RootNode->ClaimExecuteWithInput(MainFinder, ClaimedInput);
 		}
 	}
 	return NewExecutor;
