@@ -121,7 +121,7 @@ public:
 	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	UActionNode* CreateSubNode(FActiveNodeInfo& TargetInfo, UActionNode* TargetNode, int& ResultID);
+	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeInfo& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode);
