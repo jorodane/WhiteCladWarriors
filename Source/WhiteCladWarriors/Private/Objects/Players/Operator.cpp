@@ -566,6 +566,30 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 	}
 }
 
+AUnitBase* AOperator::SpawnHero(FVector Location)
+{
+	AUnitBase* Result;
+	if (IsValid(HeroActor))
+	{
+		Result = HeroActor;
+		HeroActor->SetActorLocation(Location);
+		return Result;
+	}
+
+	if (UWorld* CurrentWorld = GetWorld())
+	{
+		AActor* SpawnedActor = CurrentWorld->SpawnActor(HeroClass, &Location);
+		Result = Cast<AUnitBase>(SpawnedActor);
+		if(Result) HeroActor = Result;
+	}
+	else
+	{
+		Result = nullptr;
+	}
+
+	return Result;
+}
+
 void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
 {
 	if (PlayerController) OnPlayerDisconnected(PlayerController);

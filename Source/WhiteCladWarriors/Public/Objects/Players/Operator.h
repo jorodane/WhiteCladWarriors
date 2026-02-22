@@ -84,6 +84,12 @@ protected:
 
 	static TObjectPtr<AOperator> LocalOperator;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hero", meta = (AllowPrivateAccess=true))
+	TSubclassOf<AUnitBase> HeroClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
+	TObjectPtr<AUnitBase> HeroActor;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	TObjectPtr<UCameraComponent> SelectorCamera;
 
@@ -278,6 +284,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately);
+
+	UFUNCTION(BlueprintCallable, Category = "Hero")
+	AUnitBase* SpawnHero(FVector Location);
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
