@@ -181,7 +181,11 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	}
 	else
 	{
-		if (!bIsValidNode) return;
+		if (!bIsValidNode)
+		{
+			CheckCursorMap();
+			return;
+		}
 		else if (!bCanEnter)
 		{
 			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, RecursiveDepth - 1);
@@ -280,7 +284,7 @@ UActionNode* UActionExecutor::GetNode(UUnitActionComponent* TargetComponent, int
 
 void UActionExecutor::CheckCursorMap()
 {
-	if (CursorMap.Num() == 0 && CreatedActors.Num() == 0)
+	if (CursorMap.IsEmpty() && CreatedActors.IsEmpty())
 	{
 		DestroyExecutor(this);
 	}
@@ -308,5 +312,6 @@ UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArr
 
 void UActionExecutor::DestroyExecutor(UActionExecutor* TargetExecutor)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(L"%s", *TargetExecutor->GetName()));
 	if(IsValid(TargetExecutor))	TargetExecutor->ConditionalBeginDestroy();
 }

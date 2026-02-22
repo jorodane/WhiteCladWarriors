@@ -32,7 +32,7 @@ struct FActiveNodeInfo
 	inline void SetNode(UActionNode* Node, int ID);
 
 	inline void RemoveID(int ID);
-	inline bool IsEmpty() const { return NodeMap.Num() == 0; }
+	inline bool IsEmpty() const { return NodeMap.IsEmpty(); }
 
 	FActiveNodeInfo() { }
 	FActiveNodeInfo(UActionNode* Node) { SetNode(Node, 0); }
