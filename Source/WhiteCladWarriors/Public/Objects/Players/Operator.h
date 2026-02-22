@@ -124,13 +124,16 @@ protected:
 	float CameraLength = DEFAULT_CAMERALENGTH;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
-	bool bIsAdditiveMode;
+	bool bIsAdditiveMode = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
-	bool bIsSelectAllMode;
+	bool bIsSelectAllMode = false;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
-	bool bIsReservationMode;
+	bool bIsReservationMode = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero")
+	bool bIsFollowingHero = true;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -287,6 +290,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
 	AUnitBase* SpawnHero(FVector Location);
+
+	UFUNCTION(BlueprintCallable, Category = "Hero")
+	void SetFollowingHero(bool Value) { bIsFollowingHero = Value; }
+
+	UFUNCTION(BlueprintCallable, Category = "Hero")
+	void ToggleFollowingHero() { bIsFollowingHero = !bIsFollowingHero; }
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);

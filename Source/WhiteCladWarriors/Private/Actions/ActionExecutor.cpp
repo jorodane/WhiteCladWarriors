@@ -310,6 +310,5 @@ UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArr
 
 void UActionExecutor::DestroyExecutor(UActionExecutor* TargetExecutor)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(L"%s", *TargetExecutor->GetName()));
 	if(IsValid(TargetExecutor))	TargetExecutor->ConditionalBeginDestroy();
 }

@@ -46,6 +46,11 @@ void AOperator::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (bIsFollowingHero && IsValid(HeroActor))
+	{
+		SetActorLocation(HeroActor->GetActorLocation());
+	}
+
 	if (APlayerController* AsPlayerController = Cast<APlayerController>(GetController()))
 	{
 		FHitResult ClickAreaHitResult;
