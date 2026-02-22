@@ -172,10 +172,6 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 			else EndNode(WantCursor, OriginNode);
 			return;
 		}
-		else if (ID < 0)
-		{
-			OriginNode = CreateSubNode(*CurrentInfo, TargetNode, ID);
-		}
 
 		CurrentInfo->SetNode(TargetNode, ID);
 	}
@@ -202,10 +198,12 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	TargetNode->ClaimExecute(WantCursor);
 }
 
-UActionNode* UActionExecutor::CreateSubNode(FActiveNodeInfo& TargetInfo, UActionNode* TargetNode, int& ResultID)
+UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeInfo& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 { 
-	ResultID = TargetInfo.AddNode(TargetNode);
+	ResultID = TargetInfo.AddNode(OriginNode);
 	UActionNode* Result = TargetInfo.GetNode(ResultID);
+	BaseCursor.CurrentID = ResultID;
+	EnterNode(BaseCursor, TargetNode);
 	return Result;
 }
 
