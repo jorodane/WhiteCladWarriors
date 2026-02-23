@@ -134,14 +134,24 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		if (GetFocusActors(bIsClick, bIsDoubleClick, bIsSelectAllMode, OutResultArray, OutResultSingle, OutAllSame, OutOnlySingle))
 		{
 			if (!bIsAdditive) DeselectActors();
-			if(bIsClick && !(bIsSelectAll || bIsDoubleClick))
+			if (bIsClick && !(bIsSelectAll || bIsDoubleClick))
 			{
 				SelectToggle(OutResultSingle);
-				return;
 			}
-			SelectActors(OutResultArray, OutOnlySingle);
+			else
+			{
+				SelectActors(OutResultArray, OutOnlySingle);
+			}
 		}
-		//else if(!bIsAdditive) DeselectActors(); Remove All On Ground Click
+		else if (!bIsAdditive)
+		{
+			DeselectActors(); //Remove All On Ground Click
+		};
+
+		if (CurrentInputPackage.SelectedActors.IsEmpty() && IsValid(HeroActor))
+		{
+			SelectActor(HeroActor, true);
+		}
 	}
 }
 
