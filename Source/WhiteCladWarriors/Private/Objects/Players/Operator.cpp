@@ -48,7 +48,7 @@ void AOperator::Tick(float DeltaSeconds)
 
 	if (bIsFollowingHero && IsValid(HeroActor))
 	{
-		SetActorLocation(HeroActor->GetActorLocation());
+		CameraMoveTo(HeroActor->GetActorLocation());
 	}
 
 	if (APlayerController* AsPlayerController = Cast<APlayerController>(GetController()))
@@ -121,6 +121,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	else if(bIsMapClick)
 	{
 		CameraMoveTo(CurrentInputPackage.MouseTerrainPosition);
+		SetFollowingHero(false);
 	}
 	else
 	{
@@ -176,7 +177,11 @@ void AOperator::OnMapClick_Implementation(bool bIsDown, bool bIsRightClick, FVec
 
 void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocation)
 {
-	if (!IsInputClaimed()) CameraMoveTo(ClickLocation);
+	if (!IsInputClaimed())
+	{
+		CameraMoveTo(ClickLocation);
+		SetFollowingHero(false);
+	}
 }
 
 void AOperator::OnUpdateInput_Implementation()
@@ -224,6 +229,7 @@ void AOperator::CameraMoveTo(FVector Position)
 	FVector2D Limit = AMapSetting::GetCurrentMapHalfSize();
 	Position.X = FMath::Clamp(Position.X, -Limit.X, Limit.X);
 	Position.Y = FMath::Clamp(Position.Y, -Limit.Y, Limit.Y);
+	Position.Z = 0;
 	SetActorLocation(Position);
 }
 
@@ -603,6 +609,16 @@ AUnitBase* AOperator::SpawnHero(FVector Location)
 	}
 
 	return Result;
+}
+
+void AOperator::SetFollowingHero(bool Value)
+{ 
+	bIsFollowingHero = Value; 
+	if (bIsFollowingHero && IsValid(HeroActor))
+	{
+		DeselectActors();
+		SelectActor(HeroActor, true);
+	}
 }
 
 void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)

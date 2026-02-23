@@ -292,10 +292,10 @@ public:
 	AUnitBase* SpawnHero(FVector Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
-	void SetFollowingHero(bool Value) { bIsFollowingHero = Value; }
+	void SetFollowingHero(bool Value);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
-	void ToggleFollowingHero() { bIsFollowingHero = !bIsFollowingHero; }
+	void ToggleFollowingHero() { SetFollowingHero(!bIsFollowingHero); }
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
