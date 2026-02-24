@@ -4,6 +4,7 @@
 #include "Objects/Players/AreaSelector.h"
 #include "Objects/Players/InGameController.h"
 #include "Objects/Selectables/Units/UnitBase.h"
+#include "Objects/Selectables/Units/HeroBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Actions/ActionBase.h"
 #include "Actions/ActionExecutor.h"
@@ -587,9 +588,9 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 	}
 }
 
-AUnitBase* AOperator::SpawnHero(FVector Location)
+AHeroBase* AOperator::SpawnHero(FVector Location)
 {
-	AUnitBase* Result;
+	AHeroBase* Result;
 	if (IsValid(HeroActor))
 	{
 		Result = HeroActor;
@@ -600,13 +601,15 @@ AUnitBase* AOperator::SpawnHero(FVector Location)
 	if (UWorld* CurrentWorld = GetWorld())
 	{
 		AActor* SpawnedActor = CurrentWorld->SpawnActor(HeroClass, &Location);
-		Result = Cast<AUnitBase>(SpawnedActor);
+		Result = Cast<AHeroBase>(SpawnedActor);
 		if(Result) HeroActor = Result;
 	}
 	else
 	{
 		Result = nullptr;
 	}
+
+	OnHeroChanged.Broadcast(Result);
 
 	return Result;
 }

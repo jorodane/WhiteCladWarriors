@@ -17,6 +17,7 @@ class AActionBase;
 class UActionExecutor;
 class UActionSelectorNode;
 class AUnitBase;
+class AHeroBase;
 class UCameraComponent;
 class UUnitActionComponent;
 
@@ -45,6 +46,7 @@ public:
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, Claim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroChanged, AHeroBase*, NewHero);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputClaimChanged, const FInputClaim&, NewClaim);
 
 
@@ -78,6 +80,9 @@ public:
 	FOnSelectedChanged OnSelectedChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
+	FOnHeroChanged OnHeroChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnInputClaimChanged OnInputClaimChanged;
 
 protected:
@@ -85,10 +90,10 @@ protected:
 	static TObjectPtr<AOperator> LocalOperator;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hero", meta = (AllowPrivateAccess=true))
-	TSubclassOf<AUnitBase> HeroClass;
+	TSubclassOf<AHeroBase> HeroClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
-	TObjectPtr<AUnitBase> HeroActor;
+	TObjectPtr<AHeroBase> HeroActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	TObjectPtr<UCameraComponent> SelectorCamera;
@@ -289,7 +294,7 @@ public:
 	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
-	AUnitBase* SpawnHero(FVector Location);
+	AHeroBase* SpawnHero(FVector Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
 	void SetFollowingHero(bool Value);

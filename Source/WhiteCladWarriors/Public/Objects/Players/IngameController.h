@@ -18,6 +18,9 @@ class WHITECLADWARRIORS_API AIngameController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player")
+	FText UserName;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	TObjectPtr<AOperator> ConnectedOperator;
 
