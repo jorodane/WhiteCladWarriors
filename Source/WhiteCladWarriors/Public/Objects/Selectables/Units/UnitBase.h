@@ -14,6 +14,7 @@ class AActionBase;
 class UUnitActionComponent;
 class UActionExecutor;
 class UActionNode;
+class UFillValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
@@ -124,50 +125,6 @@ struct FMainActionInfo
 
 	bool CheckValid() const;
 };
-UCLASS()
-class UFillValue : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FillValue", Meta = (ExposeOnSpawn = "true"))
-	float CurrentValue;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FillValue", Meta = (ExposeOnSpawn = "true"))
-	float MaxValue;
-
-public:
-	UFUNCTION(BlueprintPure, Category = "FillValue")
-	float GetPercent() 
-	{ 
-		if(MaxValue == 0) return 1;
-		else CurrentValue / MaxValue;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	float SetPercent(float NewValue)
-	{
-
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	float SetCurrentValue(float NewValue)
-	{
-
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	float SetMaxValue(float NewValue)
-	{
-
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	float SetValue(float NewCurrentValue, float NewMaxValue)
-	{
-
-	}
-};
 
 UCLASS()
 class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
@@ -189,7 +146,7 @@ protected:
 	FSlateBrush SelectedIcon;
 
 	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
-	TMap<FName, UFillValue> FillValueMap;
+	TMap<FName, UFillValue*> FillValueMap;
 
 	TQueue<FActionReservator> ActionQueue;
 
