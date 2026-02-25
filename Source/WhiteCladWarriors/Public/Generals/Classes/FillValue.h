@@ -37,7 +37,7 @@ public:
 	float SetMaxValue(float NewValue);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	void SetValue(float NewCurrentValue, float NewMaxValue);
+	float SetValue(float NewCurrentValue, float NewMaxValue);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
 	float BroadcastDirty();

@@ -38,7 +38,7 @@ float UFillValue::SetMaxValue(float NewValue)
 	return Result;
 }
 
-void UFillValue::SetValue(float NewCurrentValue, float NewMaxValue)
+float UFillValue::SetValue(float NewCurrentValue, float NewMaxValue)
 {
 	float OriginCurrent = CurrentValue;
 	float OriginMax = MaxValue;
@@ -50,13 +50,13 @@ void UFillValue::SetValue(float NewCurrentValue, float NewMaxValue)
 
 	if (CurrentValue > MaxValue) CurrentValue = MaxValue;
 
-	if (OriginCurrent != CurrentValue || OriginMax != MaxValue) BroadcastDirty();
+	if (OriginCurrent != CurrentValue || OriginMax != MaxValue) return BroadcastDirty();
+	else return GetPercent();
 }
 
 float UFillValue::BroadcastDirty()
 {
-	float Ratio;
-	if (MaxValue <= 0) Ratio = 1;
-	else Ratio = CurrentValue / MaxValue;
+	float Ratio = GetPercent();
 	OnValueChanged.Broadcast(CurrentValue, MaxValue, Ratio);
+	return Ratio;
 }
