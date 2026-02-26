@@ -16,6 +16,9 @@ class UActionExecutor;
 class UActionNode;
 class UFillValue;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillValue*, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillValue*, Value);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
@@ -132,6 +135,13 @@ class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
 	GENERATED_BODY()
 
 public:
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "FillValue")
+	FOnFillValueAdded OnFillValueAdded;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "FillValue")
+	FOnFillValueRemoved OnFillValueRemoved;
+
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitDie OnUnitDie;
 
@@ -165,6 +175,21 @@ protected:
 	virtual void BeginDestroy() override;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "FillValue")
+	UFillValue* AddFillValue(FName WantTag);
+
+	UFUNCTION(BlueprintCallable, Category = "FillValue")
+	void RemoveFillValue(FName WantTag);
+
+	UFUNCTION(BlueprintPure, Category = "FillValue")
+	UFillValue* FindFillValue(FName WantTag);
+
+	UFUNCTION(BlueprintCallable, Category = "FillValue")
+	bool TryFindFillValue(FName WantTag, UFillValue*& Result);
+
+	UFUNCTION(BlueprintPure, Category = "FillValue")
+	TArray<UFillValue*> FindAllFillValue();
+
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionList() const;
 
