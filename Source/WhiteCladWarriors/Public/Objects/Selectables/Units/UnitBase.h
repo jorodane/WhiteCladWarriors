@@ -14,10 +14,10 @@ class AActionBase;
 class UUnitActionComponent;
 class UActionExecutor;
 class UActionNode;
-class UFillValue;
+class UFillableValueComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillValue*, Value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillValue*, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
@@ -93,7 +93,7 @@ struct FMontageEventInfo
 
 public:
 	bool ValidExecutor() const;
-	void Clear() { Cursor.Clear(); bIsStarted = false;}
+	void Clear() { Cursor.Clear(); bIsStarted = false; }
 	void MontageNotifyBegin(FName NotifyName);
 	void MontageNotifyEnd(FName NotifyName);
 	void MontageStart();
@@ -156,7 +156,7 @@ protected:
 	FSlateBrush SelectedIcon;
 
 	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
-	TMap<FName, UFillValue*> FillValueMap;
+	TMap<FName, UFillableValueComponent*> FillValueMap;
 
 	TQueue<FActionReservator> ActionQueue;
 
@@ -176,19 +176,19 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	UFillValue* AddFillValue(FName WantTag);
+	bool AddFillValue(FName WantTag, UFillableValueComponent* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
 	void RemoveFillValue(FName WantTag);
 
 	UFUNCTION(BlueprintPure, Category = "FillValue")
-	UFillValue* FindFillValue(FName WantTag);
+	UFillableValueComponent* FindFillValue(FName WantTag);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	bool TryFindFillValue(FName WantTag, UFillValue*& Result);
+	bool TryFindFillValue(FName WantTag, UFillableValueComponent*& Result);
 
 	UFUNCTION(BlueprintPure, Category = "FillValue")
-	TArray<UFillValue*> FindAllFillValue();
+	TArray<UFillableValueComponent*> FindAllFillValue();
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionList() const;

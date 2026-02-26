@@ -1,12 +1,12 @@
 
-#include "Generals/Classes/FillValue.h"
+#include "Objects/Selectables/Components/FillableValueComponent.h"
 
-float UFillValue::GetPercent() const
+float UFillableValueComponent::GetPercent_Implementation() const
 {
 	if (MaxValue <= 0) return 1;
 	else return CurrentValue / MaxValue;
 }
-float UFillValue::SetPercent(float NewValue)
+float UFillableValueComponent::SetPercent_Implementation(float NewValue)
 {
 	float OriginValue = CurrentValue;
 	NewValue = FMath::Clamp(NewValue, 0, 1);
@@ -22,23 +22,23 @@ float UFillValue::SetPercent(float NewValue)
 	};
 }
 
-float UFillValue::SetCurrentValue(float NewValue)
+float UFillableValueComponent::SetCurrentValue_Implementation(float NewValue)
 {
 	float Result = CurrentValue;
 
-	if(Result != CurrentValue) BroadcastDirty();
+	if (Result != CurrentValue) BroadcastDirty();
 	return Result;
 }
 
-float UFillValue::SetMaxValue(float NewValue)
+float UFillableValueComponent::SetMaxValue_Implementation(float NewValue)
 {
 	float Result = MaxValue;
 
-	if(Result != MaxValue) BroadcastDirty();
+	if (Result != MaxValue) BroadcastDirty();
 	return Result;
 }
 
-float UFillValue::SetValue(float NewCurrentValue, float NewMaxValue)
+float UFillableValueComponent::SetValue_Implementation(float NewCurrentValue, float NewMaxValue)
 {
 	float OriginCurrent = CurrentValue;
 	float OriginMax = MaxValue;
@@ -54,7 +54,7 @@ float UFillValue::SetValue(float NewCurrentValue, float NewMaxValue)
 	else return GetPercent();
 }
 
-float UFillValue::BroadcastDirty()
+float UFillableValueComponent::BroadcastDirty_Implementation()
 {
 	float Ratio = GetPercent();
 	OnValueChanged.Broadcast(CurrentValue, MaxValue, Ratio);

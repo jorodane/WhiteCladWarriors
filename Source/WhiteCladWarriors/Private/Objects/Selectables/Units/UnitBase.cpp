@@ -3,8 +3,8 @@
 
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
+#include "Objects/Selectables/Components/FillableValueComponent.h"
 #include "Generals/ReservedActionMessage.h"
-#include "Generals/Classes/FillValue.h"
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
@@ -164,59 +164,46 @@ void AUnitBase::BeginDestroy()
 	//MontageExecutor.Reset();
 }
 
-UFillValue* AUnitBase::AddFillValue(FName WantTag)
+bool AUnitBase::AddFillValue(FName WantTag, UFillableValueComponent* Target)
 {
-	UFillValue** Finder = FillValueMap.Find(WantTag);
-	UFillValue* Result = nullptr;
-	if (Finder)
+	if (!FillValueMap.Contains(WantTag))
 	{
-		if(*Finder) return *Finder;
-		else
-		{
-			Result = NewObject<UFillValue>(this);
-			FillValueMap[WantTag] = Result;
-		}
+		FillValueMap.Add(WantTag, Target);
+		OnFillValueAdded.Broadcast(Target);
+		return true;
 	}
-	else
-	{
-		Result = NewObject<UFillValue>(this);
-		FillValueMap.Add(WantTag, Result);
-	}
-
-	OnFillValueAdded.Broadcast(Result);
-	return Result;
+	return false;
 }
 
 void AUnitBase::RemoveFillValue(FName WantTag)
 {
-	UFillValue** Finder = FillValueMap.Find(WantTag);
+	UFillableValueComponent** Finder = FillValueMap.Find(WantTag);
 	if (Finder)
 	{
-		if (UFillValue* Result = *Finder)
+		if (UFillableValueComponent* Result = *Finder)
 		{
 			OnFillValueRemoved.Broadcast(Result);
-			Result->MarkAsGarbage();
 		}
 		FillValueMap.Remove(WantTag);
 	}
 }
 
-UFillValue* AUnitBase::FindFillValue(FName WantTag)
+UFillableValueComponent* AUnitBase::FindFillValue(FName WantTag)
 {
-	UFillValue** Finder = FillValueMap.Find(WantTag);
+	UFillableValueComponent** Finder = FillValueMap.Find(WantTag);
 	if (Finder) return *Finder;
 	else return nullptr;
 }
 
-bool AUnitBase::TryFindFillValue(FName WantTag, UFillValue*& Result)
+bool AUnitBase::TryFindFillValue(FName WantTag, UFillableValueComponent*& Result)
 {
 	Result = FindFillValue(WantTag);
 	return Result != nullptr;
 }
 
-TArray<UFillValue*> AUnitBase::FindAllFillValue()
+TArray<UFillableValueComponent*> AUnitBase::FindAllFillValue()
 {
-	TArray<UFillValue*> Result;
+	TArray<UFillableValueComponent*> Result;
 	FillValueMap.GenerateValueArray(Result);
 	return Result;
 }
