@@ -46,6 +46,9 @@ public:
 	TArray<FGenericWidgetClaimer> GetPortraitWidgets() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
+	TArray<FGenericWidgetClaimer> GetHeroWidgets() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
 	void ConnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "GenericWidget")

@@ -33,6 +33,9 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
+	TArray<FGenericWidgetClaimer> HeroWidgets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
 	TArray<FGenericWidgetClaimer> InfoWidgets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
@@ -54,6 +57,7 @@ public:
 public:
 	TArray<FGenericWidgetClaimer> GetInfoWidgets_Implementation() const { return InfoWidgets; }
 	TArray<FGenericWidgetClaimer> GetPortraitWidgets_Implementation() const { return PortraitWidgets; }
+	TArray<FGenericWidgetClaimer> GetHeroWidgets_Implementation() const { return HeroWidgets; }
 	void ConnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag);
 	void DisconnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag);
 //
