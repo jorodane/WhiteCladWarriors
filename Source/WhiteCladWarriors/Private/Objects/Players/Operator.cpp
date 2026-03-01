@@ -284,12 +284,30 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 	}
 }
 
+void AOperator::CommandActionForSelectedComponents(AActionBase* TargetAction, bool bIsStartImmediately)
+{
+	CommandAction(TargetAction, GetAvailableComponentList(TargetAction), bIsStartImmediately);
+}
+
 TArray<FActionTargetContainer> AOperator::GetAvailableActionList()
 {
 	TArray<FActionTargetContainer> Result;
 
 	for (const TPair<FName, FActionTargetContainer>& CurrentContainer : AvailableActions) Result.Add(CurrentContainer.Value);
-	Result.Sort([](const FActionTargetContainer& Left, const FActionTargetContainer& Right) -> bool { return Left.GetOrder() > Right.GetOrder(); });
+	Result.Sort([](const FActionTargetContainer& Left, const FActionTargetContainer& Right) -> bool { return Left.GetOrder() < Right.GetOrder(); });
+
+	return Result;
+}
+
+TArray<UUnitActionComponent*> AOperator::GetAvailableComponentList(AActionBase* WantAction)
+{
+	TArray<UUnitActionComponent*> Result;
+	if(!IsValid(WantAction)) return Result;
+
+	if (FActionTargetContainer* Container = AvailableActions.Find(WantAction->GetActionNameDefine()))
+	{
+		Result = Container->Components;
+	}
 
 	return Result;
 }

@@ -195,8 +195,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CommandAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately);
 
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void CommandActionForSelectedComponents(AActionBase* TargetAction, bool bIsStartImmediately);
+
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<FActionTargetContainer> GetAvailableActionList();
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<UUnitActionComponent*> GetAvailableComponentList(AActionBase* WantAction);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<FActionTargetContainer> GetAvaliableActionFromKey(FKey WantKey) const;

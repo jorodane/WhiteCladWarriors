@@ -18,4 +18,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero")
 	FText ClassName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero")
+	FSlateBrush Portrait;
+
 };
