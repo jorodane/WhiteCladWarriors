@@ -448,6 +448,7 @@ void AOperator::DeselectActorWithoutNotify_Implementation(AActor* Target)
 void AOperator::DeselectActor(AActor* Target)
 {
 	DeselectActorWithoutNotify(Target);
+	if (CurrentInputPackage.SelectedActors.IsEmpty())SelectActorWithoutNotify(HeroActor, true);
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
