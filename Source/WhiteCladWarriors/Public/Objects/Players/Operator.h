@@ -22,23 +22,6 @@ class UCameraComponent;
 class UUnitActionComponent;
 
 
-UCLASS(BlueprintType)
-class UActionTargetContainer : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TObjectPtr<AActionBase> Action;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TArray<UUnitActionComponent*> Components;
-
-public:
-	bool operator < (const UActionTargetContainer& Other) const;
-	bool operator > (const UActionTargetContainer& Other) const;
-	
-};
 
 #define DEFAULT_CAMERALENGTH 2000.0f
 #define DOUBLE_CLICK_DELAY 0.3
@@ -111,7 +94,7 @@ protected:
 	TEnumAsByte<ETraceTypeQuery> SelectChannel;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action", meta = (AllowPrivateAccess = true))
-	TMap<FName, UActionTargetContainer*> AvailableActions;
+	TMap<FName, FActionTargetContainer> AvailableActions;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
 	FInputClaim CurrentInputClaim;
@@ -213,7 +196,10 @@ public:
 	void CommandAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<UActionTargetContainer*> GetAvailableActionList();
+	TArray<FActionTargetContainer> GetAvailableActionList();
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<FActionTargetContainer> GetAvaliableActionFromKey(FKey WantKey) const;
 
 	UFUNCTION(BlueprintPure, Category = "Input")
 	bool IsSmartKey(AActionBase* TargetAction);

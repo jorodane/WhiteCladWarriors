@@ -48,3 +48,20 @@ struct FActionCursorFinder
 
 	void Clear();
 };
+
+
+USTRUCT(BlueprintType)
+struct FActionTargetContainer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TObjectPtr<AActionBase> Action;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TArray<UUnitActionComponent*> Components;
+
+public:
+	int GetOrder() const;
+};

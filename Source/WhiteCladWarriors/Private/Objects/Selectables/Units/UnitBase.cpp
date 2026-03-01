@@ -4,6 +4,7 @@
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/FillableValueComponent.h"
+#include "Objects/Players/Operator.h"
 #include "Generals/ReservedActionMessage.h"
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionBase.h"
@@ -216,9 +217,35 @@ TArray<AActionBase*> AUnitBase::GetActionList() const
 	return Result;
 }
 
+TArray<AActionBase*> AUnitBase::GetActionFromKey(FKey WantKey) const
+{
+	TArray<AActionBase*> Result;
+	for (const TPair<AActionBase*, FActionTargetContainer>& CurrentPair : ActionMap)
+	{
+		if (AActionBase* CurrentAction = CurrentPair.Key)
+		{
+			if (CurrentAction->GetHotKey() == WantKey) Result.Add(CurrentAction);
+		}
+	}
+	return Result;
+}
+
+TArray<FActionTargetContainer> AUnitBase::GetActionContainerFromKey(FKey WantKey) const
+{
+	TArray<FActionTargetContainer> Result;
+	for (const TPair<AActionBase*, FActionTargetContainer>& CurrentPair : ActionMap)
+	{
+		if (AActionBase* CurrentAction = CurrentPair.Key)
+		{
+			if (CurrentAction->GetHotKey() == WantKey) Result.Add(CurrentPair.Value);
+		}
+	}
+	return Result;
+}
+
 TArray<UUnitActionComponent*> AUnitBase::GetComponentsWithAction(AActionBase* TargetAction) const
 {
-	if (const TArray<UUnitActionComponent*>* Result = ActionMap.Find(TargetAction)) return *Result;
+	if (const FActionTargetContainer* Result = ActionMap.Find(TargetAction)) return Result->Components;
 	else return TArray<UUnitActionComponent*>();
 }
 
@@ -226,11 +253,11 @@ bool AUnitBase::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*&
 {
 	int MaxOrder = 0;
 	AActionBase* MaxAction = nullptr;
-	for (const TPair<AActionBase*, TArray<UUnitActionComponent*>>& CurrentPair : ActionMap)
+	for (const TPair<AActionBase*, FActionTargetContainer>& CurrentPair : ActionMap)
 	{
 		AActionBase* CurrentAction = CurrentPair.Key;
 		if (!IsValid(CurrentAction)) continue;
-		for (UUnitActionComponent* CurrentComponent : CurrentPair.Value)
+		for (UUnitActionComponent* CurrentComponent : CurrentPair.Value.Components)
 		{
 			if (!IsValid(CurrentComponent)) continue;
 
@@ -246,8 +273,8 @@ bool AUnitBase::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*&
 	if (MaxAction == nullptr) return false;
 
 	OutAction = MaxAction;
-	const TArray<UUnitActionComponent*>* ResultComponents = ActionMap.Find(OutAction);
-	OutComponents = *ResultComponents;
+	if (ActionMap.Find(OutAction))
+	OutComponents = GetComponentsWithAction(OutAction);
 	return MaxOrder > 0;
 }
 
@@ -261,8 +288,9 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 	{
 		if (AActionBase* CurrentAction = UActionSetting::GetAction(CurrentName))
 		{
-			TArray<UUnitActionComponent*>& CurrentList = ActionMap.FindOrAdd(CurrentAction);
-			CurrentList.Add(NewComponent);
+			FActionTargetContainer* CurrentContainer = ActionMap.Find(CurrentAction);
+			if (CurrentContainer == nullptr) CurrentContainer = &ActionMap.Add(CurrentAction);
+			if (CurrentContainer != nullptr) CurrentContainer->Components.Add(NewComponent);
 		}
 	}
 };

@@ -45,3 +45,8 @@ void FActionCursorFinder::Clear()
 	CurrentComponent = nullptr;
 	CurrentID = 0;
 }
+
+int FActionTargetContainer::GetOrder() const
+{
+	return IsValid(this->Action) ? this->Action->GetUIOrder() : 0;
+}

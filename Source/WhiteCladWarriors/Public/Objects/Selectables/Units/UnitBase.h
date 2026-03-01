@@ -12,6 +12,7 @@
 
 class AActionBase;
 class UUnitActionComponent;
+class UActionTargetContainer;
 class UActionExecutor;
 class UActionNode;
 class UFillableValueComponent;
@@ -155,7 +156,7 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
 	FSlateBrush SelectedIcon;
 
-	TMap<AActionBase*, TArray<UUnitActionComponent*>>  ActionMap;
+	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
 	TMap<FName, UFillableValueComponent*> FillValueMap;
 
 	TQueue<FActionReservator> ActionQueue;
@@ -192,6 +193,13 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionList() const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<AActionBase*> GetActionFromKey(FKey WantKey) const;
+
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<FActionTargetContainer> GetActionContainerFromKey(FKey WantKey) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UUnitActionComponent*> GetComponentsWithAction(AActionBase* TargetAction) const;

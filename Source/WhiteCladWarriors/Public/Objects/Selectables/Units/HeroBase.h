@@ -18,12 +18,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero")
 	FText ClassName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
-	FName Action_Q;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
-	FName Action_W;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
-	FName Action_E;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
-	FName Action_R;
 };

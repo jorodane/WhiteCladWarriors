@@ -22,15 +22,6 @@ TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
 FInputClaim FInputClaim::Claim_None;
 FInputPackage FInputPackage::Input_None;
 
-bool UActionTargetContainer::operator < (const UActionTargetContainer& Other) const
-{
-	return (IsValid(this->Action) ? this->Action->GetUIOrder() : 0) < (IsValid(Other.Action) ? Other.Action->GetUIOrder() : 0);
-}
-
-bool UActionTargetContainer::operator > (const UActionTargetContainer& Other) const
-{
-	return (IsValid(this->Action) ? this->Action->GetUIOrder() : 0) > (IsValid(Other.Action) ? Other.Action->GetUIOrder() : 0);
-}
 
 
 bool AOperator::IsVisibleOnCamera(FMatrix Matrix, AActor* Target)
@@ -293,13 +284,29 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 	}
 }
 
-TArray<UActionTargetContainer*> AOperator::GetAvailableActionList()
+TArray<FActionTargetContainer> AOperator::GetAvailableActionList()
 {
-	TArray<UActionTargetContainer*> Result;
+	TArray<FActionTargetContainer> Result;
 
-	for (TPair<FName, UActionTargetContainer*> CurrentContainer : AvailableActions) Result.Add(CurrentContainer.Value);
-	Result.Sort();
+	for (const TPair<FName, FActionTargetContainer>& CurrentContainer : AvailableActions) Result.Add(CurrentContainer.Value);
+	Result.Sort([](const FActionTargetContainer& Left, const FActionTargetContainer& Right) -> bool { return Left.GetOrder() > Right.GetOrder(); });
 
+	return Result;
+}
+
+TArray<FActionTargetContainer> AOperator::GetAvaliableActionFromKey(FKey WantKey) const
+{
+	TArray<FActionTargetContainer> Result;
+	for (const TPair<FName, FActionTargetContainer>& CurrentPair : AvailableActions)
+	{
+		const FActionTargetContainer& CurrentContainer = CurrentPair.Value;
+		
+		if (AActionBase* CurrentAction = CurrentContainer.Action)
+		{
+			if (CurrentAction->GetHotKey() == WantKey) Result.Add(CurrentContainer);
+		}
+		
+	}
 	return Result;
 }
 
@@ -449,14 +456,19 @@ void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
 	if(!IsValid(Target)) return;
 	for (const FName& CurrentActionName : Target->ActionList)
 	{
-		UActionTargetContainer** Finder = AvailableActions.Find(CurrentActionName);
-		UActionTargetContainer* CurrentContainer = Finder ? *Finder : nullptr;
-		if (!CurrentContainer)
+		FActionTargetContainer* CurrentContainer;
+
+		if (FActionTargetContainer* Finder = AvailableActions.Find(CurrentActionName))
 		{
-			CurrentContainer = AvailableActions.Add(CurrentActionName, NewObject<UActionTargetContainer>(this));
+			CurrentContainer = Finder;
+		}
+		else
+		{
+			CurrentContainer = &AvailableActions.Add(CurrentActionName);
 			CurrentContainer->Action = UActionSetting::GetAction(CurrentActionName);
 		}
-		if(CurrentContainer) CurrentContainer->Components.AddUnique(Target);
+
+		CurrentContainer->Components.AddUnique(Target);
 	}
 }
 
@@ -465,17 +477,16 @@ void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
 	if(!IsValid(Target)) return;
 	for (const FName& CurrentActionName : Target->ActionList)
 	{
-		UActionTargetContainer** Finder = AvailableActions.Find(CurrentActionName);
-		UActionTargetContainer* CurrentContainer = Finder ? *Finder : nullptr;
-		if (CurrentContainer)
+		if (FActionTargetContainer* Finder = AvailableActions.Find(CurrentActionName))
 		{
-			CurrentContainer->Components.Remove(Target);
-			if (CurrentContainer->Components.Num() == 0)
+			FActionTargetContainer& CurrentContainer = *Finder;
+			CurrentContainer.Components.Remove(Target);
+			if (CurrentContainer.Components.Num() == 0)
 			{
-				CurrentContainer->ConditionalBeginDestroy();
 				AvailableActions.Remove(CurrentActionName);
 			}
 		}
+
 	}
 }
 
