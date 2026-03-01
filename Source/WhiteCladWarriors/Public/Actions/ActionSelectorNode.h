@@ -24,8 +24,11 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	FText InputFailReason;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TArray<FSelectorInput> InputTypes;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TArray<UActionNode*> IndicatorNodes;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
