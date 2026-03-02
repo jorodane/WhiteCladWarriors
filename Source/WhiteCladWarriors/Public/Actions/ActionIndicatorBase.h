@@ -3,24 +3,47 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Components/ActorComponent.h"
 #include "ActionIndicatorBase.generated.h"
 
-UCLASS()
-class WHITECLADWARRIORS_API AActionIndicatorBase : public AActor
+class AOperator;
+class UActionSelectorNode;
+class UActionExecutor;
+class UActionNode;
+class UUnitActionComponent;
+
+UCLASS(Blueprintable, BlueprintType)
+class UActionIndicatorBase : public UActorComponent
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AActionIndicatorBase();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
+	AOperator* OwnerOperator;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
+	TObjectPtr<UActionExecutor> CurrentExecutor;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
+	TObjectPtr<UActionSelectorNode> CurrentNode;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
+	TArray<UUnitActionComponent*> CurrentComponents;
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	void SetOwner(AOperator* NewOperator);
+	void SetOwner_Implementation(AOperator* NewOperator) { OwnerOperator = NewOperator; };
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	void Set(UActionExecutor* TargetExecutor, TArray<UUnitActionComponent*> TargetComponents, UActionSelectorNode* StartNode);
+	void Set_Implementation(UActionExecutor* TargetExecutor, TArray<UUnitActionComponent*> TargetComponents, UActionSelectorNode* StartNode);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	void SetVisible();
+	void SetVisible_Implementation();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	void SetInvisible();
+	void SetInvisible_Implementation();
 };

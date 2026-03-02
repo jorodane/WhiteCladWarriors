@@ -3,25 +3,17 @@
 
 #include "Actions/ActionIndicatorBase.h"
 
-// Sets default values
-AActionIndicatorBase::AActionIndicatorBase()
+void UActionIndicatorBase::Set_Implementation(UActionExecutor* TargetExecutor, TArray<UUnitActionComponent*> TargetComponents, UActionSelectorNode* StartNode)
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-// Called when the game starts or when spawned
-void AActionIndicatorBase::BeginPlay()
+void UActionIndicatorBase::SetVisible_Implementation()
 {
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AActionIndicatorBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
 }
 
+void UActionIndicatorBase::SetInvisible_Implementation()
+{
+
+}
