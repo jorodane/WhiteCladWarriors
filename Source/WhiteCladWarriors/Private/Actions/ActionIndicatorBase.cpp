@@ -3,7 +3,7 @@
 
 #include "Actions/ActionIndicatorBase.h"
 
-void UActionIndicatorBase::Set_Implementation(UActionExecutor* TargetExecutor, TArray<UUnitActionComponent*> TargetComponents, UActionSelectorNode* StartNode)
+void UActionIndicatorBase::SetIndicator_Implementation(UActionExecutor* TargetExecutor, const TArray<UUnitActionComponent*>& TargetComponents, UActionSelectorNode* StartNode)
 {
 
 }

@@ -36,8 +36,8 @@ public:
 	void SetOwner_Implementation(AOperator* NewOperator) { OwnerOperator = NewOperator; };
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
-	void Set(UActionExecutor* TargetExecutor, TArray<UUnitActionComponent*> TargetComponents, UActionSelectorNode* StartNode);
-	void Set_Implementation(UActionExecutor* TargetExecutor, TArray<UUnitActionComponent*> TargetComponents, UActionSelectorNode* StartNode);
+	void SetIndicator(UActionExecutor* TargetExecutor, const TArray<UUnitActionComponent*>& TargetComponents, UActionSelectorNode* StartNode);
+	void SetIndicator_Implementation(UActionExecutor* TargetExecutor, const TArray<UUnitActionComponent*>& TargetComponents, UActionSelectorNode* StartNode);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void SetVisible();
