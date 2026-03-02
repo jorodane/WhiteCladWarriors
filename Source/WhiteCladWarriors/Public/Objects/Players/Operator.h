@@ -84,6 +84,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AAreaSelector> DragAreaActor;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
+	TObjectPtr<AActor> FocusActor;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AIngameController> PlayerController;
 
@@ -119,9 +122,6 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsReservationMode = false;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Hero")
-	bool bIsFollowingHero = true;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -181,6 +181,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMoveTo(FVector Position);
 
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void CameraMoveToFocusActor();
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Camera")
 	void CameraZoom(float Value, float Min, float Max, float Multiplier);
 	virtual void CameraZoom_Implementation(float Value, float Min, float Max, float Multiplier);
@@ -191,6 +194,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void SetFocusActor(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	inline void ResetFocusActor();
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
+	void SetToggleFocusActor(AActor* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CommandAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately);
@@ -292,7 +304,7 @@ public:
 	void SetFollowingHero(bool Value);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
-	void ToggleFollowingHero() { SetFollowingHero(!bIsFollowingHero); }
+	void ToggleFollowingHero();
 
 public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);

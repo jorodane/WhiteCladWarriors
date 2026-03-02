@@ -38,10 +38,7 @@ void AOperator::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bIsFollowingHero && IsValid(HeroActor))
-	{
-		CameraMoveTo(HeroActor->GetActorLocation());
-	}
+	CameraMoveToFocusActor();
 
 	if (APlayerController* AsPlayerController = Cast<APlayerController>(GetController()))
 	{
@@ -225,6 +222,15 @@ void AOperator::CameraMoveTo(FVector Position)
 	SetActorLocation(Position);
 }
 
+void AOperator::CameraMoveToFocusActor()
+{
+	if (IsValid(FocusActor))
+	{
+		CameraMoveTo(FocusActor->GetActorLocation());
+	}
+}
+
+
 void AOperator::CameraZoom_Implementation(float Value, float Min, float Max, float Multiplier)
 {
 	SetCameraLength(FMath::Clamp(CameraLength + (Value * Multiplier), Min, Max));
@@ -249,6 +255,23 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 
 	CameraMove(Result, Multiplier);
 };
+
+void AOperator::SetFocusActor(AActor* Target)
+{
+	if (IsValid(Target)) FocusActor = Target;
+	else ResetFocusActor();
+}
+void AOperator::ResetFocusActor()
+{
+	FocusActor = nullptr;
+}
+
+void AOperator::SetToggleFocusActor(AActor* Target)
+{
+
+	if (Target == FocusActor) ResetFocusActor();
+	else SetFocusActor(Target);
+}
 
 void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActionComponent*>& TargetComponent, bool bIsStartImmediately)
 {
@@ -646,13 +669,23 @@ AHeroBase* AOperator::SpawnHero(FVector Location)
 
 void AOperator::SetFollowingHero(bool Value)
 { 
-	bIsFollowingHero = Value; 
-	if (bIsFollowingHero && IsValid(HeroActor))
+	if (Value && IsValid(HeroActor))
 	{
 		DeselectActors();
 		SelectActor(HeroActor, true);
+		SetFocusActor(HeroActor);
+	}
+	else
+	{
+		ResetFocusActor();
 	}
 }
+
+void AOperator::ToggleFollowingHero()
+{ 
+	SetToggleFocusActor(HeroActor); 
+}
+
 
 void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
 {
