@@ -38,6 +38,7 @@ struct FInputClaim
 
 	void Clear()
 	{
+		TargetNode = nullptr;
 		TargetActionCursor.Clear();
 		TargetComponentArray.SetNum(0);
 		TargetDescription = FText::GetEmpty();

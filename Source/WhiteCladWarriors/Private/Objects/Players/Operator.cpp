@@ -23,13 +23,6 @@ TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
 FInputClaim FInputClaim::Claim_None;
 FInputPackage FInputPackage::Input_None;
 
-AOperator::AOperator()
-{
-	Indicator = Cast<UActionIndicatorBase>(CreateDefaultSubobject(L"Indicator", UActionIndicatorBase::StaticClass(), IndicatorClass, true, false));
-}
-
-
-
 bool AOperator::IsVisibleOnCamera(FMatrix Matrix, AActor* Target)
 {
 	if(!IsValid(Target)) return false;
@@ -44,24 +37,13 @@ void AOperator::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	CameraMoveToFocusActor();
-
-	if (APlayerController* AsPlayerController = Cast<APlayerController>(GetController()))
+	if (AController* CurrentController = GetController())
 	{
-		FHitResult ClickAreaHitResult;
-		FHitResult SelectHitResult;
-		bool isClickAreaHit = AsPlayerController->GetHitResultUnderCursorByChannel(ClickAreaChannel, false, ClickAreaHitResult);
-		bool isSelectHit = AsPlayerController->GetHitResultUnderCursorByChannel(SelectChannel, false, SelectHitResult);
-
-		if (isClickAreaHit) CurrentInputPackage.MouseTerrainPosition = ClickAreaHitResult.Location;
-		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
-		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
+		if (CurrentController->IsLocalPlayerController())
 		{
-			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverEnd(CurrentInputPackage.MouseHitActor);
-			CurrentInputPackage.MouseHitActor = CurrentSelectHitActor;
-			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverBegin(CurrentInputPackage.MouseHitActor);
+			CameraMoveToFocusActor();
+			UpdateInputPackage();
 		}
-		CurrentInputPackage.MouseHitActor = SelectHitResult.GetActor();
 	}
 }
 
@@ -182,7 +164,7 @@ void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocati
 void AOperator::OnUpdateInput_Implementation()
 {
 	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursorType);
-	OnInputClaimChanged.Broadcast(CurrentInputClaim);
+	OnInputClaimChanged.Broadcast(CurrentInputClaim, IsValid(CurrentInputClaim.TargetNode));
 }
 
 void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
@@ -194,7 +176,7 @@ void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 
 void AOperator::ForceRemoveInputClaim()
 {
-	CurrentInputClaim = FInputClaim::Claim_None;
+	CurrentInputClaim.Clear();
 	OnUpdateInput();
 }
 
@@ -208,6 +190,27 @@ void AOperator::CancelInputClaim()
 }
 
 bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetNode); }
+
+void AOperator::UpdateInputPackage()
+{
+	if (APlayerController* AsPlayerController = Cast<APlayerController>(GetController()))
+	{
+		FHitResult ClickAreaHitResult;
+		FHitResult SelectHitResult;
+		bool isClickAreaHit = AsPlayerController->GetHitResultUnderCursorByChannel(ClickAreaChannel, false, ClickAreaHitResult);
+		bool isSelectHit = AsPlayerController->GetHitResultUnderCursorByChannel(SelectChannel, false, SelectHitResult);
+
+		if (isClickAreaHit) CurrentInputPackage.MouseTerrainPosition = ClickAreaHitResult.Location;
+		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
+		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
+		{
+			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverEnd(CurrentInputPackage.MouseHitActor);
+			CurrentInputPackage.MouseHitActor = CurrentSelectHitActor;
+			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverBegin(CurrentInputPackage.MouseHitActor);
+		}
+		CurrentInputPackage.MouseHitActor = SelectHitResult.GetActor();
+	}
+}
 
 void AOperator::CameraMove(FVector2D Direction, float Multiplier)
 {

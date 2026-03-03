@@ -31,7 +31,7 @@ class UUnitActionComponent;
 DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, Claim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroChanged, AHeroBase*, NewHero);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputClaimChanged, const FInputClaim&, NewClaim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputClaimChanged, const FInputClaim&, NewClaim, bool, ValidClaim);
 
 
 USTRUCT(BlueprintType)
@@ -91,10 +91,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AIngameController> PlayerController;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
-	TSubclassOf<UActionIndicatorBase> IndicatorClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<UActionIndicatorBase> Indicator;
 
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
@@ -129,9 +126,6 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsReservationMode = false;
-
-public:
-	AOperator();
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -184,6 +178,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Input")
 	const FInputPackage& GetInputPackage() { return CurrentInputPackage; }
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void UpdateInputPackage();
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMove(FVector2D Direction, float Multiplier);

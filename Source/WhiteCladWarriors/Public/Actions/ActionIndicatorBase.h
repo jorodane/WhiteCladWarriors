@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Generals/Structs/ActionInputStructures.h"
 #include "ActionIndicatorBase.generated.h"
 
 class AOperator;
@@ -30,10 +31,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
 	TArray<UUnitActionComponent*> CurrentComponents;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
+	bool bIsActivated = false;
+
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void SetOwner(AOperator* NewOperator);
-	void SetOwner_Implementation(AOperator* NewOperator) { OwnerOperator = NewOperator; };
+	void SetOwner_Implementation(AOperator* NewOperator);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void SetIndicator(UActionExecutor* TargetExecutor, const TArray<UUnitActionComponent*>& TargetComponents, UActionSelectorNode* StartNode);
@@ -46,4 +50,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void SetInvisible();
 	void SetInvisible_Implementation();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	void ReceiveInputClaim(const FInputClaim& NewClaim, bool ValidClaim);
+	void ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim);
 };
