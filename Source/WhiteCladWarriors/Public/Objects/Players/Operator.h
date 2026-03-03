@@ -16,6 +16,7 @@ class AAreaSelector;
 class AActionBase;
 class UActionExecutor;
 class UActionSelectorNode;
+class UActionIndicatorBase;
 class AUnitBase;
 class AHeroBase;
 class UCameraComponent;
@@ -72,7 +73,7 @@ protected:
 
 	static TObjectPtr<AOperator> LocalOperator;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hero", meta = (AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess=true))
 	TSubclassOf<AHeroBase> HeroClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
@@ -89,6 +90,12 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AIngameController> PlayerController;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
+	TSubclassOf<UActionIndicatorBase> IndicatorClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
+	TObjectPtr<UActionIndicatorBase> Indicator;
 
 	UPROPERTY(EditAnywhere, BlueprintReadwrite, Category = "Select", meta = (AllowPrivateAccess = true))
 	TEnumAsByte<ETraceTypeQuery> ClickAreaChannel;
@@ -122,6 +129,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Input", meta = (AllowPrivateAccess = true))
 	bool bIsReservationMode = false;
+
+public:
+	AOperator();
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Camera")
@@ -280,6 +290,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActors();
 	virtual void DeselectActors_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void DeselectActorsWithoutNotify();
+	virtual void DeselectActorsWithoutNotify_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ComponentAddToActionList(UUnitActionComponent* Target);

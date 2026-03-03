@@ -9,6 +9,7 @@
 #include "Actions/ActionBase.h"
 #include "Actions/ActionExecutor.h"
 #include "Actions/ActionSelectorNode.h"
+#include "Actions/ActionIndicatorBase.h"
 #include "Interfaces/Selectable.h"
 #include "Camera/CameraComponent.h"
 #include "Settings/MapSetting.h"
@@ -21,6 +22,11 @@
 TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
 FInputClaim FInputClaim::Claim_None;
 FInputPackage FInputPackage::Input_None;
+
+AOperator::AOperator()
+{
+	Indicator = Cast<UActionIndicatorBase>(CreateDefaultSubobject(L"Indicator", UActionIndicatorBase::StaticClass(), IndicatorClass, true, false));
+}
 
 
 
@@ -447,6 +453,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 }
 void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 {
+	if (bIsSingleSelection) DeselectActorsWithoutNotify();
 	SelectActorWithoutNotify(Target, bIsSingleSelection);
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
@@ -483,6 +490,12 @@ void AOperator::DeselectUnit_Implementation(AUnitBase* Target)
 
 void AOperator::DeselectActors_Implementation()
 {
+	DeselectActorsWithoutNotify_Implementation();
+	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
+}
+
+void AOperator::DeselectActorsWithoutNotify_Implementation()
+{
 	for (AActor* CurrentTarget : CurrentInputPackage.SelectedActors)
 	{
 		ISelectable::Execute_Deselect(CurrentTarget);
@@ -490,7 +503,6 @@ void AOperator::DeselectActors_Implementation()
 		if (AUnitBase* CurrentUnit = Cast<AUnitBase>(CurrentTarget)) CurrentUnit->OnUnitDie.RemoveAll(this);
 	}
 	CurrentInputPackage.SelectedActors.Empty();
-	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
 void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
@@ -684,6 +696,7 @@ void AOperator::SetFollowingHero(bool Value)
 void AOperator::ToggleFollowingHero()
 { 
 	SetToggleFocusActor(HeroActor); 
+	if(FocusActor == HeroActor) SelectActor(HeroActor, true);
 }
 
 
