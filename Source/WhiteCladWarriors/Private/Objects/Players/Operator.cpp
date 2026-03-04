@@ -183,10 +183,15 @@ void AOperator::ForceRemoveInputClaim()
 void AOperator::CancelInputClaim()
 {
 	if (!IsInputClaimed() || CurrentInputClaim.TargetNode == nullptr) return;
-	for (auto CurrentComponent : CurrentInputClaim.TargetComponentArray)
+	if (!CurrentInputClaim.TargetComponentArray.IsEmpty())
 	{
-		if (CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetActionCursor)) ForceRemoveInputClaim();
+		for (auto CurrentComponent : CurrentInputClaim.TargetComponentArray)
+		{
+			CurrentInputClaim.TargetNode->CancelInput(CurrentInputClaim.TargetActionCursor);
+		}
 	}
+
+	ForceRemoveInputClaim();
 }
 
 bool AOperator::IsInputClaimed() { return IsValid(CurrentInputClaim.TargetNode); }
