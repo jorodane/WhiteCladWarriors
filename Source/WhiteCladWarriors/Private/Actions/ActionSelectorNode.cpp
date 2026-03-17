@@ -2,6 +2,7 @@
 
 
 #include "Actions/ActionSelectorNode.h"
+#include "Actions/ActionBehaviorNode.h"
 #include "Actions/ActionExecutor.h"
 
 bool UActionSelectorNode::CompleteInput_Implementation(const FActionCursorFinder& WantCursor)
@@ -97,5 +98,12 @@ bool UActionSelectorNode::CheckInput(const FActionCursorFinder& WantCursor, cons
 			break;
 		}
 	}
+	return Result;
+}
+
+TMap<UActionBehaviorNode*, FIndicatorClaim> UActionSelectorNode::GetIndicatorClaim(const FInputClaim& TargetInput)
+{
+	TMap<UActionBehaviorNode*, FIndicatorClaim> Result;
+	for (UActionBehaviorNode* CurrentNode : IndicatorNodes) Result.Add(CurrentNode, CurrentNode->GetIndicatorClaim(TargetInput));
 	return Result;
 }

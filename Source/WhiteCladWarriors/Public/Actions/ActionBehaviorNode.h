@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Actions/ActionNode.h"
+#include "Generals/Structs/ActionInputStructures.h"
 #include "ActionBehaviorNode.generated.h"
 
 /**
@@ -14,4 +15,7 @@ class WHITECLADWARRIORS_API UActionBehaviorNode : public UActionNode
 {
 	GENERATED_BODY()
 	
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
+	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
 };

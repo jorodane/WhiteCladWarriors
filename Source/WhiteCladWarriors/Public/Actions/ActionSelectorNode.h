@@ -9,6 +9,7 @@
 #include "ActionSelectorNode.generated.h"
 
 class UActionNode;
+class UActionBehaviorNode;
 class AActionIndicatorShowerBase;
 /**
  * 
@@ -27,7 +28,7 @@ protected:
 	TArray<FSelectorInput> InputTypes;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	TArray<UActionNode*> IndicatorNodes;
+	TArray<UActionBehaviorNode*> IndicatorNodes;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
@@ -81,8 +82,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction, UActionExecutor* Executor) const;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
-	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
+	UFUNCTION(BlueprintPure, Category = "Indicator")
+	TMap<UActionBehaviorNode*, FIndicatorClaim> GetIndicatorClaim(const FInputClaim& TargetInput);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")
 	void UpdateIndicator(const FInputClaim& TargetInput, const TArray<AActionIndicatorShowerBase*>& TargetIndicators);
