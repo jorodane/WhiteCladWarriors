@@ -4,16 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Generals/Structs/InputPackage.h"
+#include "Generals/Structs/ActionInputStructures.h"
 #include "Actions/ActionNode.h"
 #include "ActionSelectorNode.generated.h"
 
 class UActionNode;
-struct FInputClaim;
+class AActionIndicatorShowerBase;
 /**
  * 
  */
-
-
 
 UCLASS()
 class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
@@ -81,4 +80,10 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
 	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction, UActionExecutor* Executor) const;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
+	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")
+	void UpdateIndicator(const FInputClaim& TargetInput, const TArray<AActionIndicatorShowerBase*>& TargetIndicators);
 };

@@ -14,6 +14,24 @@ class UActionSelectorNode;
 class UActionExecutor;
 class UUnitActionComponent;
 
+UENUM(BlueprintType)
+enum class EInputIndicatorType : uint8
+{
+	Arrow, Circle, Quad
+};
+
+USTRUCT(BlueprintType)
+struct FIndicatorClaim
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
+	EInputIndicatorType IndicatorType;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
+	int Amount;
+};
+
 USTRUCT(BlueprintType)
 struct FInputClaim
 {
