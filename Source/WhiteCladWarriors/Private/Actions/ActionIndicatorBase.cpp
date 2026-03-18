@@ -32,3 +32,12 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 {
 
 }
+
+AActionIndicatorShowerBase* UActionIndicatorBase::ShowerPop()
+{
+	return nullptr;
+}
+void UActionIndicatorBase::ShowerPush(EInputIndicatorType WantType, AActionIndicatorShowerBase* NewShower)
+{
+
+}

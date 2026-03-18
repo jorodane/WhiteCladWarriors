@@ -31,10 +31,18 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
 	TArray<UUnitActionComponent*> CurrentComponents;
 
+	TMap<EInputIndicatorType, TSet<AActionIndicatorShowerBase*>> ShowerPool;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
 	bool bIsActivated = false;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Indicator")
+	AActionIndicatorShowerBase* ShowerPop();
+
+	UFUNCTION(BlueprintCallable, Category = "Indicator")
+	void ShowerPush(EInputIndicatorType WantType, AActionIndicatorShowerBase* NewShower);
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void SetOwner(AOperator* NewOperator);
 	void SetOwner_Implementation(AOperator* NewOperator);
