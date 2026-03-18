@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Generals/Structs/ActionInputStructures.h"
 #include "ActionIndicatorShowerBase.generated.h"
 
 UCLASS()
@@ -11,16 +12,13 @@ class WHITECLADWARRIORS_API AActionIndicatorShowerBase : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	AActionIndicatorShowerBase();
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
+	EInputIndicatorType GetIndicatorType();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Pool")
+	void OnPoolEnqueue();
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Pool")
+	void OnPoolDequeue();
 };
