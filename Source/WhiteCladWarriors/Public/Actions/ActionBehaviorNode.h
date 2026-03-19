@@ -7,6 +7,8 @@
 #include "Generals/Structs/ActionInputStructures.h"
 #include "ActionBehaviorNode.generated.h"
 
+
+class AActionIndicatorShowerBase;
 /**
  * 
  */
@@ -18,4 +20,7 @@ class WHITECLADWARRIORS_API UActionBehaviorNode : public UActionNode
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
 	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
+	void UpdateIndicator(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower);
 };

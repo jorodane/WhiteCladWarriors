@@ -34,7 +34,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
 	TObjectPtr<UActionSelectorNode> CurrentNode;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Pool")
+	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
+	FInputClaim CurrentClaim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool")
 	TMap<EInputIndicatorType, TSubclassOf<AActionIndicatorShowerBase>> PoolDefaultClassMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Pool")
@@ -54,10 +57,6 @@ public:
 	void SetOwnerOperator_Implementation(AOperator* NewOperator);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
-	void SetIndicator(UActionExecutor* TargetExecutor, const TArray<UUnitActionComponent*>& TargetComponents, UActionSelectorNode* TargetNode);
-	void SetIndicator_Implementation(UActionExecutor* TargetExecutor, const TArray<UUnitActionComponent*>& TargetComponents, UActionSelectorNode* TargetNode);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void SetVisible();
 	void SetVisible_Implementation();
 
@@ -68,4 +67,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void ReceiveInputClaim(const FInputClaim& NewClaim, bool ValidClaim);
 	void ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	void UpdateShower();
+	void UpdateShower_Implementation();
 };
