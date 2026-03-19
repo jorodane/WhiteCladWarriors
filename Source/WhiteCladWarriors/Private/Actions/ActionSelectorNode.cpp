@@ -101,6 +101,11 @@ bool UActionSelectorNode::CheckInput(const FActionCursorFinder& WantCursor, cons
 	return Result;
 }
 
+TArray<UActionBehaviorNode*> UActionSelectorNode::GetIndicatorNodes()
+{
+	return IndicatorNodes;
+}
+
 TMap<UActionBehaviorNode*, FIndicatorClaim> UActionSelectorNode::GetIndicatorClaim(const FInputClaim& TargetInput)
 {
 	TMap<UActionBehaviorNode*, FIndicatorClaim> Result;

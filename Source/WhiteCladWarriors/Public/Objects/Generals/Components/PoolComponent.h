@@ -13,11 +13,12 @@ class WHITECLADWARRIORS_API UPoolComponent : public UActorComponent
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ExposeOnSpawn = "true"))
-	TSubclassOf<AActor> Template;
+	UPROPERTY(BlueprintReadOnly, Category = "Pool")
+	TArray<TSoftObjectPtr<AActor>> Created;
+	TQueue<TSoftObjectPtr<AActor>> WaitQueue;
 
-	TQueue<AActor*> WaitQueue;
-	TSet<AActor*> Created;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ExposeOnSpawn = "true"))
+	TSubclassOf<AActor> TemplateClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ExposeOnSpawn = "true"))
 	int CountOnStart = 10;
@@ -26,25 +27,54 @@ protected:
 	int CountOnExpand = 5;
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void BeginDestroy() override;
-
-protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
 	void SpawnWait(int Count);
 	virtual void SpawnWait_Implementation(int Count);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
-	TArray<AActor*> SpawnInstance(int Count);
-	virtual TArray<AActor*> SpawnInstance_Implementation(int Count);
+	TArray<AActor*> SpawnLiveArray(int Count);
+	virtual TArray<AActor*> SpawnLiveArray_Implementation(int Count);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	AActor* SpawnLive();
+	virtual AActor* SpawnLive_Implementation();
+
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	AActor* SpawnInstance();
+	virtual AActor* SpawnInstance_Implementation();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	TArray<AActor*> SpawnInstanceArray(int Count);
+	virtual TArray<AActor*> SpawnInstanceArray_Implementation(int Count);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	void OnInstanceDequeue(AActor* Target);
+	void OnInstanceDequeue_Implementation(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	void OnInstanceEnqueue(AActor* Target);
+	void OnInstanceEnqueue_Implementation(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	AActor* OnWaitQueueEmpty();
+	virtual AActor* OnWaitQueueEmpty_Implementation();
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
-	AActor* CreateInstance();
-	virtual AActor* CreateInstance_Implementation();
+	void Initialize(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10, int WantCountOnExpand = 5);
+	virtual void Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10, int WantCountOnExpand = 5);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	TSoftObjectPtr<AActor> DequeueInstance();
+	virtual TSoftObjectPtr<AActor> DequeueInstance_Implementation();
 
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
-	void DestroyInstance(AActor* Target);
-	virtual void DestroyInstance_Implementation(AActor* Target);
+	void EnqueueInstance(AActor* Target);
+	virtual void EnqueueInstance_Implementation(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	void EnqueueAll();
+	void EnqueueAll_Implementation();
 };

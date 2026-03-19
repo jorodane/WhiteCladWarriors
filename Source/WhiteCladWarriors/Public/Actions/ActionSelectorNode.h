@@ -83,6 +83,9 @@ public:
 	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction, UActionExecutor* Executor) const;
 
 	UFUNCTION(BlueprintPure, Category = "Indicator")
+	TArray<UActionBehaviorNode*> GetIndicatorNodes();
+
+	UFUNCTION(BlueprintPure, Category = "Indicator")
 	TMap<UActionBehaviorNode*, FIndicatorClaim> GetIndicatorClaim(const FInputClaim& TargetInput);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")

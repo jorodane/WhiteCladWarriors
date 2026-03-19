@@ -2,40 +2,109 @@
 
 
 #include "Objects/Generals/Components/PoolComponent.h"
-
-
-// Called when the game starts
-void UPoolComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
-void UPoolComponent::BeginDestroy()
-{
-	Super::BeginDestroy();
-}
+#include "Interfaces/Poolable.h"
 
 void UPoolComponent::SpawnWait_Implementation(int Count)
 {
-	
+	TArray<AActor*> SpawnResult = SpawnInstanceArray(Count);
+	for (AActor* CurrentActor : SpawnResult) OnInstanceEnqueue(CurrentActor);
 }
 
-TArray<AActor*> UPoolComponent::SpawnInstance_Implementation(int Count)
+TArray<AActor*> UPoolComponent::SpawnLiveArray_Implementation(int Count)
 {
-
+	TArray<AActor*> SpawnResult = SpawnInstanceArray(Count);
+	for (AActor* CurrentActor : SpawnResult) OnInstanceDequeue(CurrentActor);
+	return SpawnResult;
 }
 
-AActor* UPoolComponent::CreateInstance_Implementation()
+AActor* UPoolComponent::SpawnLive_Implementation()
 {
-
+	AActor* Result = SpawnInstance();
+	OnInstanceDequeue(Result);
+	return Result;
 }
 
-void UPoolComponent::DestroyInstance_Implementation(AActor* Target)
+AActor* UPoolComponent::SpawnInstance_Implementation()
 {
-
+	AActor* Result = nullptr;
+	if (TemplateClass == nullptr) return Result;
+	UWorld* CurrentWorld = GetWorld();
+	if (!IsValid(CurrentWorld)) return Result;
+	Result = CurrentWorld->SpawnActor(TemplateClass);
+	return Result;
 }
 
+TArray<AActor*> UPoolComponent::SpawnInstanceArray_Implementation(int Count)
+{
+	TArray<AActor*> Result;
+	if (TemplateClass == nullptr || Count <= 0) return Result;
+	UWorld* CurrentWorld = GetWorld();
+	if (!IsValid(CurrentWorld)) return Result;
+	Result.SetNum(Count);
+	for (int i = 0; i < Count; i++) Result[i] = CurrentWorld->SpawnActor(TemplateClass);
+	return Result;
+}
 
+void UPoolComponent::OnInstanceDequeue_Implementation(AActor* Target)
+{
+	if (!IsValid(Target)) return;
+	IPoolable::Execute_OnPoolDequeue(Target);
+	Created.AddUnique(Target);
+}
+
+void UPoolComponent::OnInstanceEnqueue_Implementation(AActor* Target)
+{
+	if (!IsValid(Target)) return;
+	IPoolable::Execute_OnPoolEnqueue(Target);
+	WaitQueue.Enqueue(Target);
+}
+
+AActor* UPoolComponent::OnWaitQueueEmpty_Implementation()
+{
+	SpawnWait(CountOnExpand);
+	return SpawnLive();
+}
+
+void UPoolComponent::Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart, int WantCountOnExpand)
+{
+	TemplateClass = WantTemplate;
+	CountOnStart = WantCountOnStart;
+	CountOnExpand = WantCountOnExpand;
+
+	Created.Reserve(CountOnStart);
+	SpawnWait(CountOnStart);
+}
+
+TSoftObjectPtr<AActor> UPoolComponent::DequeueInstance_Implementation()
+{
+	TSoftObjectPtr<AActor> Result;
+
+	while (WaitQueue.Dequeue(Result))
+	{
+		if (Result.IsValid())
+		{
+			OnInstanceDequeue(Result.Get());
+			return Result;
+		}
+	}
+
+	Result = OnWaitQueueEmpty();
+	return Result;
+}
+
+void UPoolComponent::EnqueueInstance_Implementation(AActor* Target)
+{
+	if (!IsValid(Target)) return;
+	OnInstanceEnqueue(Target);
+	Created.Remove(Target);
+}
+
+void UPoolComponent::EnqueueAll_Implementation()
+{
+	for (TSoftObjectPtr<AActor>& CurrentActor : Created)
+	{
+		if (!CurrentActor.IsValid()) continue;
+		OnInstanceEnqueue(CurrentActor.Get());
+	}
+	Created.Empty();
+}
