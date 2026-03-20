@@ -43,13 +43,17 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Pool")
 	TMap<EInputIndicatorType, UPoolComponent*> PoolComponentMap;
 
-	TMap<UActionBehaviorNode*, TSet<AActionIndicatorShowerBase*>> ShowerActiveMap;
+	TMap<UActionBehaviorNode*, TArray<AActionIndicatorShowerBase*>> ShowerActiveMap;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
 	bool bIsActivated = false;
 
 public:
+	UActionIndicatorBase();
+
+public:
 	void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")

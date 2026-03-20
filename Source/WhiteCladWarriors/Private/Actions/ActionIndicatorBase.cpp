@@ -10,6 +10,11 @@
 #include "Objects/Generals/Components/PoolComponent.h"
 #include "Objects/Players/Operator.h"
 
+UActionIndicatorBase::UActionIndicatorBase()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
 void UActionIndicatorBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -30,7 +35,11 @@ void UActionIndicatorBase::BeginPlay()
 		}
 	}
 }
+void UActionIndicatorBase::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+}
 void UActionIndicatorBase::SetOwnerOperator_Implementation(AOperator* NewOperator)
 {
 	OwnerOperator = NewOperator;
@@ -82,7 +91,7 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 	{
 		UActionBehaviorNode* CurrentBehavior = CurrentActivePair.Key;
 		if (!IsValid(CurrentBehavior)) continue;
-		TSet<AActionIndicatorShowerBase*>& CurrentSet = CurrentActivePair.Value;
+		TArray<AActionIndicatorShowerBase*>& CurrentSet = CurrentActivePair.Value;
 		FIndicatorClaim CurrentRequest = CurrentBehavior->GetIndicatorClaim(NewClaim);
 		UPoolComponent** CurrentFinder = PoolComponentMap.Find(CurrentRequest.IndicatorType);
 		if (CurrentFinder == nullptr) continue;
@@ -92,24 +101,24 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 			TSoftObjectPtr<AActor> CurrentShower = CurrentPool->DequeueInstance();
 			if (!CurrentShower.IsValid()) continue;
 			AActionIndicatorShowerBase* NewShower = Cast<AActionIndicatorShowerBase>(CurrentShower.Get());
-			CurrentSet.Add(NewShower);
+			CurrentSet.AddUnique(NewShower);
 		}
 	}
 }
 
 void UActionIndicatorBase::UpdateShower_Implementation()
 {
-	if (!IsValid(OwnerOperator) || CurrentClaim.TargetNode == nullptr) return;
+	if (CurrentClaim.TargetNode == nullptr || !IsValid(OwnerOperator)) return;
 
 	const FInputPackage& Input = OwnerOperator->GetInputPackage();
 
 	for (auto& CurrentActivePair : ShowerActiveMap)
 	{
 		UActionBehaviorNode* CurrentRequestNode = CurrentActivePair.Key;
-		TSet<AActionIndicatorShowerBase*> CurrentShowerSet = CurrentActivePair.Value;
+		TArray<AActionIndicatorShowerBase*> CurrentShowerSet = CurrentActivePair.Value;
 
 		if (!IsValid(CurrentRequestNode)) continue;
 
-		CurrentRequestNode->UpdateIndicator(CurrentClaim, Input, CurrentShowerSet.Array());
+		CurrentRequestNode->UpdateIndicator(CurrentClaim, Input, CurrentShowerSet);
 	}
 }
