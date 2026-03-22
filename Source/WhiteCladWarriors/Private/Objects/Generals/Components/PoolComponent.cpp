@@ -49,7 +49,7 @@ void UPoolComponent::OnInstanceDequeue_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
 	IPoolable::Execute_OnPoolDequeue(Target);
-	Created.AddUnique(Target);
+	LiveArray.AddUnique(Target);
 }
 
 void UPoolComponent::OnInstanceEnqueue_Implementation(AActor* Target)
@@ -71,19 +71,19 @@ void UPoolComponent::Initialize_Implementation(TSubclassOf<AActor> WantTemplate,
 	CountOnStart = WantCountOnStart;
 	CountOnExpand = WantCountOnExpand;
 
-	Created.Reserve(CountOnStart);
+	LiveArray.Reserve(CountOnStart);
 	SpawnWait(CountOnStart);
 }
 
-TSoftObjectPtr<AActor> UPoolComponent::DequeueInstance_Implementation()
+AActor* UPoolComponent::DequeueInstance_Implementation()
 {
-	TSoftObjectPtr<AActor> Result;
+	AActor* Result;
 
 	while (WaitQueue.Dequeue(Result))
 	{
-		if (Result.IsValid())
+		if (IsValid(Result))
 		{
-			OnInstanceDequeue(Result.Get());
+			OnInstanceDequeue(Result);
 			return Result;
 		}
 	}
@@ -95,16 +95,19 @@ TSoftObjectPtr<AActor> UPoolComponent::DequeueInstance_Implementation()
 void UPoolComponent::EnqueueInstance_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	OnInstanceEnqueue(Target);
-	Created.Remove(Target);
+	if (LiveArray.Remove(Target))
+	{
+		OnInstanceEnqueue(Target);
+	}
 }
 
 void UPoolComponent::EnqueueAll_Implementation()
 {
-	for (TSoftObjectPtr<AActor>& CurrentActor : Created)
+	if(LiveArray.IsEmpty()) return;
+	for (AActor*& CurrentActor : LiveArray)
 	{
-		if (!CurrentActor.IsValid()) continue;
-		OnInstanceEnqueue(CurrentActor.Get());
+		if (!IsValid(CurrentActor)) continue;
+		if (LiveArray.Contains(CurrentActor)) OnInstanceEnqueue(CurrentActor);
 	}
-	Created.Empty();
+	LiveArray.Empty();
 }

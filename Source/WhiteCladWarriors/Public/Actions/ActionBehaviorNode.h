@@ -9,6 +9,8 @@
 
 
 class AActionIndicatorShowerBase;
+class AUnitBase;
+class UUnitActionComponent;
 /**
  * 
  */
@@ -18,9 +20,13 @@ class WHITECLADWARRIORS_API UActionBehaviorNode : public UActionNode
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
+	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
 	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
-	void UpdateIndicator(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower);
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")
+	void UpdateIndicatorArray(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower);
+	void UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers);
+
+	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
+	void UpdateIndicatorSingle(const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, AUnitBase* TargetUnit, int Index);
 };

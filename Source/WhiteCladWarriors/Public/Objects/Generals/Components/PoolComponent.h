@@ -14,8 +14,8 @@ class WHITECLADWARRIORS_API UPoolComponent : public UActorComponent
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Pool")
-	TArray<TSoftObjectPtr<AActor>> Created;
-	TQueue<TSoftObjectPtr<AActor>> WaitQueue;
+	TArray<AActor*> LiveArray;
+	TQueue<AActor*> WaitQueue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ExposeOnSpawn = "true"))
 	TSubclassOf<AActor> TemplateClass;
@@ -66,8 +66,8 @@ public:
 	virtual void Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10, int WantCountOnExpand = 5);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
-	TSoftObjectPtr<AActor> DequeueInstance();
-	virtual TSoftObjectPtr<AActor> DequeueInstance_Implementation();
+	AActor* DequeueInstance();
+	virtual AActor* DequeueInstance_Implementation();
 
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")

@@ -39,6 +39,7 @@ void UActionIndicatorBase::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	UpdateShower();
 }
 void UActionIndicatorBase::SetOwnerOperator_Implementation(AOperator* NewOperator)
 {
@@ -62,13 +63,7 @@ void UActionIndicatorBase::SetInvisible_Implementation()
 	CurrentNode = nullptr;
 	CurrentComponents.Empty();
 
-	for (auto& CurrentPoolPair : PoolComponentMap)
-	{
-		UPoolComponent* CurrentPool = CurrentPoolPair.Value;
-		if (!IsValid(CurrentPool)) continue;
-		CurrentPool->EnqueueAll();
-	}
-	ShowerActiveMap.Empty();
+	InitializePool();
 }
 
 void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim)
@@ -79,11 +74,12 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 		return;
 	}
 
+	InitializePool();
+	bIsActivated = true;
 	CurrentClaim = NewClaim;
 	CurrentExecutor = NewClaim.TargetActionCursor.CurrentExecutor;
 	CurrentNode = NewClaim.TargetNode;
 	CurrentComponents = NewClaim.TargetComponentArray;
-	bIsActivated = true;
 
 	for (UActionBehaviorNode* CurrentRequestNode : CurrentNode->GetIndicatorNodes()) ShowerActiveMap.Add(CurrentRequestNode);
 
@@ -91,8 +87,8 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 	{
 		UActionBehaviorNode* CurrentBehavior = CurrentActivePair.Key;
 		if (!IsValid(CurrentBehavior)) continue;
-		TArray<AActionIndicatorShowerBase*>& CurrentSet = CurrentActivePair.Value;
-		FIndicatorClaim CurrentRequest = CurrentBehavior->GetIndicatorClaim(NewClaim);
+		TArray<AActionIndicatorShowerBase*>& CurrentArray = CurrentActivePair.Value;
+		const FIndicatorClaim& CurrentRequest = CurrentBehavior->GetIndicatorClaim(NewClaim);
 		UPoolComponent** CurrentFinder = PoolComponentMap.Find(CurrentRequest.IndicatorType);
 		if (CurrentFinder == nullptr) continue;
 		UPoolComponent* CurrentPool = *CurrentFinder;
@@ -101,7 +97,7 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 			TSoftObjectPtr<AActor> CurrentShower = CurrentPool->DequeueInstance();
 			if (!CurrentShower.IsValid()) continue;
 			AActionIndicatorShowerBase* NewShower = Cast<AActionIndicatorShowerBase>(CurrentShower.Get());
-			CurrentSet.AddUnique(NewShower);
+			CurrentArray.AddUnique(NewShower);
 		}
 	}
 }
@@ -119,6 +115,17 @@ void UActionIndicatorBase::UpdateShower_Implementation()
 
 		if (!IsValid(CurrentRequestNode)) continue;
 
-		CurrentRequestNode->UpdateIndicator(CurrentClaim, Input, CurrentShowerSet);
+		CurrentRequestNode->UpdateIndicatorArray(CurrentClaim, Input, CurrentShowerSet);
 	}
+}
+
+void UActionIndicatorBase::InitializePool()
+{
+	for (auto& CurrentPoolPair : PoolComponentMap)
+	{
+		UPoolComponent* CurrentPool = CurrentPoolPair.Value;
+		if (!IsValid(CurrentPool)) continue;
+		CurrentPool->EnqueueAll();
+	}
+	ShowerActiveMap.Empty();
 }

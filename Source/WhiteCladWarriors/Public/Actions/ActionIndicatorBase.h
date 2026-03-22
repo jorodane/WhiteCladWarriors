@@ -75,4 +75,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void UpdateShower();
 	void UpdateShower_Implementation();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Pool")
+	void InitializePool();
 };

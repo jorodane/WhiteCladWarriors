@@ -57,6 +57,10 @@ public:
 	bool bIsStopMovementOnEnd = false;
 	
 public:
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")
+	float GetPercent(const FActionCursorFinder& Cursor);
+	float GetPercent_Implementation(const FActionCursorFinder& Cursor) { return 0.0f; }
+
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
 	bool GetCanEnter(const FActionCursorFinder& WantCursor);
 	virtual bool GetCanEnter_Implementation(const FActionCursorFinder& WantCursor);

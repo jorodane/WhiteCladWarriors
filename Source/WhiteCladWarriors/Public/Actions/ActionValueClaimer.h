@@ -22,6 +22,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value", Meta = (ExposeOnSpawn = "true"))
 	float Value;
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	virtual float GetValue() const { return Value; }
 };
 
@@ -66,6 +67,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value", Meta = (ExposeOnSpawn = "true"))
 	FVector Value;
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	virtual FVector GetValue() const { return Value; }
 };
 
@@ -276,8 +278,10 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	FVector GetPosition(const FActionCursorFinder& WantCursor) const;
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
 };
 
@@ -293,10 +297,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TObjectPtr<UFloatGetter> AngleShift;
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	virtual FVector GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor) const;
+	UFUNCTION(BlueprintPure, Category = "Value")
 	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor) const { return FVector::ZeroVector; };
-	inline virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor) const { return GetPosition(From, WantCursor); }
-	inline virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor) const { return GetStartPosition(WantCursor) + GetOriginDirection(WantCursor); }
+	UFUNCTION(BlueprintPure, Category = "Value")
+	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor) const { return GetPosition(From, WantCursor); }
+	UFUNCTION(BlueprintPure, Category = "Value")
+	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor) const { return GetStartPosition(WantCursor) + GetOriginDirection(WantCursor); }
+	UFUNCTION(BlueprintPure, Category = "Value")
 	virtual FVector GetDirection(const FActionCursorFinder& WantCursor) const;
 };
 
@@ -318,7 +327,7 @@ public:
 		AngleShift = WantAngleShift;
 	}
 	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor) const override;
-	inline virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor) const override { return GetPosition(To, WantCursor); }
+	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor) const override { return GetPosition(To, WantCursor); }
 };
 
 UCLASS(BlueprintType)
@@ -382,6 +391,7 @@ public:
 		ActorTag = WantTag;
 	}
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	AActor* GetActor(const FActionCursorFinder& WantCursor) const;
 };
 
@@ -400,6 +410,7 @@ public:
 		ActorArrayTag = WantTag;
 	}
 
+	UFUNCTION(BlueprintPure, Category = "Value")
 	TArray<AActor*> GetActorArray(const FActionCursorFinder& WantCursor) const;
 };
 
