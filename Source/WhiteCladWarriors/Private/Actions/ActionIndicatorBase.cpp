@@ -39,7 +39,7 @@ void UActionIndicatorBase::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	UpdateShower();
+	UpdateShower(bIsTriggerByIcon);
 }
 void UActionIndicatorBase::SetOwnerOperator_Implementation(AOperator* NewOperator)
 {
@@ -76,6 +76,7 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 
 	InitializePool();
 	bIsActivated = true;
+	bIsTriggerByIcon = false;
 	CurrentClaim = NewClaim;
 	CurrentExecutor = NewClaim.TargetActionCursor.CurrentExecutor;
 	CurrentNode = NewClaim.TargetNode;
@@ -102,7 +103,7 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 	}
 }
 
-void UActionIndicatorBase::UpdateShower_Implementation()
+void UActionIndicatorBase::UpdateShower_Implementation(bool bIsIconPreview)
 {
 	if (CurrentClaim.TargetNode == nullptr || !IsValid(OwnerOperator)) return;
 
@@ -115,7 +116,7 @@ void UActionIndicatorBase::UpdateShower_Implementation()
 
 		if (!IsValid(CurrentRequestNode)) continue;
 
-		CurrentRequestNode->UpdateIndicatorArray(CurrentClaim, Input, CurrentShowerSet);
+		CurrentRequestNode->UpdateIndicatorArray(CurrentClaim, Input, CurrentShowerSet, bIsIconPreview);
 	}
 }
 

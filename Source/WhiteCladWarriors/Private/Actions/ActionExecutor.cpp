@@ -47,18 +47,6 @@ void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
 	Setter = WantPosition;
 }
 
-FVector UActionExecutor::GetPosition(const FActionCursorFinder& WantCursor, UPositionClaimer* Claimer) const
-{
-	if (!IsValid(Claimer)) return FVector::ZeroVector;
-	return Claimer->GetPosition(WantCursor, WantCursor.CurrentComponent);
-}
-
-FVector UActionExecutor::GetStartPosition(const FActionCursorFinder& WantCursor, UDirectionClaimer* Claimer) const
-{
-	if (!IsValid(Claimer)) return FVector::ZeroVector;
-	return Claimer->GetStartPosition(WantCursor, WantCursor.CurrentComponent);
-}
-
 FVector UActionExecutor::GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const
 {
 	const FVector* Result = PositionMap.Find(WantTag);
@@ -82,12 +70,6 @@ void UActionExecutor::SetDirection(FName WantTag, const FActionCursorFinder& Wan
 	Setter = WantDirection;
 }
 
-FVector UActionExecutor::GetDirection(const FActionCursorFinder& WantCursor, UDirectionClaimer* Claimer) const
-{
-	if (!IsValid(Claimer)) return FVector::ZeroVector;
-	return Claimer->GetDirection(WantCursor, WantCursor.CurrentComponent);
-}
-
 FVector UActionExecutor::GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const
 {
 	const FVector* Result = DirectionMap.Find(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag));
@@ -107,23 +89,11 @@ void UActionExecutor::RemoveActor(FName WantTag, AActor* WantActor)
 	ActorMultiMap.RemoveSingle(WantTag, WantActor);
 }
 
-AActor* UActionExecutor::GetActor(const FActionCursorFinder& WantCursor, UActorClaimer* Claimer) const
-{
-	if (!IsValid(Claimer)) return nullptr;
-	return Claimer->GetActor(WantCursor, WantCursor.CurrentComponent);
-}
-
 AActor* UActionExecutor::GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const
 {
 	AActor* const* Result = ActorMultiMap.Find(WantTag);
 	if (Result) return *Result;
 	else return nullptr;
-}
-
-TArray<AActor*> UActionExecutor::GetActorArray(const FActionCursorFinder& WantCursor, UActorArrayClaimer* Claimer) const
-{
-	if (!IsValid(Claimer)) return TArray<AActor*>();
-	return Claimer->GetActorArray(WantCursor, WantCursor.CurrentComponent);
 }
 
 TArray<AActor*> UActionExecutor::GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const

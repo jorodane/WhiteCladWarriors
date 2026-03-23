@@ -67,12 +67,6 @@ public:
 	void SetPosition(FName WantTag, const FVector& WantPosition);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetPosition(const FActionCursorFinder& WantCursor, UPositionClaimer* Claimer) const;
-
-	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetStartPosition(const FActionCursorFinder& WantCursor, UDirectionClaimer* Claimer) const;
-
-	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
@@ -83,9 +77,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection);
-
-	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetDirection(const FActionCursorFinder& WantCursor, UDirectionClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FVector GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
@@ -100,13 +91,7 @@ public:
 	void RemoveActor(FName WantTag, AActor* WantActor);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetActor(const FActionCursorFinder& WantCursor, UActorClaimer* Claimer) const;
-
-	UFUNCTION(BlueprintPure, Category = "Action")
 	AActor* GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const;
-
-	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetActorArray(const FActionCursorFinder& WantCursor, UActorArrayClaimer* Claimer) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActor*> GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const;

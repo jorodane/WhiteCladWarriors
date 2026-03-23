@@ -24,9 +24,9 @@ public:
 	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")
-	void UpdateIndicatorArray(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower);
-	void UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers);
+	void UpdateIndicatorArray(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower, bool bIsIconPreview);
+	void UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers, bool bIsIconPreview);
 
 	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
-	void UpdateIndicatorSingle(const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, AUnitBase* TargetUnit, int Index);
+	void UpdateIndicatorSingle(const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, AUnitBase* TargetUnit, int Index, bool bIsIconPreview);
 };

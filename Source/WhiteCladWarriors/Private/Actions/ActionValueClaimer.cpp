@@ -7,9 +7,9 @@
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Players/Operator.h"
 
-FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
-	FVector Result = FVector::ZeroVector;
+	FVector Result = DefaultValue;
 	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 
 	switch (PositionType)
@@ -45,6 +45,7 @@ FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, con
 	}
 	break;
 	case EPositionGetterType::WorldPosition:
+		Result = FVector::ZeroVector;
 	default:
 		break;
 	}
@@ -73,7 +74,7 @@ FVector UPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Compon
 	}
 	return Result;
 }
-FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
 	if (!IsValid(Claimer))
 	{
@@ -81,15 +82,15 @@ FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FA
 		{
 			if (AUnitBase* Unit = Component->GetOwnerUnit()) return Unit->GetActorLocation();
 		}
-		return FVector::ZeroVector;
+		return DefaultValue;
 	}
 
-	return Claimer->GetPosition(WantCursor, Component);
+	return Claimer->GetPosition(WantCursor, Component, DefaultValue);
 }
 
-FVector UDirectionClaimer::GetDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+FVector UDirectionClaimer::GetDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	FVector Result = GetOriginDirection(WantCursor, Component);
+	FVector Result = GetOriginDirection(WantCursor, Component, DefaultPosition, DefaultDirection);
 	if (IsValid(AngleShift))
 	{
 		FRotator Rotator(0.0, AngleShift->GetValue(), 0.0);
@@ -98,16 +99,16 @@ FVector UDirectionClaimer::GetDirection(const FActionCursorFinder& WantCursor, c
 	return Result;
 }
 
-FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	return (GetEndPosition(WantCursor, Component) - GetStartPosition(WantCursor, Component)).GetSafeNormal();
+	return (GetEndPosition(WantCursor, Component, DefaultPosition, DefaultDirection) - GetStartPosition(WantCursor, Component, DefaultPosition)).GetSafeNormal();
 }
 
-FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
 	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (IsValid(Executor) && !DirectionTag.IsNone())return Executor->GetSavedDirection(WantCursor, DirectionTag);
-	else return FVector::ZeroVector;
+	else return DefaultDirection;
 }
 
 AActor* UActorClaimer::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const

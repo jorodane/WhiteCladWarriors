@@ -48,6 +48,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
 	bool bIsActivated = false;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
+	bool bIsTriggerByIcon = false;
+
 public:
 	UActionIndicatorBase();
 
@@ -73,8 +76,8 @@ public:
 	void ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
-	void UpdateShower();
-	void UpdateShower_Implementation();
+	void UpdateShower(bool bIsIconPreview);
+	void UpdateShower_Implementation(bool bIsIconPreview);
 
 
 	UFUNCTION(BlueprintCallable, Category = "Pool")

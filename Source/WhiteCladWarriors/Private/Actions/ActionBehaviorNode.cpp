@@ -5,7 +5,7 @@
 #include "Actions/ActionIndicatorShowerBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
-void UActionBehaviorNode::UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers)
+void UActionBehaviorNode::UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers, bool bIsIconPreview)
 {
 	const TArray<UUnitActionComponent*>& TargetComponents = TargetInput.TargetComponentArray;
 
@@ -17,6 +17,6 @@ void UActionBehaviorNode::UpdateIndicatorArray_Implementation(const FInputClaim&
 		AUnitBase* CurrentUnit;
 		if (!IsValid(CurrentComponent) || !IsValid(CurrentShower)) continue;
 		CurrentComponent->TryGetOwnerUnit(CurrentUnit);
-		UpdateIndicatorSingle(TargetInput, InputPackage, CurrentComponent, CurrentShower, CurrentUnit, i);
+		UpdateIndicatorSingle(TargetInput, InputPackage, CurrentComponent, CurrentShower, CurrentUnit, i, bIsIconPreview);
 	}
 }
