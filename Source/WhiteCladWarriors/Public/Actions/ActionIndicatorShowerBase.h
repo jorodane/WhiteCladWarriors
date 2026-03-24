@@ -15,11 +15,26 @@ class WHITECLADWARRIORS_API AActionIndicatorShowerBase : public AActor, public I
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Indicator")
-	float LocationOffset;
-	
+	FVector SizeMultiplier = FVector::OneVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Indicator")
+	float LocationOffset = 0.5f;
+
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Indicator")
 	EInputIndicatorType GetIndicatorType();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")
+	void SetPercent(float NewPercent);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")
+	void SetColor(FLinearColor NewColor);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")
+	void SetFillColor(FLinearColor NewColor);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Indicator")
+	void SetTexture(UTexture* NewTexture);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void SetMiddleLocation(FVector A, FVector B);
@@ -49,42 +64,26 @@ public:
 	void SetWidth_Implementation(float NewWidth);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void SetHeight(float NewHeight);
-	void SetHeight_Implementation(float NewHeight);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void SetLength(float NewLength);
 	void SetLength_Implementation(float NewLength);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void SetWidthLength(float NewWidth, float NewLength);
-	void SetWidthLength_Implementation(float NewWidth, float NewLength);
+	void SetLengthWidth(float NewLength, float NewWidth);
+	void SetLengthWidth_Implementation(float NewLength, float NewWidth);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void SetPercent(float NewPercent);
-	void SetPercent_Implementation(float NewPercent);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void SetColor(FColor NewColor);
-	void SetColor_Implementation(FColor NewColor);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void SetFillColor(FColor NewColor);
-	void SetFillColor_Implementation(FColor NewColor);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void DrawLineWithRotation(FVector StartPosition, FVector EndPosition, float Width, FRotator Rotation);
-	void DrawLineWithRotation_Implementation(FVector StartPosition, FVector EndPosition, float Width, FRotator Rotation);
+	void DrawLineWithRotation(FVector StartPosition, FVector EndPosition, float NewWidth, FRotator NewRotation);
+	void DrawLineWithRotation_Implementation(FVector StartPosition, FVector EndPosition, float NewWidth, FRotator NewRotation);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void DrawWithRotation(FVector StartPosition, float Length, float Width, FRotator Rotation);
-	void DrawWithRotation_Implementation(FVector StartPosition, float Length, float Width, FRotator Rotation);
+	void DrawFromRotation(FVector StartPosition, float NewLength, float NewWidth, FRotator NewRotation);
+	void DrawFromRotation_Implementation(FVector StartPosition, float NewLength, float NewWidth, FRotator NewRotation);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void DrawWithRotation(FVector StartPosition, FVector Direction, float Length, float Width);
-	void DrawWithRotation_Implementation(FVector StartPosition, FVector Direction, float Length, float Width);
+	void DrawFromDirection(FVector StartPosition, FVector NewDirection, float NewLength, float NewWidth);
+	void DrawFromDirection_Implementation(FVector StartPosition, FVector NewDirection, float NewLength, float NewWidth);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
-	void DrawLine(FVector StartPosition, FVector EndPosition, float Width);
-	void DrawLine_Implementation(FVector StartPosition, FVector EndPosition, float Width);
+	void DrawLine(FVector StartPosition, FVector EndPosition, float NewWidth);
+	void DrawLine_Implementation(FVector StartPosition, FVector EndPosition, float NewWidth);
 };
