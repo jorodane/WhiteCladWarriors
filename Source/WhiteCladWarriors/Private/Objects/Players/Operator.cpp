@@ -209,9 +209,8 @@ void AOperator::UpdateInputPackage()
 		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
 		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
 		{
-			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverEnd(CurrentInputPackage.MouseHitActor);
+			SetHoveredObject(CurrentSelectHitActor);
 			CurrentInputPackage.MouseHitActor = CurrentSelectHitActor;
-			if (IsValid(CurrentInputPackage.MouseHitActor)) ISelectable::Execute_MouseHoverBegin(CurrentInputPackage.MouseHitActor);
 		}
 		CurrentInputPackage.MouseHitActor = SelectHitResult.GetActor();
 	}
@@ -275,6 +274,15 @@ void AOperator::SetFocusActor(AActor* Target)
 	if (IsValid(Target)) FocusActor = Target;
 	else ResetFocusActor();
 }
+
+void AOperator::SetHoveredObject_Implementation(UObject* NewObject)
+{
+	if (IsValid(HoveredObject)) ISelectable::Execute_MouseHoverEnd(HoveredObject);
+	HoveredObject = NewObject;
+	OnHoverChanged.Broadcast(NewObject);
+	if (IsValid(HoveredObject)) ISelectable::Execute_MouseHoverBegin(HoveredObject);
+}
+
 void AOperator::ResetFocusActor()
 {
 	FocusActor = nullptr;

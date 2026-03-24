@@ -30,6 +30,7 @@ class UUnitActionComponent;
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, Claim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHoverChanged, UObject*, NewObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroChanged, AHeroBase*, NewHero);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputClaimChanged, const FInputClaim&, NewClaim, bool, ValidClaim);
 
@@ -63,6 +64,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Select")
 	FOnSelectedChanged OnSelectedChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Select")
+	FOnHoverChanged OnHoverChanged;
+
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnHeroChanged OnHeroChanged;
 
@@ -87,6 +91,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	TObjectPtr<AActor> FocusActor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UObject> HoveredObject;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AIngameController> PlayerController;
@@ -204,6 +211,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void SetFocusActor(AActor* Target);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void SetHoveredObject(UObject* NewObject);
+	void SetHoveredObject_Implementation(UObject* NewObject);
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	inline void ResetFocusActor();
