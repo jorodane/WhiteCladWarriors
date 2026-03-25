@@ -225,7 +225,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
-	inline void ResetFocusActor();
+	inline void RemoveFocusActor();
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void SetToggleFocusActor(AActor* Target);

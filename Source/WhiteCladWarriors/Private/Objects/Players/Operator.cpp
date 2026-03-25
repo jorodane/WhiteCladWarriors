@@ -272,7 +272,7 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 void AOperator::SetFocusActor(AActor* Target)
 {
 	if (IsValid(Target)) FocusActor = Target;
-	else ResetFocusActor();
+	else RemoveFocusActor();
 }
 
 void AOperator::SetHoveredWorldObject_Implementation(UObject* NewObject)
@@ -302,15 +302,14 @@ void AOperator::SetHoveredWidgetObject_Implementation(UObject* NewObject)
 	}
 }
 
-void AOperator::ResetFocusActor()
+void AOperator::RemoveFocusActor()
 {
 	FocusActor = nullptr;
 }
 
 void AOperator::SetToggleFocusActor(AActor* Target)
 {
-
-	if (Target == FocusActor) ResetFocusActor();
+	if (Target == FocusActor) RemoveFocusActor();
 	else SetFocusActor(Target);
 }
 
@@ -733,14 +732,22 @@ void AOperator::SetFollowingHero(bool Value)
 	}
 	else
 	{
-		ResetFocusActor();
+		RemoveFocusActor();
 	}
 }
 
 void AOperator::ToggleFollowingHero()
 { 
-	SetToggleFocusActor(HeroActor); 
-	if(FocusActor == HeroActor) SelectActor(HeroActor, true);
+	if (FocusActor == HeroActor && (CurrentInputPackage.SelectedActors.Num() > 2 || !CurrentInputPackage.SelectedActors.Contains(HeroActor)))
+	{
+		DeselectActors();
+		SelectActor(HeroActor, true);
+	}
+	else
+	{
+		SetToggleFocusActor(HeroActor);
+		if (FocusActor == HeroActor) SelectActor(HeroActor, true);
+	}
 }
 
 
