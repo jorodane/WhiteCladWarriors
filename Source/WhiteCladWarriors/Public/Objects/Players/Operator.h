@@ -93,7 +93,10 @@ protected:
 	TObjectPtr<AActor> FocusActor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
-	TObjectPtr<UObject> HoveredObject;
+	TObjectPtr<UObject> HoveredOnWorldObject;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Select", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UObject> HoveredOnWidgetObject;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AIngameController> PlayerController;
@@ -213,8 +216,13 @@ public:
 	void SetFocusActor(AActor* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void SetHoveredObject(UObject* NewObject);
-	void SetHoveredObject_Implementation(UObject* NewObject);
+	void SetHoveredWorldObject(UObject* NewObject);
+	void SetHoveredWorldObject_Implementation(UObject* NewObject);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void SetHoveredWidgetObject(UObject* NewObject);
+	void SetHoveredWidgetObject_Implementation(UObject* NewObject);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	inline void ResetFocusActor();
@@ -304,12 +312,12 @@ public:
 	virtual void DeselectActorsWithoutNotify_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ComponentAddToActionList(UUnitActionComponent* Target);
+	bool ComponentAddToActionList(UUnitActionComponent* Target);
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ComponentRemoveFromActionList(UUnitActionComponent* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ActorAddToActionList(AActor* Target);
+	bool ActorAddToActionList(AActor* Target);
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ActorRemoveFromActionList(AActor* Target);
 

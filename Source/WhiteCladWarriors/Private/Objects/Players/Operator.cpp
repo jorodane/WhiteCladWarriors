@@ -209,7 +209,7 @@ void AOperator::UpdateInputPackage()
 		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
 		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
 		{
-			SetHoveredObject(CurrentSelectHitActor);
+			SetHoveredWorldObject(CurrentSelectHitActor);
 			CurrentInputPackage.MouseHitActor = CurrentSelectHitActor;
 		}
 		CurrentInputPackage.MouseHitActor = SelectHitResult.GetActor();
@@ -275,12 +275,27 @@ void AOperator::SetFocusActor(AActor* Target)
 	else ResetFocusActor();
 }
 
-void AOperator::SetHoveredObject_Implementation(UObject* NewObject)
+void AOperator::SetHoveredWorldObject_Implementation(UObject* NewObject)
 {
-	if (IsValid(HoveredObject)) ISelectable::Execute_MouseHoverEnd(HoveredObject);
-	HoveredObject = NewObject;
-	OnHoverChanged.Broadcast(NewObject);
-	if (IsValid(HoveredObject)) ISelectable::Execute_MouseHoverBegin(HoveredObject);
+	if (IsValid(HoveredOnWorldObject)) ISelectable::Execute_MouseHoverEnd(HoveredOnWorldObject);
+	HoveredOnWorldObject = NewObject;
+	if(!IsValid(HoveredOnWidgetObject)) OnHoverChanged.Broadcast(HoveredOnWorldObject);
+	if (IsValid(HoveredOnWorldObject)) ISelectable::Execute_MouseHoverBegin(HoveredOnWorldObject);
+}
+
+void AOperator::SetHoveredWidgetObject_Implementation(UObject* NewObject)
+{
+	if (IsValid(HoveredOnWidgetObject)) ISelectable::Execute_MouseHoverEnd(HoveredOnWidgetObject);
+	HoveredOnWidgetObject = NewObject;
+	if (IsValid(HoveredOnWidgetObject))
+	{
+		ISelectable::Execute_MouseHoverBegin(HoveredOnWidgetObject);
+		OnHoverChanged.Broadcast(HoveredOnWidgetObject);
+	}
+	else
+	{
+		OnHoverChanged.Broadcast(HoveredOnWorldObject);
+	}
 }
 
 void AOperator::ResetFocusActor()
@@ -458,11 +473,12 @@ void AOperator::SelectToggle_Implementation(AActor* Target)
 void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection)
 {
 	if (!IsValid(Target)) return;
-	if (ISelectable::Execute_IsSelectable(Target, this))
+	if (!ISelectable::Execute_IsSelectable(Target, this)) return;
+
+	CurrentInputPackage.SelectedActors.AddUnique(Target);
+	ISelectable::Execute_Select(Target, this, bIsSingleSelection);
+	if (ActorAddToActionList(Target))
 	{
-		CurrentInputPackage.SelectedActors.AddUnique(Target);
-		ISelectable::Execute_Select(Target, this, bIsSingleSelection);
-		ActorAddToActionList(Target);
 		if(AUnitBase* TargetAsUnit = Cast<AUnitBase>(Target)) TargetAsUnit->OnUnitDie.AddDynamic(this, &AOperator::DeselectUnit);
 	}
 
@@ -521,9 +537,10 @@ void AOperator::DeselectActorsWithoutNotify_Implementation()
 	CurrentInputPackage.SelectedActors.Empty();
 }
 
-void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
+bool AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
 {
-	if(!IsValid(Target)) return;
+	bool Result = false;
+	if(!IsValid(Target)) return Result;
 	for (const FName& CurrentActionName : Target->ActionList)
 	{
 		FActionTargetContainer* CurrentContainer;
@@ -538,8 +555,13 @@ void AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
 			CurrentContainer->Action = UActionSetting::GetAction(CurrentActionName);
 		}
 
-		CurrentContainer->Components.AddUnique(Target);
+		if(!CurrentContainer->Components.Contains(Target)) 
+		{
+			CurrentContainer->Components.Add(Target);
+			Result = true;
+		}
 	}
+	return Result;
 }
 
 void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
@@ -560,15 +582,17 @@ void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
 	}
 }
 
-void AOperator::ActorAddToActionList(AActor* Target)
+bool AOperator::ActorAddToActionList(AActor* Target)
 {
+	bool Result = false;
 	for (UActorComponent* CurrentComponent : Target->GetComponents())
 	{
 		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
 		{
-			ComponentAddToActionList(AsActionComponent);
+			Result |= ComponentAddToActionList(AsActionComponent);
 		}
 	}
+	return Result;
 }
 
 void AOperator::ActorRemoveFromActionList(AActor* Target)
