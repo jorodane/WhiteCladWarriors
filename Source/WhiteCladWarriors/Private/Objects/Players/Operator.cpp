@@ -164,7 +164,7 @@ void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocati
 void AOperator::OnUpdateInput_Implementation()
 {
 	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursorType);
-	OnInputClaimChanged.Broadcast(CurrentInputClaim, IsValid(CurrentInputClaim.TargetNode));
+	OnInputClaimChanged.Broadcast(CurrentInputClaim, IsValid(CurrentInputClaim.TargetNode), false);
 }
 
 void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
@@ -277,24 +277,28 @@ void AOperator::SetFocusActor(AActor* Target)
 
 void AOperator::SetHoveredWorldObject_Implementation(UObject* NewObject)
 {
-	if (IsValid(HoveredOnWorldObject)) ISelectable::Execute_MouseHoverEnd(HoveredOnWorldObject);
+	if (IsValid(HoveredOnWorldObject) && HoveredOnWorldObject->GetClass()->ImplementsInterface(USelectable::StaticClass())) ISelectable::Execute_MouseHoverEnd(HoveredOnWorldObject);
 	HoveredOnWorldObject = NewObject;
-	if(!IsValid(HoveredOnWidgetObject)) OnHoverChanged.Broadcast(HoveredOnWorldObject);
-	if (IsValid(HoveredOnWorldObject)) ISelectable::Execute_MouseHoverBegin(HoveredOnWorldObject);
+	if (!IsValid(HoveredOnWidgetObject)) OnHoverChanged.Broadcast(HoveredOnWorldObject);
+	if (IsValid(HoveredOnWorldObject) && HoveredOnWorldObject->GetClass()->ImplementsInterface(USelectable::StaticClass())) ISelectable::Execute_MouseHoverBegin(HoveredOnWorldObject);
 }
 
 void AOperator::SetHoveredWidgetObject_Implementation(UObject* NewObject)
 {
-	if (IsValid(HoveredOnWidgetObject)) ISelectable::Execute_MouseHoverEnd(HoveredOnWidgetObject);
+	if (IsValid(HoveredOnWidgetObject) && HoveredOnWidgetObject->GetClass()->ImplementsInterface(USelectable::StaticClass())) ISelectable::Execute_MouseHoverEnd(HoveredOnWidgetObject);
 	HoveredOnWidgetObject = NewObject;
 	if (IsValid(HoveredOnWidgetObject))
 	{
-		ISelectable::Execute_MouseHoverBegin(HoveredOnWidgetObject);
 		OnHoverChanged.Broadcast(HoveredOnWidgetObject);
+		if(HoveredOnWidgetObject->GetClass()->ImplementsInterface(USelectable::StaticClass())) ISelectable::Execute_MouseHoverBegin(HoveredOnWidgetObject);
+	}
+	else if(IsValid(HoveredOnWorldObject))
+	{
+		OnHoverChanged.Broadcast(HoveredOnWorldObject);
 	}
 	else
 	{
-		OnHoverChanged.Broadcast(HoveredOnWorldObject);
+		OnHoverChanged.Broadcast(nullptr);
 	}
 }
 

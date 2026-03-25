@@ -8,6 +8,7 @@
 #include "ActionIndicatorBase.generated.h"
 
 class AOperator;
+class AActionBase;
 class UPoolComponent;
 class UActionSelectorNode;
 class UActionBehaviorNode;
@@ -64,16 +65,16 @@ public:
 	void SetOwnerOperator_Implementation(AOperator* NewOperator);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
-	void SetVisible();
-	void SetVisible_Implementation();
+	void ClearShower();
+	void ClearShower_Implementation();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
-	void SetInvisible();
-	void SetInvisible_Implementation();
+	void ReceiveInputClaim(const FInputClaim& NewClaim, bool ValidClaim, bool TriggerByIcon);
+	void ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim, bool TriggerByIcon);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
-	void ReceiveInputClaim(const FInputClaim& NewClaim, bool ValidClaim);
-	void ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim);
+	void ReceiveAction(AActionBase* NewAction);
+	void ReceiveAction_Implementation(AActionBase* NewAction);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
 	void UpdateShower(bool bIsIconPreview);

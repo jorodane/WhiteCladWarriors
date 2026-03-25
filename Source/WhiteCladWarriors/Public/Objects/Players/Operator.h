@@ -32,7 +32,7 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHoverChanged, UObject*, NewObject);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroChanged, AHeroBase*, NewHero);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputClaimChanged, const FInputClaim&, NewClaim, bool, ValidClaim);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnInputClaimChanged, const FInputClaim&, NewClaim, bool, ValidClaim, bool, TriggerByIcon);
 
 
 USTRUCT(BlueprintType)

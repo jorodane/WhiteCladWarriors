@@ -29,7 +29,7 @@ struct FIndicatorClaim
 	EInputIndicatorType IndicatorType = EInputIndicatorType::Arrow;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Indicator")
-	int Amount = 1;
+	int Amount = 0;
 };
 
 USTRUCT(BlueprintType)

@@ -5,6 +5,7 @@
 #include "Actions/ActionIndicatorShowerBase.h"
 #include "Actions/ActionBehaviorNode.h"
 #include "Actions/ActionSelectorNode.h"
+#include "Actions/ActionBase.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Objects/Generals/Components/PoolComponent.h"
@@ -50,14 +51,10 @@ void UActionIndicatorBase::SetOwnerOperator_Implementation(AOperator* NewOperato
 	}
 }
 
-void UActionIndicatorBase::SetVisible_Implementation()
-{
-	bIsActivated = true;
-}
-
-void UActionIndicatorBase::SetInvisible_Implementation()
+void UActionIndicatorBase::ClearShower_Implementation()
 {
 	bIsActivated = false;
+	bIsTriggerByIcon = false;
 	CurrentClaim.Clear();
 	CurrentExecutor = nullptr;
 	CurrentNode = nullptr;
@@ -66,23 +63,24 @@ void UActionIndicatorBase::SetInvisible_Implementation()
 	InitializePool();
 }
 
-void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim)
+void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim, bool TriggerByIcon)
 {
-	if (!ValidClaim)
+	UActionSelectorNode* NewNode = NewClaim.TargetNode;
+	if (!ValidClaim || !IsValid(NewNode))
 	{
-		SetInvisible();
+		ClearShower();
+		InitializePool();
 		return;
 	}
-
-	InitializePool();
-	bIsActivated = true;
-	bIsTriggerByIcon = false;
-	CurrentClaim = NewClaim;
 	CurrentExecutor = NewClaim.TargetActionCursor.CurrentExecutor;
-	CurrentNode = NewClaim.TargetNode;
 	CurrentComponents = NewClaim.TargetComponentArray;
+	CurrentNode = NewNode;
+	CurrentClaim = NewClaim;
+	bIsActivated = true;
+	bIsTriggerByIcon = TriggerByIcon;
+	TArray<UActionBehaviorNode*> IndicatorNodes = NewNode->GetIndicatorNodes();
 
-	for (UActionBehaviorNode* CurrentRequestNode : CurrentNode->GetIndicatorNodes()) ShowerActiveMap.Add(CurrentRequestNode);
+	for (UActionBehaviorNode* CurrentRequestNode : IndicatorNodes) ShowerActiveMap.Add(CurrentRequestNode);
 
 	for (auto& CurrentActivePair : ShowerActiveMap)
 	{
@@ -101,6 +99,28 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 			CurrentArray.AddUnique(NewShower);
 		}
 	}
+}
+
+void UActionIndicatorBase::ReceiveAction_Implementation(AActionBase* NewAction)
+{
+	UActionSelectorNode* SelecterNode;
+	if (!IsValid(NewAction) || !IsValid(OwnerOperator) || !NewAction->IsRootNodeSelector(SelecterNode))
+	{
+		if (bIsTriggerByIcon)
+		{
+			ClearShower();
+			InitializePool();
+		}
+		return;
+	}
+
+	FInputClaim ClaimTemp;
+	FActionCursorFinder& Cursor = ClaimTemp.TargetActionCursor;
+	Cursor.CurrentAction = NewAction;
+	Cursor.CurrentOperator = OwnerOperator;
+	ClaimTemp.TargetComponentArray = OwnerOperator->GetAvailableComponentList(NewAction);
+	ClaimTemp.TargetNode = SelecterNode;
+	ReceiveInputClaim(ClaimTemp, true, true);
 }
 
 void UActionIndicatorBase::UpdateShower_Implementation(bool bIsIconPreview)
