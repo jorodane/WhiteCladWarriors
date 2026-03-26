@@ -277,6 +277,10 @@ public:
 	virtual void DrawDragArea_Implementation(FVector Begin, FVector End);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void HideDragArea();
+	virtual void HideDragArea_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void SelectToggle(AActor* Target);
 	virtual void SelectToggle_Implementation(AActor* Target);
 

@@ -86,4 +86,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void DrawLine(FVector StartPosition, FVector EndPosition, float NewWidth);
 	void DrawLine_Implementation(FVector StartPosition, FVector EndPosition, float NewWidth);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
+	void DrawAt(FVector StartPosition, float NewWidth);
+	void DrawAt_Implementation(FVector StartPosition, float NewRadius);
 };

@@ -17,7 +17,7 @@ class UUnitActionComponent;
 UENUM(BlueprintType)
 enum class EInputIndicatorType : uint8
 {
-	Arrow, Circle, Quad
+	Arrow, Circle, Quad, Bridge, Range, StaticMesh, SkeletalMesh
 };
 
 USTRUCT(BlueprintType)

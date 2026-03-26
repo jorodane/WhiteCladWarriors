@@ -164,6 +164,7 @@ void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocati
 void AOperator::OnUpdateInput_Implementation()
 {
 	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursorType);
+	HideDragArea();
 	OnInputClaimChanged.Broadcast(CurrentInputClaim, IsValid(CurrentInputClaim.TargetNode), false);
 }
 
@@ -467,6 +468,16 @@ void AOperator::DrawDragArea_Implementation(FVector Begin, FVector End)
 		DragAreaActor->SetActorHiddenInGame(false);
 	}
 }
+
+void AOperator::HideDragArea_Implementation()
+{
+	if (IsValid(DragAreaActor))
+	{
+		DragAreaActor->SetActorHiddenInGame(true);
+	}
+}
+
+
 void AOperator::SelectToggle_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;

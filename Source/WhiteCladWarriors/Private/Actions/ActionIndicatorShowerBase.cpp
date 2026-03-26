@@ -76,5 +76,9 @@ void AActionIndicatorShowerBase::DrawLine_Implementation(FVector StartPosition, 
 	DrawLineWithRotation(StartPosition, EndPosition, NewWidth, (EndPosition - StartPosition).GetSafeNormal2D().Rotation());
 }
 
-
+void AActionIndicatorShowerBase::DrawAt_Implementation(FVector StartPosition, float NewRadius)
+{
+	SetStartLocation(StartPosition);
+	SetLengthWidth(NewRadius, NewRadius);
+}
 

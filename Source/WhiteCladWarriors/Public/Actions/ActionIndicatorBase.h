@@ -60,23 +60,26 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	UFUNCTION(BlueprintCallable, Category = "Indicator")
+	void ResetIndicator();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void SetOwnerOperator(AOperator* NewOperator);
 	void SetOwnerOperator_Implementation(AOperator* NewOperator);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void ClearShower();
 	void ClearShower_Implementation();
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void ReceiveInputClaim(const FInputClaim& NewClaim, bool ValidClaim, bool TriggerByIcon);
 	void ReceiveInputClaim_Implementation(const FInputClaim& NewClaim, bool ValidClaim, bool TriggerByIcon);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void ReceiveAction(AActionBase* NewAction);
 	void ReceiveAction_Implementation(AActionBase* NewAction);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Indicator")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void UpdateShower(bool bIsIconPreview);
 	void UpdateShower_Implementation(bool bIsIconPreview);
 

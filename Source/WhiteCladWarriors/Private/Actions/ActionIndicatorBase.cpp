@@ -42,6 +42,13 @@ void UActionIndicatorBase::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 	UpdateShower(bIsTriggerByIcon);
 }
+
+void UActionIndicatorBase::ResetIndicator()
+{
+	ClearShower();
+	InitializePool();
+}
+
 void UActionIndicatorBase::SetOwnerOperator_Implementation(AOperator* NewOperator)
 {
 	OwnerOperator = NewOperator;
@@ -68,9 +75,12 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 	UActionSelectorNode* NewNode = NewClaim.TargetNode;
 	if (!ValidClaim || !IsValid(NewNode))
 	{
-		ClearShower();
-		InitializePool();
+		ResetIndicator();
 		return;
+	}
+	else if (bIsActivated)
+	{
+		ResetIndicator();
 	}
 	CurrentExecutor = NewClaim.TargetActionCursor.CurrentExecutor;
 	CurrentComponents = NewClaim.TargetComponentArray;
@@ -104,16 +114,23 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 void UActionIndicatorBase::ReceiveAction_Implementation(AActionBase* NewAction)
 {
 	UActionSelectorNode* SelecterNode;
+	if (bIsActivated)
+	{
+		if (bIsTriggerByIcon)
+		{
+			ResetIndicator();
+		}
+		else return;
+	}
 	if (!IsValid(NewAction) || !IsValid(OwnerOperator) || !NewAction->IsRootNodeSelector(SelecterNode))
 	{
 		if (bIsTriggerByIcon)
 		{
-			ClearShower();
-			InitializePool();
+			ResetIndicator();
 		}
 		return;
 	}
-
+	
 	FInputClaim ClaimTemp;
 	FActionCursorFinder& Cursor = ClaimTemp.TargetActionCursor;
 	Cursor.CurrentAction = NewAction;
