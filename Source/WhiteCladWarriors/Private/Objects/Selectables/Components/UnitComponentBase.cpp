@@ -16,16 +16,16 @@ TArray<UWidget*> UUnitComponentBase::GetConnectedWidgetsWithTag(FName WantTag)
 	return TArray<UWidget*>();
 }
 
-void UUnitComponentBase::ConnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag)
+void UUnitComponentBase::ConnectInfoWidget_Implementation(EInfoWidgetType NewType, UWidget* TargetWidget, FName ClaimedTag)
 {
-	IInfoConnectable::Execute_OnConnectInfoWidget(this, TargetWidget, ClaimedTag);
+	IInfoConnectable::Execute_OnConnectInfoWidget(this, NewType, TargetWidget, ClaimedTag);
 	FWidgetArray& Array = ConnectedWidgets.FindOrAdd(ClaimedTag);
 	Array.WidgetArray.Add(TargetWidget);
 };
 
-void UUnitComponentBase::DisconnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag)
+void UUnitComponentBase::DisconnectInfoWidget_Implementation(EInfoWidgetType OldType, UWidget* TargetWidget, FName ClaimedTag)
 {
-	IInfoConnectable::Execute_OnDisconnectInfoWidget(this, TargetWidget, ClaimedTag);
+	IInfoConnectable::Execute_OnDisconnectInfoWidget(this, OldType, TargetWidget, ClaimedTag);
 
 	if (FWidgetArray* Array = ConnectedWidgets.Find(ClaimedTag)) Array->WidgetArray.Remove(TargetWidget);
 };

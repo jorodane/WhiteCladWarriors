@@ -32,15 +32,6 @@ public:
 	FOnComponentRemoved OnComponentRemoved;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
-	TArray<FGenericWidgetClaimer> HeroWidgets;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
-	TArray<FGenericWidgetClaimer> InfoWidgets;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Select")
-	TArray<FGenericWidgetClaimer> PortraitWidgets;
-
 	UPROPERTY(BlueprintReadOnly, Category = "GenericWidget")
 	TMap<FName, FWidgetArray> ConnectedWidgets;
 
@@ -55,11 +46,8 @@ public:
 	void BroadcastRemoveMessage();
 
 public:
-	TArray<FGenericWidgetClaimer> GetInfoWidgets_Implementation() const { return InfoWidgets; }
-	TArray<FGenericWidgetClaimer> GetPortraitWidgets_Implementation() const { return PortraitWidgets; }
-	TArray<FGenericWidgetClaimer> GetHeroWidgets_Implementation() const { return HeroWidgets; }
-	void ConnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag);
-	void DisconnectInfoWidget_Implementation(UWidget* TargetWidget, FName ClaimedTag);
+	void ConnectInfoWidget_Implementation(EInfoWidgetType NewType, UWidget* TargetWidget, FName ClaimedTag);
+	void DisconnectInfoWidget_Implementation(EInfoWidgetType OldType, UWidget* TargetWidget, FName ClaimedTag);
 //
 //public:	
 //	// Sets default values for this component's properties

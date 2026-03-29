@@ -8,6 +8,12 @@
 
 class UWidget;
 
+UENUM(BlueprintType)
+enum class EInfoWidgetType : uint8
+{
+	Minimal, Hover, Hero, Detail, Inspector
+};
+
 USTRUCT(BlueprintType)
 struct FGenericWidgetClaimer
 {
@@ -40,24 +46,17 @@ class WHITECLADWARRIORS_API IInfoConnectable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	TArray<FGenericWidgetClaimer> GetInfoWidgets() const;
+	TArray<FGenericWidgetClaimer> GetInfoWidgets(EInfoWidgetType WantType) const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	TArray<FGenericWidgetClaimer> GetPortraitWidgets() const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	TArray<FGenericWidgetClaimer> GetHeroWidgets() const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	void ConnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
+	void ConnectInfoWidget(EInfoWidgetType NewType, UWidget* TargetWidget, FName ClaimedTag);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "GenericWidget")
-	void OnConnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
+	void OnConnectInfoWidget(EInfoWidgetType NewType, UWidget* TargetWidget, FName ClaimedTag);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	void DisconnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
+	void DisconnectInfoWidget(EInfoWidgetType OldType, UWidget* TargetWidget, FName ClaimedTag);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "GenericWidget")
-	void OnDisconnectInfoWidget(UWidget* TargetWidget, FName ClaimedTag);
-
+	void OnDisconnectInfoWidget(EInfoWidgetType OldType, UWidget* TargetWidget, FName ClaimedTag);
 };
