@@ -44,5 +44,5 @@ public:
 	struct FSlateBrush GetSelectedIcon();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	FName GetSelectedName();
+	FText GetSelectedName();
 };

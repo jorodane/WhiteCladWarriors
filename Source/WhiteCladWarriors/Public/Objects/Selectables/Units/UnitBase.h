@@ -156,6 +156,9 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
 	FSlateBrush SelectedIcon;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Select")
+	FText SelectedName;
+
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
 	TMap<FName, UFillableValueComponent*> FillValueMap;
 
@@ -278,4 +281,5 @@ public:
 public:
 	bool IsSelectable_Implementation(class AOperator* Operator) { return true; }
 	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
+	FText GetSelectedName_Implementation() { return SelectedName; }
 };
