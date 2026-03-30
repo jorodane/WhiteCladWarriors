@@ -2,6 +2,7 @@
 
 
 #include "Objects/Selectables/Components/UnitComponentBase.h"
+#include "Components/Widget.h"
 
 void UUnitComponentBase::BeginDestroy()
 {
@@ -19,6 +20,7 @@ TArray<UWidget*> UUnitComponentBase::GetConnectedWidgetsWithTag(FName WantTag)
 void UUnitComponentBase::ConnectInfoWidget_Implementation(EInfoWidgetType NewType, UWidget* TargetWidget, FName ClaimedTag)
 {
 	IInfoConnectable::Execute_OnConnectInfoWidget(this, NewType, TargetWidget, ClaimedTag);
+	if (TargetWidget == nullptr) return;
 	FWidgetArray& Array = ConnectedWidgets.FindOrAdd(ClaimedTag);
 	Array.WidgetArray.Add(TargetWidget);
 };
@@ -27,6 +29,7 @@ void UUnitComponentBase::DisconnectInfoWidget_Implementation(EInfoWidgetType Old
 {
 	IInfoConnectable::Execute_OnDisconnectInfoWidget(this, OldType, TargetWidget, ClaimedTag);
 
+	if (TargetWidget == nullptr) return;
 	if (FWidgetArray* Array = ConnectedWidgets.Find(ClaimedTag)) Array->WidgetArray.Remove(TargetWidget);
 };
 
