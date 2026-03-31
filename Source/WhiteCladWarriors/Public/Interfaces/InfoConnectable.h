@@ -74,7 +74,7 @@ class WHITECLADWARRIORS_API IInfoConnectable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	UOrderedGenericWidgetClaim* GetInfoWidget(EInfoWidgetType WantType) const;
+	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget(EInfoWidgetType WantType) const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
 	void ConnectInfoWidget(EInfoWidgetType NewType, UWidget* TargetWidget, FName ClaimedTag);
