@@ -37,9 +37,6 @@ class UGenericWidgetClaim : public UObject
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
-	int UIOrder = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
 	FName WidgetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
@@ -47,6 +44,17 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
 	TArray<UGenericWidgetClaim*> Children;
+};
+
+UCLASS(BlueprintType)
+class UOrderedGenericWidgetClaim : public UGenericWidgetClaim
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+	int UIOrder = 0;
 };
 
 // This class does not need to be modified.
