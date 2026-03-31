@@ -29,6 +29,26 @@ struct FGenericWidgetClaimer
 	FName ClaimWidgetTag;
 };
 
+UCLASS(BlueprintType)
+class UGenericWidgetClaim : public UObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+	int UIOrder = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+	FName WidgetType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+	FName WidgetTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+	TArray<UGenericWidgetClaim*> Children;
+};
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UInfoConnectable : public UInterface

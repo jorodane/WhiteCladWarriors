@@ -7,6 +7,18 @@
 #include "Generals/Structs/ActionInputStructures.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
+FText AActionBase::GetActionNameUIWithKey()
+{
+	if (ActionHotKey.IsValid())
+	{
+		return FText::Format<FText, FText>(ActionNameUIWithKeyFormat, ActionNameUI, ActionHotKey.GetDisplayName(false));
+	}
+	else
+	{
+		return GetActionNameUI();
+	}
+}
+
 bool AActionBase::IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const
 {
 	AsSelectorNode = RootNodeAsSelector();

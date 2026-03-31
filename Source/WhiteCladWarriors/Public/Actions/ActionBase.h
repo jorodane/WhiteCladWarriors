@@ -31,6 +31,9 @@ protected:
 	FText ActionNameUI;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
+	FText ActionNameUIWithKeyFormat;
+
+	UPROPERTY(EditAnywhere, Category = "Action")
 	FSlateBrush ActionIcon;
 
 	UPROPERTY(EditAnywhere, Category = "Action")
@@ -72,6 +75,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline FText		GetActionNameUI()				{ return ActionNameUI;}
+	UFUNCTION(BlueprintPure, Category = "Action")
+	inline FText		GetActionNameUIWithKey();
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	inline FText		SetActionNameUI(FText Value)	{ return ActionNameUI = Value; }
 
