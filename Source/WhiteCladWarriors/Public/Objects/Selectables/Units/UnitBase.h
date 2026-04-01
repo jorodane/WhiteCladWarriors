@@ -9,9 +9,12 @@
 #include "Styling/SlateBrush.h"
 #include "Interfaces/Selectable.h"
 #include "Interfaces/InfoConnectable.h"
+#include "Interfaces/PlayerConnectable.h"
 #include "UnitBase.generated.h"
 
 class AActionBase;
+class AOperator;
+class AIngameController;
 class UUnitActionComponent;
 class UActionTargetContainer;
 class UActionExecutor;
@@ -132,7 +135,7 @@ struct FMainActionInfo
 };
 
 UCLASS()
-class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable, public IInfoConnectable
+class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable, public IInfoConnectable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -169,6 +172,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select")
 	TArray<UUnitActionComponent*> ActionComponentArray;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = true))
+	TObjectPtr<AIngameController> PlayerController;
 
 	FMainActionInfo MainAction;
 
@@ -284,8 +290,11 @@ public:
 
 
 public:
-	bool IsSelectable_Implementation(class AOperator* Operator) { return true; }
+	bool IsSelectable_Implementation(AOperator* Operator) { return true; }
 	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
 	FText GetSelectedName_Implementation() { return SelectedName; }
 	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType) const;
+	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
+	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
+	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
 };

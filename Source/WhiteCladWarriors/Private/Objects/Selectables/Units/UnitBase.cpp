@@ -501,3 +501,15 @@ TArray<UOrderedGenericWidgetClaim*> AUnitBase::GetInfoWidget_Implementation(EInf
 	};
 	return Result;
 }
+
+void AUnitBase::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
+{
+	if (PlayerController) IPlayerConnectable::Execute_OnPlayerDisconnected(this, PlayerController);
+
+	PlayerController = NewPlayer;
+}
+
+void AUnitBase::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer)
+{
+	PlayerController = nullptr;
+}

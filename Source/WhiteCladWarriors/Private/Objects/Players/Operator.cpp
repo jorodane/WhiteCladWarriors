@@ -721,7 +721,11 @@ AHeroBase* AOperator::SpawnHero(FVector Location)
 	{
 		AActor* SpawnedActor = CurrentWorld->SpawnActor(HeroClass, &Location);
 		Result = Cast<AHeroBase>(SpawnedActor);
-		if(Result) HeroActor = Result;
+		if (Result)
+		{
+			HeroActor = Result;
+			IPlayerConnectable::Execute_OnPlayerConnected(HeroActor, PlayerController);
+		}
 	}
 	else
 	{
@@ -767,10 +771,18 @@ void AOperator::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
 	if (PlayerController) OnPlayerDisconnected(PlayerController);
 	
 	PlayerController = NewPlayer;
+	if (IsValid(HeroActor))
+	{
+		IPlayerConnectable::Execute_OnPlayerConnected(HeroActor, NewPlayer);
+	}
 }
 
 void AOperator::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer)
 {
+	if (IsValid(HeroActor))
+	{
+		IPlayerConnectable::Execute_OnPlayerConnected(HeroActor, OldPlayer);
+	}
 	PlayerController = nullptr;
 }
 
