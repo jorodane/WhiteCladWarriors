@@ -487,3 +487,17 @@ void AUnitBase::Die_Implementation()
 	}
 	OnUnitDie.Broadcast(this); 
 }
+
+TArray<UOrderedGenericWidgetClaim*> AUnitBase::GetInfoWidget_Implementation(EInfoWidgetType WantType) const
+{
+	TArray<UOrderedGenericWidgetClaim*> Result;
+	Result.Append(GetUnitInfoWidget(WantType));
+	for (UActorComponent* CurrentComponent : GetComponents())
+	{
+		if (CurrentComponent && CurrentComponent->GetClass()->ImplementsInterface(UInfoConnectable::StaticClass()))
+		{
+			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType));
+		}
+	};
+	return Result;
+}

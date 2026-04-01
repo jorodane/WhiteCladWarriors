@@ -8,6 +8,7 @@
 #include "GameFramework/Character.h"
 #include "Styling/SlateBrush.h"
 #include "Interfaces/Selectable.h"
+#include "Interfaces/InfoConnectable.h"
 #include "UnitBase.generated.h"
 
 class AActionBase;
@@ -131,7 +132,7 @@ struct FMainActionInfo
 };
 
 UCLASS()
-class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable
+class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable, public IInfoConnectable
 {
 	GENERATED_BODY()
 
@@ -193,6 +194,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "FillValue")
 	TArray<UFillableValueComponent*> FindAllFillValue();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "FillValue")
+	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget(EInfoWidgetType WantType) const;
+
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionList() const;
@@ -282,4 +287,5 @@ public:
 	bool IsSelectable_Implementation(class AOperator* Operator) { return true; }
 	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
 	FText GetSelectedName_Implementation() { return SelectedName; }
+	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType) const;
 };
