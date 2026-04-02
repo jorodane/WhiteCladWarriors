@@ -217,7 +217,7 @@ void AOperator::UpdateInputPackage()
 	}
 }
 
-void AOperator::CameraMove(FVector2D Direction, float Multiplier)
+void AOperator::CameraMove(FVector Direction, float Multiplier)
 {
 	Multiplier *= CameraLength / DEFAULT_CAMERALENGTH;
 	Direction.Normalize();
@@ -255,25 +255,42 @@ void AOperator::SetCameraLength_Implementation(float Value)
 	CameraLength = Value;
 }
 
+void AOperator::ResetCameraRotation_Implementation()
+{
+	SetActorRotation(FQuat::Identity);
+}
+
 void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier)
 {
 	if (!FPlatformApplicationMisc::IsThisApplicationForeground()) return;
 
 	FVector2D MouseFromEdge = ViewportSize - MousePosition;
-	FVector2D Result = FVector2D::ZeroVector;
+	FVector Result = FVector::ZeroVector;
 
 	if (MouseFromEdge.X >= 0 && MouseFromEdge.X <= CameraMovePaddingSize) Result.X += 1.0f;
 	if (MousePosition.X >= 0 && MousePosition.X <= CameraMovePaddingSize) Result.X -= 1.0f;
 	if (MousePosition.Y >= 0 && MousePosition.Y <= CameraMovePaddingSize) Result.Y += 1.0f;
 	if (MouseFromEdge.Y >= 0 && MouseFromEdge.Y <= CameraMovePaddingSize) Result.Y -= 1.0f;
 
-	CameraMove(Result, Multiplier);
+	Result = GetActorTransform().InverseTransformVector(Result);
+
+	CameraMove(Result.GetSafeNormal2D(), Multiplier);
 };
 
 void AOperator::SetFocusActor(AActor* Target)
 {
 	if (IsValid(Target)) FocusActor = Target;
 	else RemoveFocusActor();
+}
+
+bool AOperator::IsFocusHero() 
+{ 
+	return FocusActor == HeroActor; 
+}
+
+bool AOperator::IsOnlySelectHero()
+{
+	return CurrentInputPackage.SelectedActors.Num() == 1 && CurrentInputPackage.SelectedActors[0] == HeroActor;
 }
 
 void AOperator::SetHoveredWorldObject_Implementation(UObject* NewObject)
@@ -461,10 +478,12 @@ void AOperator::DrawDragArea_Implementation(FVector Begin, FVector End)
 	if (IsValid(DragAreaActor))
 	{
 		FVector Center = (Begin + End) * 0.5f;
-		FVector Half = (End - Begin).GetAbs() * 0.5f;
+		FVector Half = (End - Center);
+		double X = Half.ProjectOnToNormal(GetActorRightVector()).Length();
+		double Y = Half.ProjectOnToNormal(GetActorForwardVector()).Length();
 
-		DragAreaActor->SetActorLocation(Center);
-		DragAreaActor->SetActorScale3D(FVector(10000.0f, Half.Y, Half.X));
+		DragAreaActor->SetActorLocationAndRotation(Center, FRotator(-90.0, GetActorRotation().Yaw, 0.0));
+		DragAreaActor->SetActorScale3D(FVector(10000.0f, X, Y));
 		DragAreaActor->SetActorHiddenInGame(false);
 	}
 }
@@ -753,7 +772,8 @@ void AOperator::SetFollowingHero(bool Value)
 
 void AOperator::ToggleFollowingHero()
 { 
-	if (FocusActor == HeroActor && (CurrentInputPackage.SelectedActors.Num() > 2 || !CurrentInputPackage.SelectedActors.Contains(HeroActor)))
+	ResetCameraRotation();
+	if (IsFocusHero() && !IsOnlySelectHero())
 	{
 		DeselectActors();
 		SelectActor(HeroActor, true);
@@ -761,7 +781,7 @@ void AOperator::ToggleFollowingHero()
 	else
 	{
 		SetToggleFocusActor(HeroActor);
-		if (FocusActor == HeroActor) SelectActor(HeroActor, true);
+		if (IsFocusHero()) SelectActor(HeroActor, true);
 	}
 }
 

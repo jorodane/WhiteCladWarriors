@@ -201,7 +201,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "FillValue")
 	TArray<UFillableValueComponent*> FindAllFillValue();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "FillValue")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Widget")
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget(EInfoWidgetType WantType) const;
 
 

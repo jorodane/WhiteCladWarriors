@@ -192,7 +192,7 @@ public:
 	void UpdateInputPackage();
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
-	void CameraMove(FVector2D Direction, float Multiplier);
+	void CameraMove(FVector Direction, float Multiplier);
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void CameraMoveTo(FVector Position);
@@ -208,11 +208,24 @@ public:
 	void SetCameraLength(float Value);
 	virtual void SetCameraLength_Implementation(float Value);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Camera")
+	void ResetCameraRotation();
+	virtual void ResetCameraRotation_Implementation();
+
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void SetFocusActor(AActor* Target);
+
+	UFUNCTION(BlueprintPure, Category = "Camera")
+	AActor* GetFocusActor() { return FocusActor; }
+
+	UFUNCTION(BlueprintPure, Category = "Camera")
+	bool IsFocusHero();
+
+	UFUNCTION(BlueprintPure, Category = "Select")
+	bool IsOnlySelectHero();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void SetHoveredWorldObject(UObject* NewObject);
