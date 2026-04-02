@@ -501,7 +501,7 @@ void AOperator::SelectToggle_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
 	if (CurrentInputPackage.SelectedActors.Contains(Target)) DeselectActor(Target);
-	else SelectActor(Target, true);
+	else SelectActor(Target, false);
 }
 void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection)
 {
@@ -618,7 +618,9 @@ void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
 bool AOperator::ActorAddToActionList(AActor* Target)
 {
 	bool Result = false;
-	for (UActorComponent* CurrentComponent : Target->GetComponents())
+	TSet<UActorComponent*> ActorComponents = Target->GetComponents();
+	if (ActorComponents.IsEmpty()) return Result;
+	for (UActorComponent* CurrentComponent : ActorComponents)
 	{
 		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
 		{
@@ -630,7 +632,8 @@ bool AOperator::ActorAddToActionList(AActor* Target)
 
 void AOperator::ActorRemoveFromActionList(AActor* Target)
 {
-	for (UActorComponent* CurrentComponent : Target->GetComponents())
+	TSet<UActorComponent*> ActorComponents = Target->GetComponents();
+	for (UActorComponent* CurrentComponent : ActorComponents)
 	{
 		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
 		{
@@ -644,26 +647,31 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 	TMap<AActionBase*, TSet<UUnitActionComponent*>> ExecuteActionComponentMap;
 	TMap<AActionBase*, TSet<AActor*>> ExecuteActionActorMap;
 
-	for (AActor* CurrentActor : Input.SelectedActors)
+	if (!Input.SelectedActors.IsEmpty())
 	{
-		AUnitBase* CurrentAsUnit = Cast<AUnitBase>(CurrentActor);
-		if (!IsValid(CurrentAsUnit)) continue;
-		AActionBase* ResultAction = nullptr;
-		TArray<UUnitActionComponent*> ResultComponents;
-		if (!CurrentAsUnit->GetSimpleAction(Input, ResultAction, ResultComponents)) continue;
-		if (!IsValid(ResultAction)) continue;
-		TSet<AActor*>& ResultActorList = ExecuteActionActorMap.FindOrAdd(ResultAction);
-		ResultActorList.Add(CurrentActor);
-		if (!bIsReservationMode)
+		for (AActor* CurrentActor : Input.SelectedActors)
 		{
-			if (ResultComponents.Num() == 0) continue;
-			TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionComponentMap.FindOrAdd(ResultAction);
-			ResultComponentList.Append(ResultComponents);
+			AUnitBase* CurrentAsUnit = Cast<AUnitBase>(CurrentActor);
+			if (!IsValid(CurrentAsUnit)) continue;
+			AActionBase* ResultAction = nullptr;
+			TArray<UUnitActionComponent*> ResultComponents;
+			if (!CurrentAsUnit->GetSimpleAction(Input, ResultAction, ResultComponents)) continue;
+			if (!IsValid(ResultAction)) continue;
+			TSet<AActor*>& ResultActorList = ExecuteActionActorMap.FindOrAdd(ResultAction);
+			ResultActorList.Add(CurrentActor);
+			if (!bIsReservationMode)
+			{
+				if (ResultComponents.Num() == 0) continue;
+				TSet<UUnitActionComponent*>& ResultComponentList = ExecuteActionComponentMap.FindOrAdd(ResultAction);
+				ResultComponentList.Append(ResultComponents);
+			}
 		}
 	}
 
+
 	if (bIsReservationMode)
 	{
+		if (ExecuteActionActorMap.IsEmpty()) return;
 		for (auto& CurrentPair : ExecuteActionActorMap)
 		{
 			AActionBase* CurrentAction = CurrentPair.Key;
@@ -676,6 +684,7 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 	}
 	else
 	{
+		if (ExecuteActionComponentMap.IsEmpty()) return;
 		for (auto& CurrentPair : ExecuteActionComponentMap)
 		{
 			AActionBase* CurrentAction = CurrentPair.Key;
@@ -690,6 +699,8 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately)
 {
 	FActionReservator Reservator(this, TargetAction, Input);
+
+	if (TargetActors.IsEmpty()) return;
 
 	for (AActor* CurrentActor : TargetActors)
 	{
