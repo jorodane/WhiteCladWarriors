@@ -32,6 +32,9 @@ protected:
 	virtual void OnPossess(APawn* aPawn) override;
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Player")
+	FVector GetTerrainPosition(float HeightOffset);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void SetCursor(EMouseCursor::Type NewCursor);
 	virtual void SetCursor_Implementation(EMouseCursor::Type NewCursor);

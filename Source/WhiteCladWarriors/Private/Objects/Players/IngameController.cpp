@@ -16,6 +16,16 @@ void AIngameController::OnPossess(APawn* aPawn)
 	}
 }
 
+FVector AIngameController::GetTerrainPosition(float HeightOffset)
+{
+	FVector Origin, Direction;
+	if (!DeprojectMousePositionToWorld(Origin, Direction)) return FVector::ZeroVector;
+	if (Direction.Z == 0) return FVector::ZeroVector;
+	const float Distance = (HeightOffset - Origin.Z) / Direction.Z;
+
+	return Origin + (Direction * Distance);
+}
+
 void AIngameController::SetCursor_Implementation(EMouseCursor::Type NewCursor)
 {
 	if (!NewCursor) NewCursor = EMouseCursor::Default;

@@ -14,20 +14,26 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWidgetUpdated, UGenericWidgetBase
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWidgetUpdatedSingle, UGenericWidgetBase*, TargetWidget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWidgetUpdateClaim, UGenericWidgetBase*, TargetWidget);
 
+UENUM(BlueprintType)
+enum class EWidgetTransformType : uint8
+{
+	FillSlot, FillPercent, HorizontalSize, VerticalSize, HorizontalAlignment, VerticalAlignment, Padding_Left,Padding_Right,Padding_Up,Padding_Down
+};
+
 /**
  * 
  */
-USTRUCT(BlueprintType)
-struct FGenericWidgetClaimer
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	int UIOrder = 0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
-	FName ClaimWidgetType;
-};
+//USTRUCT(BlueprintType)
+//struct FGenericWidgetClaimer
+//{
+//	GENERATED_BODY()
+//
+//public:
+//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+//	int UIOrder = 0;
+//
+//
+//};
 
 UCLASS(BlueprintType, Blueprintable)
 class UGenericWidgetClaim : public UObject
@@ -48,6 +54,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
 	FName WidgetType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
+	TMap<EWidgetTransformType, float> WidgetTransform;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", Meta = (ExposeOnSpawn = "true"))
 	TArray<UGenericWidgetClaim*> Children;

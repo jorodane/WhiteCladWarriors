@@ -201,12 +201,14 @@ void AOperator::UpdateInputPackage()
 {
 	if (APlayerController* AsPlayerController = Cast<APlayerController>(GetController()))
 	{
-		FHitResult ClickAreaHitResult;
 		FHitResult SelectHitResult;
-		bool isClickAreaHit = AsPlayerController->GetHitResultUnderCursorByChannel(ClickAreaChannel, false, ClickAreaHitResult);
 		bool isSelectHit = AsPlayerController->GetHitResultUnderCursorByChannel(SelectChannel, false, SelectHitResult);
 
-		if (isClickAreaHit) CurrentInputPackage.MouseTerrainPosition = ClickAreaHitResult.Location;
+		if (IsValid(PlayerController))
+		{
+			CurrentInputPackage.MouseTerrainPosition = PlayerController->GetTerrainPosition(GetActorLocation().Z);
+		}
+
 		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
 		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
 		{
