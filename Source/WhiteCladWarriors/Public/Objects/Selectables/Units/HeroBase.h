@@ -6,6 +6,7 @@
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "HeroBase.generated.h"
 
+class UUnitActionContainer;
 /**
  * 
  */
@@ -21,4 +22,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero")
 	FSlateBrush Portrait;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TArray<UUnitActionContainer*> HeroActions;
 };

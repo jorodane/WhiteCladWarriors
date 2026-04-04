@@ -17,19 +17,26 @@ class WHITECLADWARRIORS_API UUnitActionContainer : public UObject
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TObjectPtr<AActionBase> CurrentAction;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<UUnitActionComponent*> CurrentComponents;
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	AActionBase* SetAction(AActionBase* NewAction);
-	AActionBase* SetAction_Implementation(AActionBase* NewAction) {return CurrentAction = NewAction;};
+	AActionBase* SetCurrentAction(AActionBase* NewAction);
+	AActionBase* SetCurrentAction_Implementation(AActionBase* NewAction) {return CurrentAction = NewAction;};
+
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
+	AActionBase* GetCurrentAction();
+	AActionBase* GetCurrentAction_Implementation() { return CurrentAction; };
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	TArray<UUnitActionComponent*> SetComponents(const TArray<UUnitActionComponent*>& NewComponents);
-	TArray<UUnitActionComponent*> SetComponents_Implementation(const TArray<UUnitActionComponent*>& NewComponents) { return CurrentComponents = NewComponents;};
+	TArray<UUnitActionComponent*> SetCurrentComponents(const TArray<UUnitActionComponent*>& NewComponents);
+	TArray<UUnitActionComponent*> SetCurrentComponents_Implementation(const TArray<UUnitActionComponent*>& NewComponents) { return CurrentComponents = NewComponents;};
+
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
+	TArray<UUnitActionComponent*> GetCurrentComponents();
+	TArray<UUnitActionComponent*> GetCurrentComponents_Implementation() { return CurrentComponents; };
 
 };

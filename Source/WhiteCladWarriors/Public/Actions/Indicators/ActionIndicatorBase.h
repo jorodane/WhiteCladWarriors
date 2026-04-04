@@ -15,6 +15,7 @@ class UActionBehaviorNode;
 class AActionIndicatorShowerBase;
 class UActionExecutor;
 class UActionNode;
+class UUnitActionContainer;
 class UUnitActionComponent;
 
 UCLASS(Blueprintable, BlueprintType)
@@ -78,6 +79,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void ReceiveAction(AActionBase* NewAction);
 	void ReceiveAction_Implementation(AActionBase* NewAction);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
+	void ReceiveActionContainer(UUnitActionContainer* NewContainer);
+	void ReceiveActionContainer_Implementation(UUnitActionContainer* NewContainer);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Indicator")
 	void UpdateShower(bool bIsIconPreview);

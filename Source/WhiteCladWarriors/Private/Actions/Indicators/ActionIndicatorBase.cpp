@@ -6,6 +6,7 @@
 #include "Actions/Executables/ActionBehaviorNode.h"
 #include "Actions/Executables/ActionSelectorNode.h"
 #include "Actions/ActionBase.h"
+#include "Actions/UnitActionContainer.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Objects/Generals/Components/PoolComponent.h"
@@ -116,19 +117,13 @@ void UActionIndicatorBase::ReceiveAction_Implementation(AActionBase* NewAction)
 	UActionSelectorNode* SelecterNode;
 	if (bIsActivated)
 	{
-		if (bIsTriggerByIcon)
-		{
-			ResetIndicator();
-		}
+		if (bIsTriggerByIcon) ResetIndicator();
 		else return;
 	}
 	if (!IsValid(NewAction) || !IsValid(OwnerOperator) || !NewAction->IsRootNodeSelector(SelecterNode))
 	{
-		if (bIsTriggerByIcon)
-		{
-			ResetIndicator();
-		}
-		return;
+		if (bIsTriggerByIcon) ResetIndicator();
+		else return;
 	}
 	
 	FInputClaim ClaimTemp;
@@ -136,6 +131,31 @@ void UActionIndicatorBase::ReceiveAction_Implementation(AActionBase* NewAction)
 	Cursor.CurrentAction = NewAction;
 	Cursor.CurrentOperator = OwnerOperator;
 	ClaimTemp.TargetComponentArray = OwnerOperator->GetAvailableComponentList(NewAction);
+	ClaimTemp.TargetNode = SelecterNode;
+	ReceiveInputClaim(ClaimTemp, true, true);
+}
+
+void UActionIndicatorBase::ReceiveActionContainer_Implementation(UUnitActionContainer* NewContainer)
+{
+	UActionSelectorNode* SelecterNode;
+
+	if (bIsActivated || !IsValid(NewContainer) || !IsValid(OwnerOperator))
+	{
+		if (bIsTriggerByIcon) ResetIndicator();
+		else return;
+	}
+	AActionBase* NewAction = NewContainer->CurrentAction;
+	if (!IsValid(NewAction)  || !NewAction->IsRootNodeSelector(SelecterNode))
+	{
+		if (bIsTriggerByIcon) ResetIndicator();
+		else return;
+	}
+
+	FInputClaim ClaimTemp;
+	FActionCursorFinder& Cursor = ClaimTemp.TargetActionCursor;
+	Cursor.CurrentAction = NewAction;
+	Cursor.CurrentOperator = OwnerOperator;
+	ClaimTemp.TargetComponentArray = NewContainer->CurrentComponents;
 	ClaimTemp.TargetNode = SelecterNode;
 	ReceiveInputClaim(ClaimTemp, true, true);
 }

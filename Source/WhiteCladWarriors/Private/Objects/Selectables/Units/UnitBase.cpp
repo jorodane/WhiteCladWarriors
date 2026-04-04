@@ -142,8 +142,6 @@ bool FMainActionInfo::CheckValid() const
 
 void AUnitBase::BeginPlay()
 {
-	Super::BeginPlay();
-	
 	for (UActorComponent* CurrentComponent : GetComponents()) AddActionComponent(Cast<UUnitActionComponent>(CurrentComponent));
 
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
@@ -156,6 +154,8 @@ void AUnitBase::BeginPlay()
 			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &AUnitBase::MontageNotifyEnd);
 		}
 	}
+
+	Super::BeginPlay();
 }
 
 void AUnitBase::BeginDestroy()
