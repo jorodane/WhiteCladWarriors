@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/ActionIndicatorShowerBase.h"
+#include "Actions/Indicators/ActionIndicatorShowerBase.h"
 
 void AActionIndicatorShowerBase::SetMiddleLocation_Implementation(FVector A, FVector B)
 {

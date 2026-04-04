@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "ContainActionValue.generated.h"
+#include "ContainEventValue.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FActionDelegate);
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UContainActionValue : public UInterface
+class UContainEventValue : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -18,7 +18,7 @@ class UContainActionValue : public UInterface
 /**
  * 
  */
-class WHITECLADWARRIORS_API IContainActionValue
+class WHITECLADWARRIORS_API IContainEventValue
 {
 	GENERATED_BODY()
 
@@ -26,5 +26,5 @@ class WHITECLADWARRIORS_API IContainActionValue
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
-	void SetAction(const FActionDelegate& Action);
+	void SetEvent(const FActionDelegate& NewEvent);
 };

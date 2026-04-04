@@ -2,8 +2,8 @@
 
 
 #include "Actions/ActionBase.h"
-#include "Actions/ActionSelectorNode.h"
-#include "Actions/ActionExecutor.h"
+#include "Actions/Executables/ActionSelectorNode.h"
+#include "Actions/Executables/ActionExecutor.h"
 #include "Generals/Structs/ActionInputStructures.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 

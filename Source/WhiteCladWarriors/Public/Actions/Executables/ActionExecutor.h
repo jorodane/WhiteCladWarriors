@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Actions/ActionValueClaimer.h"
+#include "Actions/Values/ActionValueClaimer.h"
 #include "ActionExecutor.generated.h"
 
 class AOperator;

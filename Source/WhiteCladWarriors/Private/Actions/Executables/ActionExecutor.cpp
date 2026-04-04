@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/ActionExecutor.h"
-#include "Actions/ActionSelectorNode.h"
+#include "Actions/Executables/ActionExecutor.h"
+#include "Actions/Executables/ActionSelectorNode.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Players/Operator.h"
-#include "Actions/ActionNode.h"
 
 
 int FActiveNodeInfo::AddNode(UActionNode* Node)

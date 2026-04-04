@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/ActionIndicatorBase.h"
-#include "Actions/ActionIndicatorShowerBase.h"
-#include "Actions/ActionBehaviorNode.h"
-#include "Actions/ActionSelectorNode.h"
+#include "Actions/Indicators/ActionIndicatorBase.h"
+#include "Actions/Indicators/ActionIndicatorShowerBase.h"
+#include "Actions/Executables/ActionBehaviorNode.h"
+#include "Actions/Executables/ActionSelectorNode.h"
 #include "Actions/ActionBase.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Generals/Structs/InputPackage.h"

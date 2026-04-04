@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Generals/Structs/ActionInputStructures.h"
-#include "Actions/ActionNode.h"
+#include "Actions/Executables/ActionNode.h"
 #include "ActionSelectorNode.generated.h"
 
 class UActionNode;

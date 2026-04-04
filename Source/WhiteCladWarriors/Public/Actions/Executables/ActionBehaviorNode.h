@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actions/ActionNode.h"
+#include "Actions/Executables/ActionNode.h"
 #include "Generals/Structs/ActionInputStructures.h"
 #include "ActionBehaviorNode.generated.h"
 

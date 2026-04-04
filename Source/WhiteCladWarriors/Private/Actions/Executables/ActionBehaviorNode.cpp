@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/ActionBehaviorNode.h"
-#include "Actions/ActionIndicatorShowerBase.h"
+#include "Actions/Executables/ActionBehaviorNode.h"
+#include "Actions/Indicators/ActionIndicatorShowerBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
 void UActionBehaviorNode::UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers, bool bIsIconPreview)

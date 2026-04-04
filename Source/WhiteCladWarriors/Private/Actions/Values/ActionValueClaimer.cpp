@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/ActionValueClaimer.h"
-#include "Actions/ActionExecutor.h"
+#include "Actions/Values/ActionValueClaimer.h"
+#include "Actions/Executables/ActionExecutor.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Units/UnitBase.h"
 #include "Objects/Players/Operator.h"

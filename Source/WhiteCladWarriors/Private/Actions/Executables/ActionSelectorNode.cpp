@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actions/ActionSelectorNode.h"
-#include "Actions/ActionBehaviorNode.h"
-#include "Actions/ActionExecutor.h"
+#include "Actions/Executables/ActionSelectorNode.h"
+#include "Actions/Executables/ActionBehaviorNode.h"
+#include "Actions/Executables/ActionExecutor.h"
 
 bool UActionSelectorNode::CompleteInput_Implementation(const FActionCursorFinder& WantCursor)
 {
