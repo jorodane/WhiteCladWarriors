@@ -189,6 +189,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Mesh")
 	USkeletalMeshComponent* GetMesh();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Mesh")
+	float GetHalfHeight();
+	float GetHalfHeight_Implementation() { return 0.0f; }
+
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
 	bool AddFillValue(FName WantTag, UFillableValueComponent* Target);
 

@@ -19,15 +19,25 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Navigation")
 	TObjectPtr<UNavigationPath> CurrentPath;
 
+	TArray<double> DistanceArray;
+
 	double PathLength = 0.0;
+
+	double MovedDistance = 0.0;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Navigation")
 	void SetPath(UNavigationPath* NewPath);
 
-	UFUNCTION(BlueprintPure, Category = "Navigation")
-	FVector GetPathLocationWithPercent(double Percent, FVector CurrentLocation);
+	UFUNCTION(BlueprintCallable, Category = "Navigation")
+	bool MoveNextDistance(double WantDistance);
 
 	UFUNCTION(BlueprintPure, Category = "Navigation")
 	FVector GetPathLocationWithDistance(double Distance, FVector CurrentLocation);
+
+	UFUNCTION(BlueprintPure, Category = "Navigation")
+	FVector GetPathLocationWithPercent(double Percent, FVector CurrentLocation);
+
+	UFUNCTION()
+	void OnPathUpdated(UNavigationPath* AffectedPath, TEnumAsByte<ENavPathEvent::Type> PathEvent);
 };

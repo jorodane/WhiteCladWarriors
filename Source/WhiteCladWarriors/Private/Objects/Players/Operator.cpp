@@ -514,7 +514,10 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 	ISelectable::Execute_Select(Target, this, bIsSingleSelection);
 	if (ActorAddToActionList(Target))
 	{
-		if(AUnitBase* TargetAsUnit = Cast<AUnitBase>(Target)) TargetAsUnit->OnUnitDie.AddDynamic(this, &AOperator::DeselectUnit);
+		if (AUnitBase* TargetAsUnit = Cast<AUnitBase>(Target))
+		{
+			TargetAsUnit->OnUnitDie.AddUniqueDynamic(this, &AOperator::DeselectUnit);
+		}
 	}
 
 }
@@ -576,6 +579,8 @@ bool AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
 {
 	bool Result = false;
 	if(!IsValid(Target)) return Result;
+	if (Target->ActionList.IsEmpty()) return Result;
+
 	for (const FName& CurrentActionName : Target->ActionList)
 	{
 		FActionTargetContainer* CurrentContainer;
