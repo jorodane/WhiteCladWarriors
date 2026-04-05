@@ -439,7 +439,6 @@ void AUnitBase::ClaimStopMovement_Implementation()
 
 bool AUnitBase::ClaimJump_Implementation()
 {
-	Jump();
 	return true;
 }
 

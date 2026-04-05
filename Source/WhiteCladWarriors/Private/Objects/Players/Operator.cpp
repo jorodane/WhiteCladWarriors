@@ -121,15 +121,15 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 				SelectActors(OutResultArray, OutOnlySingle);
 			}
 		}
-		else if (!bIsAdditive)
-		{
-			DeselectActors(); //Remove All On Ground Click
-		};
+		//else if (!bIsAdditive)
+		//{
+		//	DeselectActors(); //Remove All On Ground Click
+		//};
 
-		if (CurrentInputPackage.SelectedActors.IsEmpty() && IsValid(HeroActor))
-		{
-			SelectActor(HeroActor, true);
-		}
+		//if (CurrentInputPackage.SelectedActors.IsEmpty() && IsValid(HeroActor))
+		//{
+		//	SelectActor(HeroActor, true);
+		//}
 	}
 }
 

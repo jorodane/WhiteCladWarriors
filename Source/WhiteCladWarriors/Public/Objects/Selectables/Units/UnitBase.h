@@ -135,7 +135,7 @@ struct FMainActionInfo
 };
 
 UCLASS()
-class WHITECLADWARRIORS_API AUnitBase : public ACharacter, public ISelectable, public IInfoConnectable, public IPlayerConnectable
+class WHITECLADWARRIORS_API AUnitBase : public AActor, public ISelectable, public IInfoConnectable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -186,6 +186,9 @@ protected:
 	virtual void BeginDestroy() override;
 
 public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Mesh")
+	USkeletalMeshComponent* GetMesh();
+
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
 	bool AddFillValue(FName WantTag, UFillableValueComponent* Target);
 
