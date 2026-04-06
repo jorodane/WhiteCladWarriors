@@ -4,7 +4,7 @@
 #include "Actions/Executables/ActionExecutor.h"
 #include "Actions/Executables/ActionSelectorNode.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
-#include "Objects/Selectables/Units/UnitBase.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Players/Operator.h"
 
 
@@ -189,7 +189,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 		Cursor.RemoveID(ID);
 		if (Cursor.IsEmpty())
 		{
-			if (AUnitBase* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(Executor, TargetComponent);
+			if (UUnitMainComponent* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(Executor, TargetComponent);
 			CursorMap.Remove(TargetComponent);
 			CheckCursorMap();
 		}

@@ -9,7 +9,8 @@
 /**
  * 
  */
-class AUnitBase;
+class UUnitMainComponent;
+class UHeroMainComponent;
 class AOperator;
 
 UCLASS()
@@ -25,7 +26,7 @@ public:
 	TObjectPtr<AOperator> ConnectedOperator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
-	TObjectPtr<AUnitBase> ConnectedHero;
+	TObjectPtr<UHeroMainComponent> ConnectedHero;
 
 
 protected:

@@ -28,5 +28,5 @@ public:
 	void UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers, bool bIsIconPreview);
 
 	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
-	void UpdateIndicatorSingle(const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, AUnitBase* TargetUnit, int Index, bool bIsIconPreview);
+	void UpdateIndicatorSingle(const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, UUnitMainComponent* TargetUnit, int Index, bool bIsIconPreview);
 };

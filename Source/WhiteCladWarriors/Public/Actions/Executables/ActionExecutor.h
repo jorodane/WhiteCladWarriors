@@ -12,7 +12,7 @@ class UUnitActionComponent;
 class UActionSelectorNode;
 class UActionNode;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionMessage_Simple, AUnitBase*, From);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionMessage_Simple, UUnitMainComponent*, From);
 
 /**
  * 

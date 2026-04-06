@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "ContainHeroValue.generated.h"
 
-class AHeroBase;
+class UHeroMainComponent;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -25,5 +25,5 @@ class WHITECLADWARRIORS_API IContainHeroValue
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
-	void SetHero(AHeroBase* Value);
+	void SetHero(UHeroMainComponent* Value);
 };

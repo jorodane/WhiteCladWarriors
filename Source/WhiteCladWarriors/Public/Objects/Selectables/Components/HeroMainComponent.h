@@ -10,8 +10,8 @@ class UUnitActionContainer;
 /**
  * 
  */
-UCLASS()
-class WHITECLADWARRIORS_API AHeroBase : public AUnitBase
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WHITECLADWARRIORS_API UHeroMainComponent : public UUnitMainComponent
 {
 	GENERATED_BODY()
 

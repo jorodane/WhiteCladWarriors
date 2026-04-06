@@ -3,8 +3,7 @@
 #include "Objects/Players/Operator.h"
 #include "Objects/Players/AreaSelector.h"
 #include "Objects/Players/InGameController.h"
-#include "Objects/Selectables/Units/UnitBase.h"
-#include "Objects/Selectables/Units/HeroBase.h"
+#include "Objects/Selectables/Components/HeroMainComponent.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Actions/ActionBase.h"
 #include "Actions/Executables/ActionExecutor.h"
@@ -88,7 +87,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 					FActionCursorFinder NewFinder(CurrentInputClaim.TargetActionCursor);
 					NewFinder.CurrentComponent = CurrentComponent;
 					FinderArray.Add(NewFinder);
-					if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
+					if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 				}
 				bool bIsInputComplete =  CurrentInputClaim.TargetActionCursor.CurrentExecutor->SetInputArray(FinderArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
 				if (bIsInputComplete) ForceRemoveInputClaim();
@@ -337,7 +336,7 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 {
 	if(!IsValid(TargetAction)) return;
 
-	for (UUnitActionComponent* CurrentComponent : TargetComponent) if (AUnitBase* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
+	for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 
 	FInputClaim ResultInput;
 	TArray<bool> ComponentResult;
@@ -508,13 +507,14 @@ void AOperator::SelectToggle_Implementation(AActor* Target)
 void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection)
 {
 	if (!IsValid(Target)) return;
-	if (!ISelectable::Execute_IsSelectable(Target, this)) return;
+	if (!Target->GetClass()->ImplementsInterface(USelectable::StaticClass())) return;
+	if (!ISelectable::Execute_CheckSelectable(Target, this)) return;
 
 	CurrentInputPackage.SelectedActors.AddUnique(Target);
 	ISelectable::Execute_Select(Target, this, bIsSingleSelection);
 	if (ActorAddToActionList(Target))
 	{
-		if (AUnitBase* TargetAsUnit = Cast<AUnitBase>(Target))
+		if (UUnitMainComponent* TargetAsUnit = Target->GetComponentByClass<UUnitMainComponent>())
 		{
 			TargetAsUnit->OnUnitDie.AddUniqueDynamic(this, &AOperator::DeselectUnit);
 		}
@@ -552,10 +552,13 @@ void AOperator::DeselectActor(AActor* Target)
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
-void AOperator::DeselectUnit_Implementation(AUnitBase* Target) 
-{ 
-	if(IsValid(Target)) Target->OnUnitDie.RemoveAll(this);
-	DeselectActor(Target); 
+void AOperator::DeselectUnit_Implementation(UUnitMainComponent* Target)
+{
+	if (IsValid(Target))
+	{
+		Target->OnUnitDie.RemoveAll(this);
+		DeselectActor(Target->GetOwner());
+	}
 };
 
 void AOperator::DeselectActors_Implementation()
@@ -570,7 +573,7 @@ void AOperator::DeselectActorsWithoutNotify_Implementation()
 	{
 		ISelectable::Execute_Deselect(CurrentTarget);
 		ActorRemoveFromActionList(CurrentTarget);
-		if (AUnitBase* CurrentUnit = Cast<AUnitBase>(CurrentTarget)) CurrentUnit->OnUnitDie.RemoveAll(this);
+		if (UUnitMainComponent* CurrentUnit = CurrentTarget->GetComponentByClass<UUnitMainComponent>()) CurrentUnit->OnUnitDie.RemoveAll(this);
 	}
 	CurrentInputPackage.SelectedActors.Empty();
 }
@@ -658,7 +661,8 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 	{
 		for (AActor* CurrentActor : Input.SelectedActors)
 		{
-			AUnitBase* CurrentAsUnit = Cast<AUnitBase>(CurrentActor);
+			if (!IsValid(CurrentActor)) continue;
+			UUnitMainComponent* CurrentAsUnit = CurrentActor->GetComponentByClass<UUnitMainComponent>();
 			if (!IsValid(CurrentAsUnit)) continue;
 			AActionBase* ResultAction = nullptr;
 			TArray<UUnitActionComponent*> ResultComponents;
@@ -711,7 +715,7 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 
 	for (AActor* CurrentActor : TargetActors)
 	{
-		if (AUnitBase* AsUnit = Cast<AUnitBase>(CurrentActor))
+		if (UUnitMainComponent* AsUnit = CurrentActor->GetComponentByClass<UUnitMainComponent>())
 		{
 			TArray<UUnitActionComponent*> TargetComponents;
 			FInputClaim ResultInput;
@@ -744,12 +748,12 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 	}
 }
 
-AHeroBase* AOperator::SpawnHero(FVector Location)
+UHeroMainComponent* AOperator::SpawnHero(FVector Location)
 {
-	AHeroBase* Result;
-	if (IsValid(HeroActor))
+	UHeroMainComponent* Result = nullptr;
+	if (IsValid(HeroComponent) && IsValid(HeroActor))
 	{
-		Result = HeroActor;
+		Result = HeroComponent;
 		HeroActor->SetActorLocation(Location);
 		return Result;
 	}
@@ -757,11 +761,11 @@ AHeroBase* AOperator::SpawnHero(FVector Location)
 	if (UWorld* CurrentWorld = GetWorld())
 	{
 		AActor* SpawnedActor = CurrentWorld->SpawnActor(HeroClass, &Location);
-		Result = Cast<AHeroBase>(SpawnedActor);
-		if (Result)
+		if (SpawnedActor)
 		{
-			HeroActor = Result;
-			IPlayerConnectable::Execute_OnPlayerConnected(HeroActor, PlayerController);
+			Result = HeroComponent = SpawnedActor->GetComponentByClass<UHeroMainComponent>();
+			HeroActor = SpawnedActor;
+			IPlayerConnectable::Execute_OnPlayerConnected(HeroComponent, PlayerController);
 		}
 	}
 	else

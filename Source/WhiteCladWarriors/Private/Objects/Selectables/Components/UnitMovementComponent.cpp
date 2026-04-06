@@ -2,7 +2,7 @@
 
 
 #include "Objects/Selectables/Components/UnitMovementComponent.h"
-#include "Objects/Selectables/Units/UnitBase.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
 
 void UUnitMovementComponent::SetPath(UNavigationPath* NewPath)
 {
@@ -45,13 +45,13 @@ bool UUnitMovementComponent::MoveNextDistance(double WantDistance)
 {
 	bool Result = false;
 	if (!IsValid(CurrentPath)) return Result;
-	AUnitBase* Unit = GetOwnerUnit();
+	UUnitMainComponent* Unit = GetOwnerUnit();
 	if (!IsValid(Unit)) return Result;
 	MovedDistance += WantDistance;
 	if (MovedDistance >= PathLength) Result = true;
-	const FVector& OriginLocation = Unit->GetActorLocation();
+	const FVector& OriginLocation = Unit->GetOwner()->GetActorLocation();
 	const FVector& GoalLocation = GetPathLocationWithDistance(MovedDistance, OriginLocation);// +(FVector::UpVector * Unit->GetHalfHeight());
-	Unit->SetActorLocation(GoalLocation);
+	Unit->GetOwner()->SetActorLocation(GoalLocation);
 
 	return Result;
 }

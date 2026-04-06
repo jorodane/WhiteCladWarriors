@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "GameFramework/Character.h"
@@ -24,7 +25,7 @@ class UFillableValueComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, AUnitBase*, TargetUnit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
@@ -134,8 +135,8 @@ struct FMainActionInfo
 	bool CheckValid() const;
 };
 
-UCLASS()
-class WHITECLADWARRIORS_API UUnitMainComponent : public UActorComponent, public ISelectable, public IInfoConnectable, public IPlayerConnectable
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, public ISelectable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -171,7 +172,7 @@ protected:
 	FActionReservator CurrentReservatedAction;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select")
-	TArray<UUnitActionComponent*> ActionComponentArray;
+	TArray<UUnitComponentBase*> UnitComponentArray;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = true))
 	TObjectPtr<AIngameController> PlayerController;
@@ -183,11 +184,17 @@ protected:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void BeginDestroy() override;
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Component")
+	TArray<UUnitComponentBase*> GetComponents() const;
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Mesh")
 	USkeletalMeshComponent* GetMesh();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mesh")
+	USkeletalMeshComponent* SetMesh(USkeletalMeshComponent* NewMesh);
+	USkeletalMeshComponent* SetMesh_Implementation(USkeletalMeshComponent* NewMesh);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Mesh")
 	float GetHalfHeight();
@@ -208,8 +215,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "FillValue")
 	TArray<UFillableValueComponent*> FindAllFillValue();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Widget")
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Widget")
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget(EInfoWidgetType WantType) const;
+	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget_Implementation(EInfoWidgetType WantType) { return TArray<UOrderedGenericWidgetClaim*>(); }
 
 
 	UFUNCTION(BlueprintPure, Category = "Action")
@@ -229,7 +237,7 @@ public:
 	bool GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*& OutAction, TArray<UUnitActionComponent*>& OutComponents) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddActionComponent(UUnitActionComponent* NewComponent);
+	void AddUnitComponent(UUnitComponentBase* NewComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
 	bool GetMainActionCancelable() const;

@@ -17,10 +17,10 @@ class AActionBase;
 class UActionExecutor;
 class UActionSelectorNode;
 class UActionIndicatorBase;
-class AUnitBase;
-class AHeroBase;
-class UCameraComponent;
 class UUnitActionComponent;
+class UUnitMainComponent;
+class UHeroMainComponent;
+class UCameraComponent;
 
 
 
@@ -31,7 +31,7 @@ class UUnitActionComponent;
 DECLARE_DYNAMIC_DELEGATE_OneParam(FFunctionForSimpleAction, const FInputClaim&, Claim);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedChanged, const TArray<AActor*>&, NewActors);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHoverChanged, UObject*, NewObject);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroChanged, AHeroBase*, NewHero);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroChanged, UHeroMainComponent*, NewHero);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnInputClaimChanged, const FInputClaim&, NewClaim, bool, ValidClaim, bool, TriggerByIcon);
 
 
@@ -78,10 +78,11 @@ protected:
 	static TObjectPtr<AOperator> LocalOperator;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess=true))
-	TSubclassOf<AHeroBase> HeroClass;
+	TSubclassOf<AActor> HeroClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
-	TObjectPtr<AHeroBase> HeroActor;
+	TObjectPtr<UHeroMainComponent> HeroComponent;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	TObjectPtr<UCameraComponent> SelectorCamera;
@@ -89,6 +90,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess=true))
 	TObjectPtr<AAreaSelector> DragAreaActor;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Hero", meta = (AllowPrivateAccess = true))
+	TObjectPtr<AActor> HeroActor;
 	UPROPERTY(BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
 	TObjectPtr<AActor> FocusActor;
 
@@ -316,8 +319,8 @@ public:
 	void DeselectActor(AActor* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void DeselectUnit(AUnitBase* Target);
-	void DeselectUnit_Implementation(AUnitBase* Target);
+	void DeselectUnit(UUnitMainComponent* Target);
+	void DeselectUnit_Implementation(UUnitMainComponent* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActors();
@@ -344,7 +347,7 @@ public:
 	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
-	AHeroBase* SpawnHero(FVector Location);
+	UHeroMainComponent* SpawnHero(FVector Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Hero")
 	void SetFollowingHero(bool Value);

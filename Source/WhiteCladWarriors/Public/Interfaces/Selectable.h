@@ -23,7 +23,7 @@ class WHITECLADWARRIORS_API ISelectable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select", meta = (ExpandEnumAsExecs = "ReturnValue"))
-	bool IsSelectable(class AOperator* Operator);
+	bool CheckSelectable(class AOperator* Operator);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void PlaySelectEffect(class AOperator* Operator, bool bIsSingleSelection);

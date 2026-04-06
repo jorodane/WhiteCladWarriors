@@ -4,7 +4,7 @@
 #include "Actions/Values/ActionValueClaimer.h"
 #include "Actions/Executables/ActionExecutor.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
-#include "Objects/Selectables/Units/UnitBase.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Players/Operator.h"
 
 FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
@@ -19,10 +19,10 @@ FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, con
 		break;
 	case EPositionGetterType::SelfPosition:
 	{
-		AUnitBase* ResultUnit;
+		UUnitMainComponent* ResultUnit;
 		if (IsValid(Component) && Component->TryGetOwnerUnit(ResultUnit))
 		{
-			Result = ResultUnit->GetActorLocation();
+			Result = ResultUnit->GetOwner()->GetActorLocation();
 		}
 	}
 	break;
@@ -66,10 +66,10 @@ FVector UPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Compon
 
 	if (AdditiveSpace == EPositionSpaceType::Self && IsValid(Component))
 	{
-		AUnitBase* ResultUnit;
+		UUnitMainComponent* ResultUnit;
 		if (Component->TryGetOwnerUnit(ResultUnit))
 		{
-			return ResultUnit->GetActorTransform().TransformVector(Result);
+			return ResultUnit->GetOwner()->GetActorTransform().TransformVector(Result);
 		}
 	}
 	return Result;
@@ -80,7 +80,7 @@ FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FA
 	{
 		if (IsValid(Component))
 		{
-			if (AUnitBase* Unit = Component->GetOwnerUnit()) return Unit->GetActorLocation();
+			if (UUnitMainComponent* Unit = Component->GetOwnerUnit()) return Unit->GetOwner()->GetActorLocation();
 		}
 		return DefaultValue;
 	}

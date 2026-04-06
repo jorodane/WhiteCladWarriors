@@ -2,6 +2,7 @@
 
 
 #include "Objects/Selectables/Components/UnitMainComponent.h"
+#include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/FillableValueComponent.h"
 #include "Objects/Players/Operator.h"
@@ -142,9 +143,21 @@ bool FMainActionInfo::CheckValid() const
 
 void UUnitMainComponent::BeginPlay()
 {
-	for (UActorComponent* CurrentComponent : GetComponents()) AddActionComponent(Cast<UUnitActionComponent>(CurrentComponent));
+	for (UActorComponent* CurrentComponent : GetOwner()->GetComponents()) AddUnitComponent(Cast<UUnitComponentBase>(CurrentComponent));
+	SetMesh(GetMesh());
 
-	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
+	Super::BeginPlay();
+}
+
+TArray<UUnitComponentBase*> UUnitMainComponent::GetComponents() const
+{
+	return UnitComponentArray;
+}
+
+
+USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMeshComponent* NewMesh)
+{
+	if (USkeletalMeshComponent* CurrentMesh = NewMesh)
 	{
 		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
 		{
@@ -153,16 +166,9 @@ void UUnitMainComponent::BeginPlay()
 			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UUnitMainComponent::MontageNotifyBegin);
 			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UUnitMainComponent::MontageNotifyEnd);
 		}
+		return CurrentMesh;
 	}
-
-	Super::BeginPlay();
-}
-
-void UUnitMainComponent::BeginDestroy()
-{
-	Super::BeginDestroy();
-	//MontageComponent.Reset();
-	//MontageExecutor.Reset();
+	return nullptr;
 }
 
 bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValueComponent* Target)
@@ -278,19 +284,23 @@ bool UUnitMainComponent::GetSimpleAction(const FInputPackage& CurrentInput, AAct
 	return MaxOrder > 0;
 }
 
-void UUnitMainComponent::AddActionComponent(UUnitActionComponent* NewComponent)
+void UUnitMainComponent::AddUnitComponent(UUnitComponentBase* NewComponent)
 {
 	if (!IsValid(NewComponent)) return;
 
-	ActionComponentArray.AddUnique(NewComponent);
+	NewComponent->SetOwnerUnit(this);
+	UnitComponentArray.AddUnique(NewComponent);
 
-	for (FName CurrentName : NewComponent->ActionList)
+	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(NewComponent))
 	{
-		if (AActionBase* CurrentAction = UActionSetting::GetAction(CurrentName))
+		for (FName CurrentName : AsActionComponent->ActionList)
 		{
-			FActionTargetContainer* CurrentContainer = ActionMap.Find(CurrentAction);
-			if (CurrentContainer == nullptr) CurrentContainer = &ActionMap.Add(CurrentAction);
-			if (CurrentContainer != nullptr) CurrentContainer->Components.Add(NewComponent);
+			if (AActionBase* CurrentAction = UActionSetting::GetAction(CurrentName))
+			{
+				FActionTargetContainer* CurrentContainer = ActionMap.Find(CurrentAction);
+				if (CurrentContainer == nullptr) CurrentContainer = &ActionMap.Add(CurrentAction);
+				if (CurrentContainer != nullptr) CurrentContainer->Components.Add(AsActionComponent);
+			}
 		}
 	}
 };
@@ -488,6 +498,7 @@ TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementa
 	Result.Append(GetUnitInfoWidget(WantType));
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
+		if (CurrentComponent == this) continue;
 		if (CurrentComponent && CurrentComponent->GetClass()->ImplementsInterface(UInfoConnectable::StaticClass()))
 		{
 			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType));

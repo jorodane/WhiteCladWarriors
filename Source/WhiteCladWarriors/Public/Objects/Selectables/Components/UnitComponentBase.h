@@ -10,6 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComponentRemoved, UUnitComponentBase*, TargetComponent);
 
 class UWidget;
+class UUnitMainComponent;
 
 UCLASS( Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent, public IInfoConnectable
@@ -21,12 +22,33 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnComponentRemoved OnComponentRemoved;
 
+	UUnitMainComponent* OwnerUnit;
+
 public:
 	virtual void BeginDestroy() override;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void BroadcastRemoveMessage();
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
+	FVector GetLocation();
+	FVector GetLocation_Implementation();
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
+	FVector GetDirection(FVector Destination, bool bIsIgnoreZ = false);
+	FVector GetDirection_Implementation(FVector Destination, bool bIsIgnoreZ = false);
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
+	UUnitMainComponent* GetOwnerUnit() const;
+	inline UUnitMainComponent* GetOwnerUnit_Implementation() const { return OwnerUnit; }
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
+	UUnitMainComponent* SetOwnerUnit(UUnitMainComponent* NewUnit);
+	inline UUnitMainComponent* SetOwnerUnit_Implementation(UUnitMainComponent* NewUnit);
+
+	UFUNCTION(BlueprintCallable, Category = "Variable", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	bool TryGetOwnerUnit(UUnitMainComponent*& ResultUnit) const;
+
 //
 //public:	
 //	// Sets default values for this component's properties

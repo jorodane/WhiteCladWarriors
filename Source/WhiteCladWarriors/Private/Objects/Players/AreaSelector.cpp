@@ -17,7 +17,9 @@ TArray<AActor*> AAreaSelector::GetActorsInArea_Implementation(AOperator* Operato
 	{
 		if (AActor* CurrentActor = CurrentHit.GetActor())
 		{
-			if (ISelectable::Execute_IsSelectable(CurrentActor, Operator))
+			if (!CurrentActor->GetClass()->ImplementsInterface(USelectable::StaticClass())) continue;
+
+			if (ISelectable::Execute_CheckSelectable(CurrentActor, Operator))
 			{
 				Result.AddUnique(CurrentActor);
 				if (bIsAllSame)

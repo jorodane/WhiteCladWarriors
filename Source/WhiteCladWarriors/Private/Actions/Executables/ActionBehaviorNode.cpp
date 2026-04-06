@@ -14,7 +14,7 @@ void UActionBehaviorNode::UpdateIndicatorArray_Implementation(const FInputClaim&
 	{
 		UUnitActionComponent* CurrentComponent = TargetComponents[i];
 		AActionIndicatorShowerBase* CurrentShower = TargetShowers[i];
-		AUnitBase* CurrentUnit;
+		UUnitMainComponent* CurrentUnit;
 		if (!IsValid(CurrentComponent) || !IsValid(CurrentShower)) continue;
 		CurrentComponent->TryGetOwnerUnit(CurrentUnit);
 		UpdateIndicatorSingle(TargetInput, InputPackage, CurrentComponent, CurrentShower, CurrentUnit, i, bIsIconPreview);
