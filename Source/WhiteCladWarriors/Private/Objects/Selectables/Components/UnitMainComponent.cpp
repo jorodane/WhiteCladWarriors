@@ -143,7 +143,11 @@ bool FMainActionInfo::CheckValid() const
 
 void UUnitMainComponent::BeginPlay()
 {
-	for (UActorComponent* CurrentComponent : GetOwner()->GetComponents()) AddUnitComponent(Cast<UUnitComponentBase>(CurrentComponent));
+	for (UActorComponent* CurrentComponent : GetOwner()->GetComponents())
+	{
+		if (CurrentComponent == this) continue;
+		AddUnitComponent(Cast<UUnitComponentBase>(CurrentComponent));
+	}
 	SetMesh(GetMesh());
 
 	Super::BeginPlay();
@@ -498,7 +502,6 @@ TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementa
 	Result.Append(GetUnitInfoWidget(WantType));
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
-		if (CurrentComponent == this) continue;
 		if (CurrentComponent && CurrentComponent->GetClass()->ImplementsInterface(UInfoConnectable::StaticClass()))
 		{
 			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType));
