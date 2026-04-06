@@ -164,6 +164,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Select")
 	FText SelectedName;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Hero")
+	FText ClassName;
+
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
 	TMap<FName, UFillableValueComponent*> FillValueMap;
 

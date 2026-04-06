@@ -763,6 +763,7 @@ UHeroMainComponent* AOperator::SpawnHero(FVector Location)
 		AActor* SpawnedActor = CurrentWorld->SpawnActor(HeroClass, &Location);
 		if (SpawnedActor)
 		{
+			SpawnedActor->SetOwner(this);
 			Result = HeroComponent = SpawnedActor->GetComponentByClass<UHeroMainComponent>();
 			HeroActor = SpawnedActor;
 			IPlayerConnectable::Execute_OnPlayerConnected(HeroComponent, PlayerController);

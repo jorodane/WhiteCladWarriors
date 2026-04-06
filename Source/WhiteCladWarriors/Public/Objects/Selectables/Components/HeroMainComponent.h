@@ -17,9 +17,6 @@ class WHITECLADWARRIORS_API UHeroMainComponent : public UUnitMainComponent
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero")
-	FText ClassName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hero")
 	FSlateBrush Portrait;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
