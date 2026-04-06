@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Objects/Selectables/Units/UnitBase.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/FillableValueComponent.h"
 #include "Objects/Players/Operator.h"
@@ -140,7 +140,7 @@ bool FMainActionInfo::CheckValid() const
 	return Cursor.CheckValid();
 }
 
-void AUnitBase::BeginPlay()
+void UUnitMainComponent::BeginPlay()
 {
 	for (UActorComponent* CurrentComponent : GetComponents()) AddActionComponent(Cast<UUnitActionComponent>(CurrentComponent));
 
@@ -148,24 +148,24 @@ void AUnitBase::BeginPlay()
 	{
 		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
 		{
-			AnimInstance->OnMontageStarted.AddDynamic(this, &AUnitBase::MontageStarted);
-			AnimInstance->OnMontageEnded.AddDynamic(this, &AUnitBase::MontageEnded);
-			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &AUnitBase::MontageNotifyBegin);
-			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &AUnitBase::MontageNotifyEnd);
+			AnimInstance->OnMontageStarted.AddDynamic(this, &UUnitMainComponent::MontageStarted);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &UUnitMainComponent::MontageEnded);
+			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UUnitMainComponent::MontageNotifyBegin);
+			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UUnitMainComponent::MontageNotifyEnd);
 		}
 	}
 
 	Super::BeginPlay();
 }
 
-void AUnitBase::BeginDestroy()
+void UUnitMainComponent::BeginDestroy()
 {
 	Super::BeginDestroy();
 	//MontageComponent.Reset();
 	//MontageExecutor.Reset();
 }
 
-bool AUnitBase::AddFillValue(FName WantTag, UFillableValueComponent* Target)
+bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValueComponent* Target)
 {
 	if (!FillValueMap.Contains(WantTag))
 	{
@@ -176,7 +176,7 @@ bool AUnitBase::AddFillValue(FName WantTag, UFillableValueComponent* Target)
 	return false;
 }
 
-void AUnitBase::RemoveFillValue(FName WantTag)
+void UUnitMainComponent::RemoveFillValue(FName WantTag)
 {
 	UFillableValueComponent** Finder = FillValueMap.Find(WantTag);
 	if (Finder)
@@ -189,20 +189,20 @@ void AUnitBase::RemoveFillValue(FName WantTag)
 	}
 }
 
-UFillableValueComponent* AUnitBase::FindFillValue(FName WantTag)
+UFillableValueComponent* UUnitMainComponent::FindFillValue(FName WantTag)
 {
 	UFillableValueComponent** Finder = FillValueMap.Find(WantTag);
 	if (Finder) return *Finder;
 	else return nullptr;
 }
 
-bool AUnitBase::TryFindFillValue(FName WantTag, UFillableValueComponent*& Result)
+bool UUnitMainComponent::TryFindFillValue(FName WantTag, UFillableValueComponent*& Result)
 {
 	Result = FindFillValue(WantTag);
 	return Result != nullptr;
 }
 
-TArray<UFillableValueComponent*> AUnitBase::FindAllFillValue()
+TArray<UFillableValueComponent*> UUnitMainComponent::FindAllFillValue()
 {
 	TArray<UFillableValueComponent*> Result;
 	FillValueMap.GenerateValueArray(Result);
@@ -210,14 +210,14 @@ TArray<UFillableValueComponent*> AUnitBase::FindAllFillValue()
 }
 
 
-TArray<AActionBase*> AUnitBase::GetActionList() const
+TArray<AActionBase*> UUnitMainComponent::GetActionList() const
 {
 	TArray<AActionBase*> Result;
 	ActionMap.GetKeys(Result);
 	return Result;
 }
 
-TArray<AActionBase*> AUnitBase::GetActionFromKey(FKey WantKey) const
+TArray<AActionBase*> UUnitMainComponent::GetActionFromKey(FKey WantKey) const
 {
 	TArray<AActionBase*> Result;
 	for (const TPair<AActionBase*, FActionTargetContainer>& CurrentPair : ActionMap)
@@ -230,7 +230,7 @@ TArray<AActionBase*> AUnitBase::GetActionFromKey(FKey WantKey) const
 	return Result;
 }
 
-TArray<FActionTargetContainer> AUnitBase::GetActionContainerFromKey(FKey WantKey) const
+TArray<FActionTargetContainer> UUnitMainComponent::GetActionContainerFromKey(FKey WantKey) const
 {
 	TArray<FActionTargetContainer> Result;
 	for (const TPair<AActionBase*, FActionTargetContainer>& CurrentPair : ActionMap)
@@ -243,13 +243,13 @@ TArray<FActionTargetContainer> AUnitBase::GetActionContainerFromKey(FKey WantKey
 	return Result;
 }
 
-TArray<UUnitActionComponent*> AUnitBase::GetComponentsWithAction(AActionBase* TargetAction) const
+TArray<UUnitActionComponent*> UUnitMainComponent::GetComponentsWithAction(AActionBase* TargetAction) const
 {
 	if (const FActionTargetContainer* Result = ActionMap.Find(TargetAction)) return Result->Components;
 	else return TArray<UUnitActionComponent*>();
 }
 
-bool AUnitBase::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*& OutAction, TArray<UUnitActionComponent*>& OutComponents) const
+bool UUnitMainComponent::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*& OutAction, TArray<UUnitActionComponent*>& OutComponents) const
 {
 	int MaxOrder = 0;
 	AActionBase* MaxAction = nullptr;
@@ -278,7 +278,7 @@ bool AUnitBase::GetSimpleAction(const FInputPackage& CurrentInput, AActionBase*&
 	return MaxOrder > 0;
 }
 
-void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
+void UUnitMainComponent::AddActionComponent(UUnitActionComponent* NewComponent)
 {
 	if (!IsValid(NewComponent)) return;
 
@@ -296,16 +296,16 @@ void AUnitBase::AddActionComponent(UUnitActionComponent* NewComponent)
 };
 
 
-bool AUnitBase::SetMainAction(const FMainActionInfo& Info)
+bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
 {
 	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
 	else return SetMainAction(FActionCursorFinder::None);
 }
 
-bool AUnitBase::GetMainActionCancelable_Implementation() const 
+bool UUnitMainComponent::GetMainActionCancelable_Implementation() const 
 { return MainAction.bIsCancelable; };
 
-bool AUnitBase::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement)
+bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement)
 {
 	bool Result = MainAction.Cancel(bIsStopMovement);
 	if (Result)
@@ -316,7 +316,7 @@ bool AUnitBase::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCan
 	return Result;
 }
 
-void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
+void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
 {
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
@@ -333,7 +333,7 @@ void AUnitBase::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent
 	}
 }
 
-void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
+void UUnitMainComponent::ReservationEnqueue(const FActionReservator& Reservation)
 {
 	const FActionReservator& NewReservation = Reservation;
 
@@ -351,12 +351,12 @@ void AUnitBase::ReservationEnqueue(const FActionReservator& Reservation)
 	}
 };
 
-void AUnitBase::ReservationClear()
+void UUnitMainComponent::ReservationClear()
 {
 	ActionQueue.Empty();
 };
 
-void AUnitBase::ReservationNext()
+void UUnitMainComponent::ReservationNext()
 {
 	if (ActionQueue.Dequeue(CurrentReservatedAction))
 	{
@@ -371,7 +371,7 @@ void AUnitBase::ReservationNext()
 	}
 }
 
-void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+void UUnitMainComponent::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
 {
 	if (CurrentReservatedAction.CheckValid())
 	{
@@ -387,7 +387,7 @@ void AUnitBase::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor,
 }
 
 
-void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
+void UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
 	{
@@ -407,7 +407,7 @@ void AUnitBase::ClaimPlayMontage_Implementation(const FMontageEventInfo& Montage
 	}
 }
 
-void AUnitBase::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
+void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
 {
 	if (WantCursor.CheckExecutor(ClaimedMontageEvent.Cursor.CurrentExecutor) && ClaimedMontageEvent.Cursor.CurrentID == WantCursor.CurrentID)
 	{
@@ -416,7 +416,7 @@ void AUnitBase::NotifyMontageNodePassed_Implementation(const FActionCursorFinder
 }
 
 
-void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
+void UUnitMainComponent::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
 	{
@@ -427,27 +427,22 @@ void AUnitBase::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 	}
 }
 
-void AUnitBase::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor)
+void UUnitMainComponent::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor)
 {
 	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, WantCursor);
 }
 
-void AUnitBase::ClaimStopMovement_Implementation()
+void UUnitMainComponent::ClaimStopMovement_Implementation()
 {
 	OnMovementStop.Broadcast();
 }
 
-bool AUnitBase::ClaimJump_Implementation()
-{
-	return true;
-}
-
-void AUnitBase::MontageStarted(UAnimMontage* Montage)
+void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 {
 	ClaimedMontageEvent.MontageStart();
 }
 
-void AUnitBase::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
+void UUnitMainComponent::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
 	if(ClaimedMontageEvent.MontageToPlay == Montage)
 	{
@@ -467,18 +462,18 @@ void AUnitBase::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 	}
 }
 
-void AUnitBase::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
+void UUnitMainComponent::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
 	ClaimedMontageEvent.MontageNotifyBegin(NotifyName);
 }
 
-void AUnitBase::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
+void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
 	ClaimedMontageEvent.MontageNotifyEnd(NotifyName);
 }
 
 
-void AUnitBase::Die_Implementation() 
+void UUnitMainComponent::Die_Implementation() 
 { 
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
@@ -487,7 +482,7 @@ void AUnitBase::Die_Implementation()
 	OnUnitDie.Broadcast(this); 
 }
 
-TArray<UOrderedGenericWidgetClaim*> AUnitBase::GetInfoWidget_Implementation(EInfoWidgetType WantType) const
+TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType) const
 {
 	TArray<UOrderedGenericWidgetClaim*> Result;
 	Result.Append(GetUnitInfoWidget(WantType));
@@ -501,14 +496,14 @@ TArray<UOrderedGenericWidgetClaim*> AUnitBase::GetInfoWidget_Implementation(EInf
 	return Result;
 }
 
-void AUnitBase::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
+void UUnitMainComponent::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
 {
 	if (PlayerController) IPlayerConnectable::Execute_OnPlayerDisconnected(this, PlayerController);
 
 	PlayerController = NewPlayer;
 }
 
-void AUnitBase::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer)
+void UUnitMainComponent::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer)
 {
 	PlayerController = nullptr;
 }

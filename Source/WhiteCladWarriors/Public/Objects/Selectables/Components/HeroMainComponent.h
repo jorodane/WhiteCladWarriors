@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Objects/Selectables/Units/UnitBase.h"
-#include "HeroBase.generated.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
+#include "HeroMainComponent.generated.h"
 
 class UUnitActionContainer;
 /**

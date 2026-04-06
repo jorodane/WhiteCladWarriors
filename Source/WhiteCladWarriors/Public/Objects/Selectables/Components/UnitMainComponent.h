@@ -10,7 +10,7 @@
 #include "Interfaces/Selectable.h"
 #include "Interfaces/InfoConnectable.h"
 #include "Interfaces/PlayerConnectable.h"
-#include "UnitBase.generated.h"
+#include "UnitMainComponent.generated.h"
 
 class AActionBase;
 class AOperator;
@@ -135,7 +135,7 @@ struct FMainActionInfo
 };
 
 UCLASS()
-class WHITECLADWARRIORS_API AUnitBase : public AActor, public ISelectable, public IInfoConnectable, public IPlayerConnectable
+class WHITECLADWARRIORS_API UUnitMainComponent : public UActorComponent, public ISelectable, public IInfoConnectable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -275,10 +275,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	void ClaimStopMovement();
 	void ClaimStopMovement_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	bool ClaimJump();
-	bool ClaimJump_Implementation();
 
 	UFUNCTION()
 	void MontageStarted(UAnimMontage* Montage);
