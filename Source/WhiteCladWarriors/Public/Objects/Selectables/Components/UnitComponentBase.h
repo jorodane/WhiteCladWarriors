@@ -8,6 +8,7 @@
 #include "UnitComponentBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComponentRemoved, UUnitComponentBase*, TargetComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentSimpleMessage, UUnitComponentBase*, From, FName, Message);
 
 class UWidget;
 class UUnitMainComponent;
@@ -21,6 +22,9 @@ class WHITECLADWARRIORS_API UUnitComponentBase : public UActorComponent, public 
 public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnComponentRemoved OnComponentRemoved;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Unit")
+	FOnComponentSimpleMessage OnComponentSimpleMessage;
 
 	UUnitMainComponent* OwnerUnit;
 
