@@ -295,10 +295,16 @@ public:
 	void HideDragArea();
 	virtual void HideDragArea_Implementation();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
+	bool SelectTest(AActor* Target);
+	bool SelectTest_Implementation(AActor* Target);
+
+	UFUNCTION(BlueprintPure, Category = "Select")
+	bool SelectInvalid(AActor* Target) { return !SelectTest(Target); }
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void SelectToggle(AActor* Target);
 	virtual void SelectToggle_Implementation(AActor* Target);
-
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void SelectActorWithoutNotify(AActor* Target, bool bIsSingleSelection);
@@ -308,8 +314,8 @@ public:
 	void SelectActor(AActor* Target, bool bIsSingleSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void SelectActors(const TArray<AActor*>& Targets, bool bIsSingleSelection);
-	virtual void SelectActors_Implementation(const TArray<AActor*>& Targets, bool bIsSingleSelection);
+	void SelectActors(TArray<AActor*>& Targets, bool bIsSingleSelection);
+	virtual void SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActorWithoutNotify(AActor* Target);

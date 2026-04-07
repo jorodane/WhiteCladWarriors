@@ -497,6 +497,10 @@ void AOperator::HideDragArea_Implementation()
 	}
 }
 
+bool AOperator::SelectTest_Implementation(AActor* Target)
+{
+	return IsValid(Target) && Target->GetClass()->ImplementsInterface(USelectable::StaticClass()) && ISelectable::Execute_CheckSelectable(Target, this);
+}
 
 void AOperator::SelectToggle_Implementation(AActor* Target)
 {
@@ -504,12 +508,9 @@ void AOperator::SelectToggle_Implementation(AActor* Target)
 	if (CurrentInputPackage.SelectedActors.Contains(Target)) DeselectActor(Target);
 	else SelectActor(Target, false);
 }
+
 void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIsSingleSelection)
 {
-	if (!IsValid(Target)) return;
-	if (!Target->GetClass()->ImplementsInterface(USelectable::StaticClass())) return;
-	if (!ISelectable::Execute_CheckSelectable(Target, this)) return;
-
 	CurrentInputPackage.SelectedActors.AddUnique(Target);
 	ISelectable::Execute_Select(Target, this, bIsSingleSelection);
 	if (ActorAddToActionList(Target))
@@ -523,13 +524,17 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 }
 void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 {
+	if(SelectInvalid(Target)) return;
 	if (bIsSingleSelection) DeselectActorsWithoutNotify();
 	SelectActorWithoutNotify(Target, bIsSingleSelection);
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
-void AOperator::SelectActors_Implementation(const TArray<AActor*>& Targets, bool bIsSingleSelection)
+void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection)
 {
+	Targets.RemoveAll([this](AActor* Target){return !SelectTest(Target);});
+	if(Targets.IsEmpty()) return;
+
 	for (AActor* CurrentTarget : Targets)
 	{
 		SelectActorWithoutNotify(CurrentTarget, bIsSingleSelection);
