@@ -89,7 +89,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 
 UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
 {
-	const TArray<UUnitActionComponent*>& ClaimedComponents = TargetComponents;
+	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	const FInputPackage& ClaimedInput = Input;
 	UActionExecutor* NewExecutor = nullptr;
 	if(ClaimedComponents.IsEmpty()) return NewExecutor;

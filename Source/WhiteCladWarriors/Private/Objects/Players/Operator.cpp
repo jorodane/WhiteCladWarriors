@@ -15,8 +15,9 @@
 #include "Settings/ActionSetting.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Misc/Optional.h"
 #include "HAL/PlatformApplicationMisc.h"
+#include "Math/Matrix.h"
+#include "Misc/Optional.h"
 
 TObjectPtr<AOperator> AOperator::LocalOperator = nullptr;
 FInputClaim FInputClaim::Claim_None;
@@ -110,14 +111,13 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		CurrentInputPackage.MouseClickActor = CurrentInputPackage.MouseHitActor;
 		if (GetFocusActors(bIsClick, bIsDoubleClick, bIsSelectAllMode, OutResultArray, OutResultSingle, OutAllSame, OutOnlySingle))
 		{
-			if (!bIsAdditive) DeselectActors();
-			if (bIsClick && !(bIsSelectAll || bIsDoubleClick))
+			if (bIsClick && bIsAdditive && !(bIsSelectAll || bIsDoubleClick))
 			{
 				SelectToggle(OutResultSingle);
 			}
 			else
 			{
-				SelectActors(OutResultArray, OutOnlySingle);
+				SelectActors(OutResultArray, OutOnlySingle, bIsAdditive);
 			}
 		}
 		//else if (!bIsAdditive)
@@ -426,7 +426,6 @@ TArray<AActor*> AOperator::GetVisibleSameClasses_Implementation(TSubclassOf<AAct
 {
 	TArray<AActor*> Result;
 	if(!IsValid(Template)) return Result;
-
 	FMinimalViewInfo CurrentView;
 	FMatrix ViewMatrix;
 	FMatrix ProjectionMatrix;
@@ -505,7 +504,7 @@ bool AOperator::SelectTest_Implementation(AActor* Target)
 void AOperator::SelectToggle_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	if (CurrentInputPackage.SelectedActors.Contains(Target)) DeselectActor(Target);
+	if (CurrentInputPackage.SelectedActors.Num() > 1 && CurrentInputPackage.SelectedActors.Contains(Target)) DeselectActor(Target);
 	else SelectActor(Target, false);
 }
 
@@ -530,10 +529,12 @@ void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
-void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection)
+void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection, bool bIsAdditionalSelection)
 {
 	Targets.RemoveAll([this](AActor* Target){return !SelectTest(Target);});
 	if(Targets.IsEmpty()) return;
+
+	if(!bIsAdditionalSelection) DeselectActors();
 
 	for (AActor* CurrentTarget : Targets)
 	{
@@ -720,6 +721,7 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 
 	for (AActor* CurrentActor : TargetActors)
 	{
+		if (!IsValid(CurrentActor)) continue;
 		if (UUnitMainComponent* AsUnit = CurrentActor->GetComponentByClass<UUnitMainComponent>())
 		{
 			TArray<UUnitActionComponent*> TargetComponents;

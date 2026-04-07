@@ -314,8 +314,8 @@ public:
 	void SelectActor(AActor* Target, bool bIsSingleSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
-	void SelectActors(TArray<AActor*>& Targets, bool bIsSingleSelection);
-	virtual void SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection);
+	void SelectActors(TArray<AActor*>& Targets, bool bIsSingleSelection, bool bIsAdditionalSelection);
+	virtual void SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection, bool bIsAdditionalSelection);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActorWithoutNotify(AActor* Target);
