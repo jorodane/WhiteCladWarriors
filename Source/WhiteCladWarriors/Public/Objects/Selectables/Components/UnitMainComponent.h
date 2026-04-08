@@ -268,24 +268,24 @@ public:
 	void NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
-	void ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void NotifyMontageNodePassed(const FActionCursorFinder& WantCursor);
 	void NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void ClaimStopMontage(UAnimMontage* WantMontage);
-	void ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
+	bool ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
+	bool ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	bool ClaimStopMontage(UAnimMontage* WantMontage);
+	bool ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	void ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
-	void ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
+	bool ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
+	bool ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	void ClaimStopMovement();
-	void ClaimStopMovement_Implementation();
+	bool ClaimStopMovement();
+	bool ClaimStopMovement_Implementation();
 
 	UFUNCTION()
 	void MontageStarted(UAnimMontage* Montage);

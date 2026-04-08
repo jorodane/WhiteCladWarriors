@@ -8,6 +8,7 @@
 #include "ActionExecutor.generated.h"
 
 class AOperator;
+class AActionBase;
 class UUnitComponentBase;
 class UUnitActionComponent;
 class UActionSelectorNode;
@@ -18,27 +19,59 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionMessage_Simple, UUnitMainCo
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class ENodeListeningState : uint8
+{
+	Mute, Pending, Listening
+};
+
 USTRUCT(BlueprintType)
 struct FActiveNodeInfo
 {
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<int, UActionNode*> NodeMap;
+	TObjectPtr<UActionNode> CurrentNode = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Message")
+	ENodeListeningState CurrentListeningState = ENodeListeningState::Pending;
+
+	FActiveNodeInfo() {}
+
+	FActiveNodeInfo(UActionNode* WantNode, ENodeListeningState WantListeningState = ENodeListeningState::Pending)
+	{
+		CurrentNode = WantNode;
+		SetListening(WantListeningState);
+	}
+
+	inline ENodeListeningState SetListening(ENodeListeningState NewState) { return CurrentListeningState = NewState; }
+
+	inline ENodeListeningState TryListeningPending() { if(CurrentListeningState == ENodeListeningState::Listening) SetListening(ENodeListeningState::Pending); return CurrentListeningState; }
+	inline ENodeListeningState TryListeningStart() { if (CurrentListeningState == ENodeListeningState::Pending) SetListening(ENodeListeningState::Listening); return CurrentListeningState; }
+};
+
+USTRUCT(BlueprintType)
+struct FActiveNodeMap
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TMap<int, FActiveNodeInfo> NodeMap;
 
 	int nextID = 1;
 
 	int AddNode(UActionNode* Node);
-	inline UActionNode* GetNode(int ID) const;
-	inline void SetNode(UActionNode* Node, int ID);
+	inline UActionNode* GetNode(int ID);
+	inline FActiveNodeInfo* GetInfo(int ID);
+	inline FActiveNodeInfo& SetNode(UActionNode* Node, int ID);
 
 	inline void RemoveID(int ID);
 	inline bool IsEmpty() const { return NodeMap.IsEmpty(); }
 
 	void BroadcastMessage(const FActionCursorFinder& Cursor, FName Message);
 
-	FActiveNodeInfo() { }
-	FActiveNodeInfo(UActionNode* Node) { SetNode(Node, 0); }
+	FActiveNodeMap() { }
+	FActiveNodeMap(UActionNode* Node) { SetNode(Node, 0); }
 };
 
 
@@ -49,10 +82,12 @@ class WHITECLADWARRIORS_API UActionExecutor : public UObject
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<AActionBase> Action;
+	UPROPERTY(BlueprintReadOnly, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<AOperator> Operator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<UUnitActionComponent*, FActiveNodeInfo> CursorMap;
+	TMap<UUnitActionComponent*, FActiveNodeMap> CursorMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<AActor*> CreatedActors;
@@ -109,7 +144,7 @@ public:
 	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeInfo& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode);
@@ -136,9 +171,9 @@ public:
 	void CheckCursorMap();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent);
+	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0);
 
-	FActiveNodeInfo* GetCursor(UUnitActionComponent* TargetComponent);
+	FActiveNodeMap* GetCursor(UUnitActionComponent* TargetComponent);
 	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
 	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int TargetID = 0);
 
@@ -149,7 +184,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	static UActionExecutor* CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
+	static UActionExecutor* CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void DestroyExecutor(UActionExecutor* TargetExecutor);

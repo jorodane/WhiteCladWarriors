@@ -65,7 +65,7 @@ void UActionNode::OnActionMessage_Simple_Implementation(const FActionCursorFinde
 		if (NodeInfo.bIsSubNode)
 		{
 			int ResultID;
-			if (FActiveNodeInfo* ResultInfo = WantCursor.CurrentExecutor->GetCursor(TargetComponent))
+			if (FActiveNodeMap* ResultInfo = WantCursor.CurrentExecutor->GetCursor(TargetComponent))
 			{
 				Executor->CreateSubNode(WantCursor, *ResultInfo, this, NodeInfo.Node, ResultID);
 			}

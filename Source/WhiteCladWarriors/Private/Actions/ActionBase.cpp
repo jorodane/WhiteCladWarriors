@@ -77,7 +77,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 	if (ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, ClaimedComponents, RootNode);
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
@@ -95,7 +95,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	if(ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(TargetOperator, ClaimedComponents, RootNode);
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);

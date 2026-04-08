@@ -400,8 +400,15 @@ void UUnitMainComponent::NotifyExecutorEnded_Implementation(UActionExecutor* End
 	}
 }
 
+void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
+{
+	if (WantCursor.CheckExecutor(ClaimedMontageEvent.Cursor.CurrentExecutor) && ClaimedMontageEvent.Cursor.CurrentID == WantCursor.CurrentID)
+	{
+		ClaimedMontageEvent.MontageToPlay = nullptr;
+	}
+}
 
-void UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
+bool UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
 	{
@@ -419,18 +426,10 @@ void UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo
 			}
 		}
 	}
+	return true;
 }
 
-void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
-{
-	if (WantCursor.CheckExecutor(ClaimedMontageEvent.Cursor.CurrentExecutor) && ClaimedMontageEvent.Cursor.CurrentID == WantCursor.CurrentID)
-	{
-		ClaimedMontageEvent.MontageToPlay = nullptr;
-	}
-}
-
-
-void UUnitMainComponent::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
+bool UUnitMainComponent::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
 	{
@@ -439,16 +438,19 @@ void UUnitMainComponent::ClaimStopMontage_Implementation(UAnimMontage* WantMonta
 			AnimInstance->Montage_Stop(0.2f, WantMontage);
 		}
 	}
+	return true;
 }
 
-void UUnitMainComponent::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor)
+bool UUnitMainComponent::ClaimStartMovement_Implementation(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor)
 {
 	OnMovementStart.Broadcast(Destination, TargetActor, AcceptanceRadius, WantCursor);
+	return true;
 }
 
-void UUnitMainComponent::ClaimStopMovement_Implementation()
+bool UUnitMainComponent::ClaimStopMovement_Implementation()
 {
 	OnMovementStop.Broadcast();
+	return true;
 }
 
 void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
