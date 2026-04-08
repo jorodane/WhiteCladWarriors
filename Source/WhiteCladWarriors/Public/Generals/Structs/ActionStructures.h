@@ -63,5 +63,9 @@ public:
 	TArray<UUnitActionComponent*> Components;
 
 public:
+	FActionTargetContainer() : Action(nullptr) {};
+	FActionTargetContainer(AActionBase* NewAction) { Action = NewAction; };
+
+public:
 	int GetOrder() const;
 };

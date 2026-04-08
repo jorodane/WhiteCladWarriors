@@ -11,7 +11,7 @@ class UWidget;
 UENUM(BlueprintType)
 enum class EInfoWidgetType : uint8
 {
-	Minimal, Hover, Hero, Detail, Inspector
+	Minimal, Hover, Detail, Inspector
 };
 
 // This class does not need to be modified.

@@ -336,6 +336,10 @@ public:
 	void DeselectActorsWithoutNotify();
 	virtual void DeselectActorsWithoutNotify_Implementation();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void BroadcastSelectChange();
+	virtual void BroadcastSelectChange_Implementation();
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool ComponentAddToActionList(UUnitActionComponent* Target);
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -365,5 +369,15 @@ public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
 	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Action")
+	static TArray<FActionTargetContainer> GetAvailableActionListFromActors(const TArray<AActor*>& TargetArray);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void AppendAvailableActionFromComponent(UUnitActionComponent* TargetComponent, UPARAM(ref) TMap<FName, FActionTargetContainer>& OutMap);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void AppendAvailableActionFromActor(AActor* TargetActor, UPARAM(ref) TMap<FName, FActionTargetContainer>& OutMap);
 	
 };

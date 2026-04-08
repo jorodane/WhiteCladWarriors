@@ -17,7 +17,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWidgetUpdateClaim, UGenericWidget
 UENUM(BlueprintType)
 enum class EWidgetTransformType : uint8
 {
-	AspectRatio, Size, HorizontalSize, VerticalSize, HorizontalAlignment, VerticalAlignment, Padding, Padding_Horizontal, Padding_Vertical, Padding_Left, Padding_Right, Padding_Top, Padding_Bottom
+	AspectRatio, 
+	Fill, Fill_Horizontal, Fill_Vertical,
+	Size, HorizontalSize, VerticalSize, 
+	HorizontalAlignment, VerticalAlignment, 
+	Padding, Padding_Horizontal, Padding_Vertical, Padding_Left, Padding_Right, Padding_Top, Padding_Bottom
 };
 
 /**

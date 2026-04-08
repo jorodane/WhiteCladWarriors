@@ -526,7 +526,7 @@ void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 	if(SelectInvalid(Target)) return;
 	if (bIsSingleSelection) DeselectActorsWithoutNotify();
 	SelectActorWithoutNotify(Target, bIsSingleSelection);
-	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
+	BroadcastSelectChange();
 }
 
 void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection, bool bIsAdditionalSelection)
@@ -540,7 +540,7 @@ void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSi
 	{
 		SelectActorWithoutNotify(CurrentTarget, bIsSingleSelection);
 	};
-	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
+	BroadcastSelectChange();
 }
 void AOperator::DeselectActorWithoutNotify_Implementation(AActor* Target)
 {
@@ -555,7 +555,8 @@ void AOperator::DeselectActor(AActor* Target)
 {
 	DeselectActorWithoutNotify(Target);
 	if (CurrentInputPackage.SelectedActors.IsEmpty())SelectActorWithoutNotify(HeroActor, true);
-	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
+	BroadcastSelectChange();
+	
 }
 
 void AOperator::DeselectUnit_Implementation(UUnitMainComponent* Target)
@@ -570,7 +571,7 @@ void AOperator::DeselectUnit_Implementation(UUnitMainComponent* Target)
 void AOperator::DeselectActors_Implementation()
 {
 	DeselectActorsWithoutNotify_Implementation();
-	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
+	BroadcastSelectChange();
 }
 
 void AOperator::DeselectActorsWithoutNotify_Implementation()
@@ -582,6 +583,12 @@ void AOperator::DeselectActorsWithoutNotify_Implementation()
 		if (UUnitMainComponent* CurrentUnit = CurrentTarget->GetComponentByClass<UUnitMainComponent>()) CurrentUnit->OnUnitDie.RemoveAll(this);
 	}
 	CurrentInputPackage.SelectedActors.Empty();
+}
+
+void AOperator::BroadcastSelectChange_Implementation()
+{
+	Algo::Sort(CurrentInputPackage.SelectedActors, [](AActor* Left, AActor* Right) -> bool { return ISelectable::Execute_GetSelectedorder(Left) < ISelectable::Execute_GetSelectedorder(Right);});
+	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
 bool AOperator::ComponentAddToActionList(UUnitActionComponent* Target)
@@ -634,27 +641,24 @@ void AOperator::ComponentRemoveFromActionList(UUnitActionComponent* Target)
 bool AOperator::ActorAddToActionList(AActor* Target)
 {
 	bool Result = false;
-	TSet<UActorComponent*> ActorComponents = Target->GetComponents();
+	TArray<UUnitActionComponent*> ActorComponents;
+	Target->GetComponents<UUnitActionComponent>(ActorComponents);
 	if (ActorComponents.IsEmpty()) return Result;
-	for (UActorComponent* CurrentComponent : ActorComponents)
+	for (UUnitActionComponent* CurrentComponent : ActorComponents)
 	{
-		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
-		{
-			Result |= ComponentAddToActionList(AsActionComponent);
-		}
+		Result |= ComponentAddToActionList(CurrentComponent);
 	}
 	return Result;
 }
 
 void AOperator::ActorRemoveFromActionList(AActor* Target)
 {
-	TSet<UActorComponent*> ActorComponents = Target->GetComponents();
-	for (UActorComponent* CurrentComponent : ActorComponents)
+	TArray<UUnitActionComponent*> ActorComponents;
+	Target->GetComponents<UUnitActionComponent>(ActorComponents);
+	if (ActorComponents.IsEmpty()) return;
+	for (UUnitActionComponent* CurrentComponent : ActorComponents)
 	{
-		if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(CurrentComponent))
-		{
-			ComponentRemoveFromActionList(AsActionComponent);
-		}
+		ComponentRemoveFromActionList(CurrentComponent);
 	}
 }
 
@@ -836,3 +840,49 @@ void AOperator::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer
 	PlayerController = nullptr;
 }
 
+
+
+TArray<FActionTargetContainer> AOperator::GetAvailableActionListFromActors(const TArray<AActor*>& TargetArray)
+{
+	TArray<FActionTargetContainer> Result;
+
+	if (TargetArray.IsEmpty()) return Result;
+
+	TMap<FName, FActionTargetContainer> Collector;
+
+	for (AActor* CurrentTarget : TargetArray) AppendAvailableActionFromActor(CurrentTarget, Collector);
+
+	Collector.GenerateValueArray(Result);
+	Result.Sort([](const FActionTargetContainer& Left, const FActionTargetContainer& Right) -> bool { return Left.GetOrder() < Right.GetOrder(); });
+	return Result;
+
+}
+
+void AOperator::AppendAvailableActionFromComponent(UUnitActionComponent* TargetComponent, TMap<FName, FActionTargetContainer>& OutMap)
+{
+	if (!IsValid(TargetComponent)) return;
+
+	for (const FName& CurrentActionName : TargetComponent->ActionList)
+	{
+		if (FActionTargetContainer* Container = OutMap.Find(CurrentActionName))
+		{
+			if (!Container->Components.Contains(TargetComponent)) Container->Components.Add(TargetComponent);
+		}
+		else
+		{
+			AActionBase* NewAction = UActionSetting::GetAction(CurrentActionName);
+			OutMap.Add(CurrentActionName, NewAction).Components.Add(TargetComponent);
+		}
+	}
+}
+
+void AOperator::AppendAvailableActionFromActor(AActor* TargetActor, TMap<FName, FActionTargetContainer>& OutMap)
+{
+	if (!IsValid(TargetActor)) return;
+	TArray<UUnitActionComponent*> ActionComponentArray;
+	TargetActor->GetComponents<UUnitActionComponent>(ActionComponentArray);
+	for (UActorComponent* CurrentComponent : ActionComponentArray)
+	{
+		AppendAvailableActionFromComponent(Cast<UUnitActionComponent>(CurrentComponent), OutMap);
+	}
+}

@@ -45,4 +45,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	FText GetSelectedName();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	float GetSelectedorder();
 };
