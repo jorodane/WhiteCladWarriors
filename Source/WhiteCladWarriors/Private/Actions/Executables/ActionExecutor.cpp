@@ -186,10 +186,14 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		}
 		Result = CursorMap.Add(TargetComponent, TargetNode).GetInfo(0);
 	}
-	bool bIsMainAction = TargetNode->bIsMainAction;
-	bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
-	if (bWasMainAction) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
-	if (bIsMainAction) TargetComponent->TrySetMainAction(WantCursor, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
+	const bool bIsMainAction = IsValid(TargetNode) ? TargetNode->bIsMainAction : false;
+	const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
+
+	const bool bEnterMainLine =  bIsMainAction && !bWasMainAction;
+	const bool bExitMainLine  = !bIsMainAction &&  bWasMainAction;
+
+	if (bExitMainLine) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
+	if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
 	TargetNode->ClaimExecute(WantCursor);
 	if (Result) Result->TryListeningStart();
 }
