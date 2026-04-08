@@ -34,6 +34,19 @@ void FActiveNodeInfo::RemoveID(int ID)
 	NodeMap.Remove(ID);
 }
 
+void FActiveNodeInfo::BroadcastMessage(const FActionCursorFinder& Cursor, FName Message)
+{
+	for (const auto& CurrentArray : NodeMap)
+	{
+		if (UActionNode* CurrentNode = CurrentArray.Value)
+		{
+			FActionCursorFinder NewCursor = Cursor;
+			NewCursor.CurrentID = CurrentArray.Key;
+			CurrentNode->OnActionMessage_Simple(NewCursor, Message);
+		}
+	}
+}
+
 void UActionExecutor::SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message)
 {
 	UActionNode* CurrentNode = GetNode(WantCursor);
@@ -213,7 +226,8 @@ void UActionExecutor::CancelNode(const FActionCursorFinder& WantCursor)
 void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)
 {
 	if (!IsValid(TargetComponent)) return;
-	TargetComponent->OnComponentRemoved.AddDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
+	TargetComponent->OnComponentRemoved.AddUniqueDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
+	TargetComponent->OnComponentSimpleMessage.AddUniqueDynamic(this, &UActionExecutor::OnSimpleMessage);
 	CursorMap.Add(TargetComponent, StartNode);
 }
 
@@ -227,6 +241,19 @@ void UActionExecutor::RemoveComponentFromMap(UUnitActionComponent* TargetCompone
 }
 
 void UActionExecutor::RemoveComponentBaseFromMap(UUnitComponentBase* TargetComponent) { RemoveComponentFromMap(Cast<UUnitActionComponent>(TargetComponent)); }
+
+void UActionExecutor::CheckCursorMap()
+{
+	if (CursorMap.IsEmpty() && CreatedActors.IsEmpty())
+	{
+		DestroyExecutor(this);
+	}
+}
+
+FActionCursorFinder UActionExecutor::CreateCursorFinder(UUnitActionComponent* TargetComponent)
+{
+	
+}
 
 FActiveNodeInfo* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent)
 {
@@ -249,13 +276,21 @@ UActionNode* UActionExecutor::GetNode(UUnitActionComponent* TargetComponent, int
 	return nullptr;
 }
 
-void UActionExecutor::CheckCursorMap()
+
+
+void UActionExecutor::OnSimpleMessage(UUnitComponentBase* From, FName Message)
 {
-	if (CursorMap.IsEmpty() && CreatedActors.IsEmpty())
+	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(From))
 	{
-		DestroyExecutor(this);
+		FActionCursorFinder BaseFinder = CreateCursorFinder(AsActionComponent);
+
+		if (FActiveNodeInfo* CurrentCursor = GetCursor(AsActionComponent))
+		{
+			CurrentCursor->BroadcastMessage(BaseFinder, Message);
+		}
 	}
 }
+
 
 UActionExecutor* UActionExecutor::CreateExecutor(AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
 {

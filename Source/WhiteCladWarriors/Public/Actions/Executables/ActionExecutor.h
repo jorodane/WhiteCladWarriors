@@ -8,6 +8,7 @@
 #include "ActionExecutor.generated.h"
 
 class AOperator;
+class UUnitComponentBase;
 class UUnitActionComponent;
 class UActionSelectorNode;
 class UActionNode;
@@ -33,6 +34,8 @@ struct FActiveNodeInfo
 
 	inline void RemoveID(int ID);
 	inline bool IsEmpty() const { return NodeMap.IsEmpty(); }
+
+	void BroadcastMessage(const FActionCursorFinder& Cursor, FName Message);
 
 	FActiveNodeInfo() { }
 	FActiveNodeInfo(UActionNode* Node) { SetNode(Node, 0); }
@@ -129,13 +132,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void RemoveComponentBaseFromMap(UUnitComponentBase* TargetComponent);
 
-
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CheckCursorMap();
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent);
 
 	FActiveNodeInfo* GetCursor(UUnitActionComponent* TargetComponent);
 	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
 	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int TargetID = 0);
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void OnSimpleMessage(UUnitComponentBase* From, FName Message);
+
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
