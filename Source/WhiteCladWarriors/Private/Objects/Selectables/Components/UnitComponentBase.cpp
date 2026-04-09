@@ -7,14 +7,31 @@
 
 void UUnitComponentBase::BeginDestroy()
 {
-	BroadcastRemoveMessage();
+	BroadcastMessage_Removed();
+	if (IsValid(OwnerUnit))
+	{
+		OwnerUnit->OnUnitMessage_Simple.RemoveAll(this);
+	}
 	Super::BeginDestroy();
 }
 
-void UUnitComponentBase::BroadcastRemoveMessage()
+void UUnitComponentBase::BroadcastMessage_Removed()
 {
 	OnComponentRemoved.Broadcast(this);
 	OnComponentRemoved.Clear();
+}
+
+void UUnitComponentBase::BroadcastMessage_Simple(const FName& Message)
+{
+	if (IsValid(OwnerUnit))
+	{
+		OwnerUnit->UnitMessage(Message);
+	}
+}
+
+void UUnitComponentBase::ReceiveUnitMessage_Simple(const FName& Message)
+{
+	OnComponentMessage_Simple.Broadcast(this, Message);
 }
 
 FVector UUnitComponentBase::GetLocation_Implementation()
@@ -33,6 +50,14 @@ FVector UUnitComponentBase::GetDirection_Implementation(FVector Destination, boo
 
 UUnitMainComponent* UUnitComponentBase::SetOwnerUnit_Implementation(UUnitMainComponent* NewUnit)
 {
+	if (IsValid(OwnerUnit))
+	{
+		OwnerUnit->OnUnitMessage_Simple.RemoveAll(this);
+	}
+	if (IsValid(NewUnit))
+	{
+		NewUnit->OnUnitMessage_Simple.AddUniqueDynamic(this, &UUnitComponentBase::ReceiveUnitMessage_Simple);
+	}
 	return OwnerUnit = NewUnit;
 }
 

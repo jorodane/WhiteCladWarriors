@@ -245,7 +245,7 @@ void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, U
 {
 	if (!IsValid(TargetComponent)) return;
 	TargetComponent->OnComponentRemoved.AddUniqueDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
-	TargetComponent->OnComponentSimpleMessage.AddUniqueDynamic(this, &UActionExecutor::OnSimpleMessage);
+	TargetComponent->OnComponentMessage_Simple.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Simple);
 	CursorMap.Add(TargetComponent, StartNode);
 }
 
@@ -256,7 +256,7 @@ void UActionExecutor::RemoveComponentFromMap(UUnitActionComponent* TargetCompone
 	if (IsValid(TargetComponent))
 	{
 		TargetComponent->OnComponentRemoved.RemoveAll(this);
-		TargetComponent->OnComponentSimpleMessage.RemoveAll(this);
+		TargetComponent->OnComponentMessage_Simple.RemoveAll(this);
 	}
 	CursorMap.Remove(TargetComponent);
 	CheckCursorMap();
@@ -301,7 +301,7 @@ UActionNode* UActionExecutor::GetNode(UUnitActionComponent* TargetComponent, int
 
 
 
-void UActionExecutor::OnSimpleMessage(UUnitComponentBase* From, FName Message)
+void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, FName Message)
 {
 	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(From))
 	{

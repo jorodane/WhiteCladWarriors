@@ -8,7 +8,7 @@
 #include "UnitComponentBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComponentRemoved, UUnitComponentBase*, TargetComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentSimpleMessage, UUnitComponentBase*, From, FName, Message);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentMessage_Simple, UUnitComponentBase*, From, FName, Message);
 
 class UWidget;
 class UUnitMainComponent;
@@ -24,8 +24,9 @@ public:
 	FOnComponentRemoved OnComponentRemoved;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Unit")
-	FOnComponentSimpleMessage OnComponentSimpleMessage;
+	FOnComponentMessage_Simple OnComponentMessage_Simple;
 
+	UPROPERTY(BlueprintReadOnly, Category = "UnitComponent")
 	UUnitMainComponent* OwnerUnit;
 
 public:
@@ -33,7 +34,13 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
-	void BroadcastRemoveMessage();
+	void BroadcastMessage_Removed();
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void BroadcastMessage_Simple(const FName& Message);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void ReceiveUnitMessage_Simple(const FName& Message);
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
 	FVector GetLocation();

@@ -55,39 +55,6 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 	return !bIsValid;
 }
 
-bool FMontageEventInfo::ValidExecutor() const 
-{
-	return IsValid(Cursor.CurrentExecutor) && IsValid(Cursor.CurrentComponent) && IsValid(MontageToPlay);
-}
-
-
-void FMontageEventInfo::MontageNotifyBegin(FName NotifyName)
-{
-	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageNotifyBegin.ExecuteIfBound(Cursor, NotifyName);
-}
-
-void FMontageEventInfo::MontageNotifyEnd(FName NotifyName)
-{
-	if(!ValidExecutor() || !bIsStarted) return;
-	OnMontageNotifyEnd.ExecuteIfBound(Cursor, NotifyName);
-}
-
-void FMontageEventInfo::MontageStart()
-{
-	if (!ValidExecutor() || bIsStarted) return;
-	bIsStarted = true;
-	OnMontageStart.ExecuteIfBound(Cursor);
-}
-
-void FMontageEventInfo::MontageEnd(bool bIsInterrupted)
-{
-	if (!ValidExecutor() || !bIsStarted) return;
-	OnMontageEnd.ExecuteIfBound(Cursor, bIsInterrupted);
-	Clear();
-}
-
-
 void FMainActionInfo::Clear()
 {
 	Cursor.Clear();
@@ -402,10 +369,7 @@ void UUnitMainComponent::NotifyExecutorEnded_Implementation(UActionExecutor* End
 
 void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
 {
-	if (WantCursor.CheckExecutor(ClaimedMontageEvent.Cursor.CurrentExecutor) && ClaimedMontageEvent.Cursor.CurrentID == WantCursor.CurrentID)
-	{
-		ClaimedMontageEvent.MontageToPlay = nullptr;
-	}
+	ClaimedMontageEvent.MontageToPlay = nullptr;
 }
 
 bool UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
@@ -414,16 +378,7 @@ bool UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo
 	{
 		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
 		{
-			if (ClaimedMontageEvent.ValidExecutor())
-			{
-				QueuedMontageEvent = MontageEvent;
-				AnimInstance->Montage_Stop(0.0f, ClaimedMontageEvent.MontageToPlay);
-			}
-			else
-			{
-				ClaimedMontageEvent = MontageEvent;
-				AnimInstance->Montage_Play(ClaimedMontageEvent.MontageToPlay, ClaimedMontageEvent.PlayRate, EMontagePlayReturnType::MontageLength, ClaimedMontageEvent.StartingPosition);
-			}
+
 		}
 	}
 	return true;
@@ -453,39 +408,25 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
+void UUnitMainComponent::UnitMessage(const FName& Message)
+{
+	OnUnitMessage_Simple.Broadcast(Message);
+}
+
 void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 {
-	ClaimedMontageEvent.MontageStart();
 }
 
 void UUnitMainComponent::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
-	if(ClaimedMontageEvent.MontageToPlay == Montage)
-	{
-		ClaimedMontageEvent.MontageEnd(bIsInterrupted);
-		if (QueuedMontageEvent.ValidExecutor())
-		{
-			ClaimedMontageEvent = QueuedMontageEvent;
-			QueuedMontageEvent.Clear();
-			if (USkeletalMeshComponent* CurrentMesh = GetMesh())
-			{
-				if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
-				{
-					AnimInstance->Montage_Play(ClaimedMontageEvent.MontageToPlay, ClaimedMontageEvent.PlayRate, EMontagePlayReturnType::MontageLength, ClaimedMontageEvent.StartingPosition);
-				}
-			}
-		}
-	}
 }
 
 void UUnitMainComponent::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
-	ClaimedMontageEvent.MontageNotifyBegin(NotifyName);
 }
 
 void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
-	ClaimedMontageEvent.MontageNotifyEnd(NotifyName);
 }
 
 
@@ -493,7 +434,7 @@ void UUnitMainComponent::Die_Implementation()
 { 
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
-		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastRemoveMessage();
+		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastMessage_Removed();
 	}
 	OnUnitDie.Broadcast(this); 
 }

@@ -179,7 +179,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void OnSimpleMessage(UUnitComponentBase* From, FName Message);
+	void OnMessageFromComponent_Simple(UUnitComponentBase* From, FName Message);
 
 
 public:

@@ -26,6 +26,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueCom
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitMessage_Simple, const FName&, Message);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
@@ -72,9 +73,6 @@ struct FMontageEventInfo
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	FActionCursorFinder Cursor;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> MontageToPlay = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
@@ -83,27 +81,7 @@ struct FMontageEventInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	float StartingPosition = 0.0f;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	FOnMontageNotify OnMontageNotifyBegin;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	FOnMontageNotify OnMontageNotifyEnd;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	FOnMontageStart OnMontageStart;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	FOnMontageEnd OnMontageEnd;
-
 	bool bIsStarted = false;
-
-public:
-	bool ValidExecutor() const;
-	void Clear() { Cursor.Clear(); bIsStarted = false; }
-	void MontageNotifyBegin(FName NotifyName);
-	void MontageNotifyEnd(FName NotifyName);
-	void MontageStart();
-	void MontageEnd(bool bIsInterrupted);
 };
 
 USTRUCT(BlueprintType)
@@ -156,6 +134,9 @@ public:
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnMovementStart OnMovementStart;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnUnitMessage_Simple OnUnitMessage_Simple;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
@@ -286,6 +267,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	bool ClaimStopMovement();
 	bool ClaimStopMovement_Implementation();
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void UnitMessage(const FName& Message);
 
 	UFUNCTION()
 	void MontageStarted(UAnimMontage* Montage);
