@@ -113,6 +113,18 @@ struct FMainActionInfo
 	bool CheckValid() const;
 };
 
+UENUM(BlueprintType)
+enum class EUnitAllyType : uint8
+{
+	Normal, Own, Enemy, Ally
+};
+
+UENUM(BlueprintType)
+enum class EUnitControlledType : uint8
+{
+	Neutral, Player, Monster
+};
+
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, public ISelectable, public IPlayerConnectable
 {
@@ -166,6 +178,11 @@ protected:
 	FMontageEventInfo ClaimedMontageEvent;
 	FMontageEventInfo QueuedMontageEvent;
 
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "UnitComponent", meta = (AllowPrivateAccess = true))
+	EUnitControlledType ControlledType;
+
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -202,6 +219,18 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Widget")
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget(EInfoWidgetType WantType) const;
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget_Implementation(EInfoWidgetType WantType) { return TArray<UOrderedGenericWidgetClaim*>(); }
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
+	bool HasOperatorAuthority(AOperator* From);
+	bool HasOperatorAuthority_Implementation(AOperator* From);
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
+	bool IsAlly(EUnitControlledType OtherType);
+	bool IsAlly_Implementation(EUnitControlledType OtherType);
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
+	EUnitAllyType GetAllyType(AOperator* From);
+	EUnitAllyType GetAllyType_Implementation(AOperator* From);
 
 
 	UFUNCTION(BlueprintPure, Category = "Action")

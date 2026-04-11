@@ -10,6 +10,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComponentRemoved, UUnitComponentBase*, TargetComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentMessage_Simple, UUnitComponentBase*, From, FName, Message);
 
+class AOperator;
 class UWidget;
 class UUnitMainComponent;
 
@@ -28,6 +29,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "UnitComponent")
 	UUnitMainComponent* OwnerUnit;
+
 
 public:
 	virtual void BeginDestroy() override;
@@ -49,6 +51,7 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
 	FVector GetDirection(FVector Destination, bool bIsIgnoreZ = false);
 	FVector GetDirection_Implementation(FVector Destination, bool bIsIgnoreZ = false);
+
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
 	UUnitMainComponent* GetOwnerUnit() const;
 	inline UUnitMainComponent* GetOwnerUnit_Implementation() const { return OwnerUnit; }
@@ -60,18 +63,4 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Variable", meta = (ExpandEnumAsExecs = "ReturnValue"))
 	bool TryGetOwnerUnit(UUnitMainComponent*& ResultUnit) const;
 
-//
-//public:	
-//	// Sets default values for this component's properties
-//	UUnitComponentBase();
-//
-//protected:
-//	// Called when the game starts
-//	virtual void BeginPlay() override;
-//
-//public:	
-//	// Called every frame
-//	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-//
-//		
 };

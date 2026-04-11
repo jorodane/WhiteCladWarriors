@@ -5,6 +5,7 @@
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/FillableValueComponent.h"
+#include "Objects/Players/IngameController.h"
 #include "Objects/Players/Operator.h"
 #include "Generals/ReservedActionMessage.h"
 #include "Actions/Executables/ActionExecutor.h"
@@ -184,6 +185,47 @@ TArray<UFillableValueComponent*> UUnitMainComponent::FindAllFillValue()
 	TArray<UFillableValueComponent*> Result;
 	FillValueMap.GenerateValueArray(Result);
 	return Result;
+}
+
+bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From)
+{
+	if (PlayerController == nullptr || From == nullptr) return false;
+	return PlayerController->ConnectedOperator == From;
+}
+
+bool UUnitMainComponent::IsAlly_Implementation(EUnitControlledType OtherType)
+{
+	if (OtherType == ControlledType) return true;
+
+	if (ControlledType == EUnitControlledType::Monster || OtherType == EUnitControlledType::Monster)
+	{
+		return false;
+	}
+	else return true;
+}
+
+EUnitAllyType UUnitMainComponent::GetAllyType_Implementation(AOperator* From)
+{
+	if (PlayerController == nullptr)
+	{
+		if (ControlledType == EUnitControlledType::Monster)
+		{
+			return EUnitAllyType::Enemy;
+		}
+		else
+		{
+			return EUnitAllyType::Normal;
+		}
+	}
+
+	if (HasOperatorAuthority(From))
+	{
+		return EUnitAllyType::Own;
+	}
+	else
+	{
+		return EUnitAllyType::Ally;
+	}
 }
 
 

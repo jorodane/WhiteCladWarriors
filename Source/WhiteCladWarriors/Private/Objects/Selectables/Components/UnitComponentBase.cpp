@@ -48,6 +48,7 @@ FVector UUnitComponentBase::GetDirection_Implementation(FVector Destination, boo
 	return Result;
 };
 
+
 UUnitMainComponent* UUnitComponentBase::SetOwnerUnit_Implementation(UUnitMainComponent* NewUnit)
 {
 	if (IsValid(OwnerUnit))
