@@ -162,7 +162,6 @@ void AOperator::OnMapDrag_Implementation(bool bIsRightClick, FVector ClickLocati
 
 void AOperator::OnUpdateInput_Implementation()
 {
-	if (IsValid(PlayerController))PlayerController->SetCursor(CurrentInputClaim.TargetCursorType);
 	HideDragArea();
 	OnInputClaimChanged.Broadcast(CurrentInputClaim, IsValid(CurrentInputClaim.TargetNode), false);
 }

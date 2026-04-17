@@ -20,6 +20,12 @@ enum class EInputIndicatorType : uint8
 	Arrow, Circle, Quad, Bridge, Range, StaticMesh, SkeletalMesh
 };
 
+UENUM(BlueprintType)
+enum class EInputMouseCursorType : uint8
+{
+	Default, Attack, Target, Selectable, Impossible, Enter, Exit, Up,Down,Left,Right, Grab, Work
+};
+
 USTRUCT(BlueprintType)
 struct FIndicatorClaim
 {
@@ -52,14 +58,17 @@ struct FInputClaim
 	FText TargetDescription;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
-	TEnumAsByte<EMouseCursor::Type> TargetCursorType = EMouseCursor::Type::Default;
+	FText TargetMouseCursorDescription;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	EInputMouseCursorType TargetMouseCursorType = EInputMouseCursorType::Default;
 
 	void Clear()
 	{
 		TargetNode = nullptr;
 		TargetActionCursor.Clear();
 		TargetComponentArray.SetNum(0);
-		TargetDescription = FText::GetEmpty();
-		TargetCursorType = EMouseCursor::Default;
+		TargetMouseCursorDescription = TargetDescription = FText::GetEmpty();
+		TargetMouseCursorType = EInputMouseCursorType::Default;
 	}
 };
