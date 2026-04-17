@@ -23,7 +23,7 @@ enum class EInputIndicatorType : uint8
 UENUM(BlueprintType)
 enum class EInputMouseCursorType : uint8
 {
-	Default, Attack, Target, Selectable, Impossible, Enter, Exit, Up,Down,Left,Right, Grab, Work
+	Default, Attack, Target, Selectable, Impossible, Enter, Exit, Up,Down,Left,Right, Grab, Work, Rotate
 };
 
 USTRUCT(BlueprintType)

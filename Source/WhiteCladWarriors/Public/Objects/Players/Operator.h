@@ -122,6 +122,9 @@ protected:
 	FInputPackage CurrentInputPackage;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
+	FVector MouseScrolling = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = true))
 	double LastLeftClickTime = -DOUBLE_CLICK_DELAY;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = true))
@@ -174,6 +177,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Input")
 	void OnUpdateInput();
 	virtual void OnUpdateInput_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	void OnUpdateCursor();
+	virtual void OnUpdateCursor_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	EInputMouseCursorType GetCursorType();
+	virtual EInputMouseCursorType GetCursorType_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ClaimInput(const FInputClaim& ClaimInfo);

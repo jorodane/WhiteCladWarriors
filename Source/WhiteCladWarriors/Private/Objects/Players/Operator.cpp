@@ -130,6 +130,10 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		//	SelectActor(HeroActor, true);
 		//}
 	}
+	if (IsValid(PlayerController))
+	{
+		PlayerController->SetCursor(GetCursorType());
+	}
 }
 
 
@@ -137,6 +141,10 @@ void AOperator::OnRightClick_Implementation(bool bIsMapClick)
 {
 	if (IsInputClaimed()) CancelInputClaim();
 	else SimpleAction(CurrentInputPackage);
+	if (IsValid(PlayerController))
+	{
+		PlayerController->SetCursor(GetCursorType());
+	}
 }
 
 void AOperator::OnMapClick_Implementation(bool bIsDown, bool bIsRightClick, FVector ClickLocation)
@@ -164,6 +172,49 @@ void AOperator::OnUpdateInput_Implementation()
 {
 	HideDragArea();
 	OnInputClaimChanged.Broadcast(CurrentInputClaim, IsValid(CurrentInputClaim.TargetNode), false);
+	OnUpdateCursor();
+}
+
+void AOperator::OnUpdateCursor_Implementation()
+{
+	if (IsValid(PlayerController))
+	{
+		PlayerController->SetCursor(GetCursorType());
+	}
+}
+
+
+EInputMouseCursorType AOperator::GetCursorType_Implementation()
+{
+	EInputMouseCursorType ResultCursor = EInputMouseCursorType::Default;
+	if (CurrentInputClaim.TargetMouseCursorType == EInputMouseCursorType::Default)
+	{
+		if (!MouseScrolling.IsZero())
+		{
+			if (MouseScrolling.X > 0)
+			{
+				ResultCursor = EInputMouseCursorType::Right;
+			}
+			else if (MouseScrolling.X < 0)
+			{
+				ResultCursor = EInputMouseCursorType::Left;
+			}
+			else if (MouseScrolling.Y > 0)
+			{
+				ResultCursor = EInputMouseCursorType::Up;
+			}
+			else
+			{
+				ResultCursor = EInputMouseCursorType::Down;
+			}
+		}
+	}
+	else
+	{
+		ResultCursor = CurrentInputClaim.TargetMouseCursorType;
+	}
+
+	return ResultCursor;
 }
 
 void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
@@ -265,21 +316,29 @@ void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, floa
 	if (!FPlatformApplicationMisc::IsThisApplicationForeground()) return;
 
 	FVector2D MouseFromEdge = ViewportSize - MousePosition;
-	FVector Result = FVector::ZeroVector;
+	FVector lastScrolling = MouseScrolling;
+	MouseScrolling = FVector::ZeroVector;
 
-	if (MouseFromEdge.X >= 0 && MouseFromEdge.X <= CameraMovePaddingSize) Result.X += 1.0f;
-	if (MousePosition.X >= 0 && MousePosition.X <= CameraMovePaddingSize) Result.X -= 1.0f;
-	if (MousePosition.Y >= 0 && MousePosition.Y <= CameraMovePaddingSize) Result.Y += 1.0f;
-	if (MouseFromEdge.Y >= 0 && MouseFromEdge.Y <= CameraMovePaddingSize) Result.Y -= 1.0f;
+	if (MouseFromEdge.X >= 0 && MouseFromEdge.X <= CameraMovePaddingSize) MouseScrolling.X += 1.0f;
+	if (MousePosition.X >= 0 && MousePosition.X <= CameraMovePaddingSize) MouseScrolling.X -= 1.0f;
+	if (MousePosition.Y >= 0 && MousePosition.Y <= CameraMovePaddingSize) MouseScrolling.Y += 1.0f;
+	if (MouseFromEdge.Y >= 0 && MouseFromEdge.Y <= CameraMovePaddingSize) MouseScrolling.Y -= 1.0f;
 
-	Result = GetActorTransform().InverseTransformVector(Result);
+	MouseScrolling = GetActorTransform().InverseTransformVector(MouseScrolling);
 
-	CameraMove(Result.GetSafeNormal2D(), Multiplier);
+	CameraMove(MouseScrolling.GetSafeNormal2D(), Multiplier);
+
+	if (lastScrolling != MouseScrolling) OnUpdateCursor();
 };
 
 void AOperator::SetFocusActor(AActor* Target)
 {
-	if (IsValid(Target)) FocusActor = Target;
+	if (IsValid(Target))
+	{
+		MouseScrolling = FVector::ZeroVector;
+		OnUpdateCursor();
+		FocusActor = Target;
+	}
 	else RemoveFocusActor();
 }
 

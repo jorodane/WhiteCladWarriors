@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Framework/Application/NavigationConfig.h"
+#include "Framework/Application/SlateApplication.h"
 #include "IngameController.generated.h"
 
 /**
@@ -28,6 +30,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	TObjectPtr<UHeroMainComponent> ConnectedHero;
 
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player")
+	TSharedPtr<FNavigationConfig> NavConfig;
 
 protected:
 	virtual void OnPossess(APawn* aPawn) override;
@@ -37,8 +41,8 @@ public:
 	FVector GetTerrainPosition(float HeightOffset);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
-	void SetCursor(EMouseCursor::Type NewCursor);
-	virtual void SetCursor_Implementation(EMouseCursor::Type NewCursor);
+	void SetCursor(EInputMouseCursorType NewCursor);
+	virtual void SetCursor_Implementation(EInputMouseCursorType NewCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnOperatorConnected(AOperator* NewOperator);
