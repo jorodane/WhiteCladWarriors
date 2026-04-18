@@ -187,26 +187,33 @@ void AOperator::OnUpdateCursor_Implementation()
 EInputMouseCursorType AOperator::GetCursorType_Implementation()
 {
 	EInputMouseCursorType ResultCursor = EInputMouseCursorType::Default;
+	
 	if (CurrentInputClaim.TargetMouseCursorType == EInputMouseCursorType::Default)
 	{
-		if (!MouseScrolling.IsZero())
+		if (IsValid(HoveredOnWidgetObject))
 		{
-			if (MouseScrolling.X > 0)
+			ResultCursor = EInputMouseCursorType::Selectable;
+		}
+		else if (IsValid(HoveredOnWorldObject))
+		{
+			if (AActor* WorldActor = Cast<AActor>(HoveredOnWorldObject))
 			{
-				ResultCursor = EInputMouseCursorType::Right;
+				UUnitMainComponent* WorldUnit;
+				TArray<UUnitActionComponent*> ResultComponents;
+				if (AActionBase* WorldAction = GetSimpleActionFromActor(CurrentInputPackage, WorldActor, WorldUnit, ResultComponents))
+				{
+					if (UActionSelectorNode* WorldSelector = WorldAction->RootNodeAsSelector())
+					{
+						FInputClaim WorldSimpleInputClaim = WorldSelector->GetInputClaim(ResultComponents, WorldAction, nullptr);
+
+						ResultCursor = WorldSimpleInputClaim.TargetMouseCursorType;
+					}
+				}
 			}
-			else if (MouseScrolling.X < 0)
-			{
-				ResultCursor = EInputMouseCursorType::Left;
-			}
-			else if (MouseScrolling.Y > 0)
-			{
-				ResultCursor = EInputMouseCursorType::Up;
-			}
-			else
-			{
-				ResultCursor = EInputMouseCursorType::Down;
-			}
+		}
+		else
+		{
+			ResultCursor = GetCursorScrollType();
 		}
 	}
 	else
@@ -214,6 +221,31 @@ EInputMouseCursorType AOperator::GetCursorType_Implementation()
 		ResultCursor = CurrentInputClaim.TargetMouseCursorType;
 	}
 
+	return ResultCursor;
+}
+
+EInputMouseCursorType AOperator::GetCursorScrollType_Implementation()
+{
+	EInputMouseCursorType ResultCursor = EInputMouseCursorType::Default;
+	if (!MouseScrolling.IsZero())
+	{
+		if (MouseScrolling.X > 0)
+		{
+			ResultCursor = EInputMouseCursorType::Right;
+		}
+		else if (MouseScrolling.X < 0)
+		{
+			ResultCursor = EInputMouseCursorType::Left;
+		}
+		else if (MouseScrolling.Y > 0)
+		{
+			ResultCursor = EInputMouseCursorType::Up;
+		}
+		else
+		{
+			ResultCursor = EInputMouseCursorType::Down;
+		}
+	}
 	return ResultCursor;
 }
 
@@ -261,8 +293,8 @@ void AOperator::UpdateInputPackage()
 		AActor* CurrentSelectHitActor = isSelectHit ? SelectHitResult.GetActor() : nullptr;
 		if (CurrentSelectHitActor != CurrentInputPackage.MouseHitActor)
 		{
-			SetHoveredWorldObject(CurrentSelectHitActor);
 			CurrentInputPackage.MouseHitActor = CurrentSelectHitActor;
+			SetHoveredWorldObject(CurrentSelectHitActor);
 		}
 		CurrentInputPackage.MouseHitActor = SelectHitResult.GetActor();
 	}
@@ -357,7 +389,11 @@ void AOperator::SetHoveredWorldObject_Implementation(UObject* NewObject)
 	if (IsValid(HoveredOnWorldObject) && HoveredOnWorldObject->GetClass()->ImplementsInterface(USelectable::StaticClass())) ISelectable::Execute_MouseHoverEnd(HoveredOnWorldObject);
 	HoveredOnWorldObject = NewObject;
 	if (!IsValid(HoveredOnWidgetObject)) OnHoverChanged.Broadcast(HoveredOnWorldObject);
-	if (IsValid(HoveredOnWorldObject) && HoveredOnWorldObject->GetClass()->ImplementsInterface(USelectable::StaticClass())) ISelectable::Execute_MouseHoverBegin(HoveredOnWorldObject);
+	if (IsValid(HoveredOnWorldObject) && HoveredOnWorldObject->GetClass()->ImplementsInterface(USelectable::StaticClass()))
+	{
+		ISelectable::Execute_MouseHoverBegin(HoveredOnWorldObject);
+	}
+	OnUpdateCursor();
 }
 
 void AOperator::SetHoveredWidgetObject_Implementation(UObject* NewObject)
@@ -377,6 +413,7 @@ void AOperator::SetHoveredWidgetObject_Implementation(UObject* NewObject)
 	{
 		OnHoverChanged.Broadcast(nullptr);
 	}
+	OnUpdateCursor();
 }
 
 void AOperator::RemoveFocusActor()
@@ -720,6 +757,22 @@ void AOperator::ActorRemoveFromActionList(AActor* Target)
 	}
 }
 
+AActionBase* AOperator::GetSimpleActionFromActor(const FInputPackage& Input, AActor* Target, UUnitMainComponent*& OutUnit, TArray<UUnitActionComponent*>& OutComponents)
+{
+	AActionBase* Result = nullptr;
+	if (!IsValid(Target)) return Result;
+	OutUnit = Target->GetComponentByClass<UUnitMainComponent>();
+	return GetSimpleActionFromComponent(Input, OutUnit, OutComponents);
+}
+AActionBase* AOperator::GetSimpleActionFromComponent(const FInputPackage& Input, UUnitMainComponent* Target, TArray<UUnitActionComponent*>& OutComponents)
+{
+	AActionBase* Result = nullptr;
+	if (!IsValid(Target)) return Result;
+	Target->GetSimpleAction(Input, Result, OutComponents);
+	return Result;
+}
+
+
 void AOperator::SimpleAction(const FInputPackage& Input)
 {
 	TMap<AActionBase*, TSet<UUnitActionComponent*>> ExecuteActionComponentMap;
@@ -730,11 +783,9 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 		for (AActor* CurrentActor : Input.SelectedActors)
 		{
 			if (!IsValid(CurrentActor)) continue;
-			UUnitMainComponent* CurrentAsUnit = CurrentActor->GetComponentByClass<UUnitMainComponent>();
-			if (!IsValid(CurrentAsUnit)) continue;
-			AActionBase* ResultAction = nullptr;
+			UUnitMainComponent* CurrentAsUnit;
 			TArray<UUnitActionComponent*> ResultComponents;
-			if (!CurrentAsUnit->GetSimpleAction(Input, ResultAction, ResultComponents)) continue;
+			AActionBase* ResultAction = GetSimpleActionFromActor(Input, CurrentActor, CurrentAsUnit, ResultComponents);
 			if (!IsValid(ResultAction)) continue;
 			TSet<AActor*>& ResultActorList = ExecuteActionActorMap.FindOrAdd(ResultAction);
 			ResultActorList.Add(CurrentActor);

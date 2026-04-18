@@ -186,6 +186,10 @@ public:
 	EInputMouseCursorType GetCursorType();
 	virtual EInputMouseCursorType GetCursorType_Implementation();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
+	EInputMouseCursorType GetCursorScrollType();
+	virtual EInputMouseCursorType GetCursorScrollType_Implementation();
+
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void ClaimInput(const FInputClaim& ClaimInfo);
 
@@ -362,6 +366,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SimpleAction(const FInputPackage& Input);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	AActionBase* GetSimpleActionFromActor(const FInputPackage& Input, AActor* Target, UUnitMainComponent*& OutUnit, TArray<UUnitActionComponent*>& OutComponents);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	AActionBase* GetSimpleActionFromComponent(const FInputPackage& Input, UUnitMainComponent* Target, TArray<UUnitActionComponent*>& OutComponents);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void ReservationAction(AActionBase* TargetAction, TArray<AActor*> TargetActors, const FInputPackage& Input, bool bIsStartImmediately);
