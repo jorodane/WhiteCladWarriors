@@ -310,11 +310,11 @@ public:
 	virtual void HideDragArea_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
-	bool SelectTest(AActor* Target);
-	bool SelectTest_Implementation(AActor* Target);
+	bool SelectTest(AActor* Target, bool bIsSingleSelected);
+	bool SelectTest_Implementation(AActor* Target, bool bIsSingleSelected);
 
 	UFUNCTION(BlueprintPure, Category = "Select")
-	bool SelectInvalid(AActor* Target) { return !SelectTest(Target); }
+	bool SelectInvalid(AActor* Target, bool bIsSingleSelected) { return !SelectTest(Target, bIsSingleSelected); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void SelectToggle(AActor* Target);

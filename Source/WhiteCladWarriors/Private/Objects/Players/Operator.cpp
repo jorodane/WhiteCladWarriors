@@ -591,9 +591,9 @@ void AOperator::HideDragArea_Implementation()
 	}
 }
 
-bool AOperator::SelectTest_Implementation(AActor* Target)
+bool AOperator::SelectTest_Implementation(AActor* Target, bool bIsSingleSelected)
 {
-	return IsValid(Target) && Target->GetClass()->ImplementsInterface(USelectable::StaticClass()) && ISelectable::Execute_CheckSelectable(Target, this);
+	return IsValid(Target) && Target->GetClass()->ImplementsInterface(USelectable::StaticClass()) && ISelectable::Execute_CheckSelectable(Target, this, bIsSingleSelected);
 }
 
 void AOperator::SelectToggle_Implementation(AActor* Target)
@@ -618,7 +618,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 }
 void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 {
-	if(SelectInvalid(Target)) return;
+	if(SelectInvalid(Target, bIsSingleSelection)) return;
 	if (bIsSingleSelection) DeselectActorsWithoutNotify();
 	SelectActorWithoutNotify(Target, bIsSingleSelection);
 	BroadcastSelectChange();
@@ -626,7 +626,7 @@ void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 
 void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSingleSelection, bool bIsAdditionalSelection)
 {
-	Targets.RemoveAll([this](AActor* Target){return !SelectTest(Target);});
+	Targets.RemoveAll([this, bIsSingleSelection](AActor* Target){return !SelectTest(Target, bIsSingleSelection);});
 	if(Targets.IsEmpty()) return;
 
 	if(!bIsAdditionalSelection) DeselectActors();
