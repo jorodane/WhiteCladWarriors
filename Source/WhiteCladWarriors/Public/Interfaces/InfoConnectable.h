@@ -7,6 +7,7 @@
 #include "InfoConnectable.generated.h"
 
 class UWidget;
+class AOperator;
 
 UENUM(BlueprintType)
 enum class EInfoWidgetType : uint8
@@ -31,5 +32,5 @@ class WHITECLADWARRIORS_API IInfoConnectable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
-	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget(EInfoWidgetType WantType) const;
+	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget(EInfoWidgetType WantType, AOperator* Operator) const;
 };

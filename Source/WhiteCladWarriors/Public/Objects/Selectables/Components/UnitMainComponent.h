@@ -320,7 +320,7 @@ public:
 	bool IsSelectable_Implementation(AOperator* Operator) { return true; }
 	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
 	FText GetSelectedName_Implementation() { return SelectedName; }
-	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType) const;
+	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const;
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
 	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }

@@ -481,7 +481,7 @@ void UUnitMainComponent::Die_Implementation()
 	OnUnitDie.Broadcast(this); 
 }
 
-TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType) const
+TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const
 {
 	TArray<UOrderedGenericWidgetClaim*> Result;
 	Result.Append(GetUnitInfoWidget(WantType));
@@ -489,7 +489,7 @@ TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementa
 	{
 		if (CurrentComponent && CurrentComponent->GetClass()->ImplementsInterface(UInfoConnectable::StaticClass()))
 		{
-			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType));
+			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType, Operator));
 		}
 	};
 	return Result;
