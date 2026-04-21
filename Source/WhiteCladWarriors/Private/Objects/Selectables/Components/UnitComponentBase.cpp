@@ -29,7 +29,7 @@ void UUnitComponentBase::BroadcastMessage_Simple(const FName& Message)
 	}
 }
 
-void UUnitComponentBase::ReceiveUnitMessage_Simple(const FName& Message)
+void UUnitComponentBase::ReceiveUnitMessage_Simple(const  FName& Message)
 {
 	OnComponentMessage_Simple.Broadcast(this, Message);
 }
