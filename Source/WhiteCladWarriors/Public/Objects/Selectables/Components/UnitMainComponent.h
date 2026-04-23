@@ -175,6 +175,8 @@ protected:
 
 	FMainActionInfo MainAction;
 
+	FMontageEventInfo InputReadyMontageEvent;
+
 	FMontageEventInfo ClaimedMontageEvent;
 	FMontageEventInfo QueuedMontageEvent;
 
@@ -280,6 +282,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	void NotifyMontageNodePassed(const FActionCursorFinder& WantCursor);
 	void NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	bool SetInputReadyMontage(const FMontageEventInfo& MontageEvent);
+	bool SetInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	bool ClaimPlayMontage(const FMontageEventInfo& MontageEvent);

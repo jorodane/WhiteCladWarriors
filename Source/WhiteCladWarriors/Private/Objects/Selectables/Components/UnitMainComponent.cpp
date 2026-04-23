@@ -414,6 +414,11 @@ void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCur
 	ClaimedMontageEvent.MontageToPlay = nullptr;
 }
 
+bool UUnitMainComponent::SetInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent)
+{
+	return true;
+}
+
 bool UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
 	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
