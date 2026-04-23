@@ -126,12 +126,21 @@ TArray<UUnitComponentBase*> UUnitMainComponent::GetComponents() const
 	return UnitComponentArray;
 }
 
+USkeletalMeshComponent* UUnitMainComponent::GetMesh_Implementation() const
+{
+	if (ACharacter* OwnerAsCharacter = Cast<ACharacter>(GetOwner()))
+	{
+		return OwnerAsCharacter->GetMesh();
+	};
+	return nullptr;
+}
 
 USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMeshComponent* NewMesh)
 {
 	if (USkeletalMeshComponent* CurrentMesh = NewMesh)
 	{
-		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
+		AnimInstance = CurrentMesh->GetAnimInstance();
+		if(IsValid(AnimInstance))
 		{
 			AnimInstance->OnMontageStarted.AddDynamic(this, &UUnitMainComponent::MontageStarted);
 			AnimInstance->OnMontageEnded.AddDynamic(this, &UUnitMainComponent::MontageEnded);
@@ -414,31 +423,36 @@ void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCur
 	ClaimedMontageEvent.MontageToPlay = nullptr;
 }
 
-bool UUnitMainComponent::SetInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent)
+bool UUnitMainComponent::PlayInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
+	if (!IsValid(AnimInstance)) return false;
+	InputReadyMontageEvent.Stop(AnimInstance);
+	InputReadyMontageEvent = MontageEvent;
+	InputReadyMontageEvent.Play(AnimInstance);
 	return true;
+}
+
+void UUnitMainComponent::StopInputReadyMontage_Implementation()
+{
+	if (!IsValid(AnimInstance)) return;
+	InputReadyMontageEvent.Stop(AnimInstance);
+	InputReadyMontageEvent.Clear();
 }
 
 bool UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
-	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
+	if (IsValid(AnimInstance))
 	{
-		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
-		{
 
-		}
 	}
 	return true;
 }
 
 bool UUnitMainComponent::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
 {
-	if (USkeletalMeshComponent* CurrentMesh = GetMesh())
+	if (IsValid(AnimInstance))
 	{
-		if (UAnimInstance* AnimInstance = CurrentMesh->GetAnimInstance())
-		{
-			AnimInstance->Montage_Stop(0.2f, WantMontage);
-		}
+		AnimInstance->Montage_Stop(0.2f, WantMontage);
 	}
 	return true;
 }

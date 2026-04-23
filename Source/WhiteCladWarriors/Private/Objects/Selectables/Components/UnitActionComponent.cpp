@@ -27,3 +27,13 @@ void UUnitActionComponent::EndMainAction(UActionExecutor* Executor, bool bIsStop
 {
 	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(Executor, this, bIsStopMovement);
 }
+
+void UUnitActionComponent::OnInputStart_Implementation(const FInputClaim& StartedInput)
+{
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->PlayInputReadyMontage(StartedInput.TargetReadyMontage);
+}
+
+void UUnitActionComponent::OnInputEnd_Implementation(const FInputClaim& EndedInput)
+{
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->StopInputReadyMontage();
+}

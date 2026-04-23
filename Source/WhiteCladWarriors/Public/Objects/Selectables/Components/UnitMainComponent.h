@@ -6,6 +6,7 @@
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Generals/Structs/ActionStructures.h"
+#include "Generals/Structs/MontageStructures.h"
 #include "GameFramework/Character.h"
 #include "Styling/SlateBrush.h"
 #include "Interfaces/Selectable.h"
@@ -65,23 +66,6 @@ struct FActionReservator
 	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 
-};
-
-USTRUCT(BlueprintType)
-struct FMontageEventInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TObjectPtr<UAnimMontage> MontageToPlay = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	float PlayRate = 1.0f;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	float StartingPosition = 0.0f;
-
-	bool bIsStarted = false;
 };
 
 USTRUCT(BlueprintType)
@@ -173,6 +157,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = true))
 	TObjectPtr<AIngameController> PlayerController;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+	TObjectPtr<UAnimInstance> AnimInstance;
+
 	FMainActionInfo MainAction;
 
 	FMontageEventInfo InputReadyMontageEvent;
@@ -192,8 +179,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Component")
 	TArray<UUnitComponentBase*> GetComponents() const;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Mesh")
-	USkeletalMeshComponent* GetMesh();
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Mesh")
+	USkeletalMeshComponent* GetMesh() const;
+	USkeletalMeshComponent* GetMesh_Implementation() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Mesh")
 	USkeletalMeshComponent* SetMesh(USkeletalMeshComponent* NewMesh);
@@ -284,8 +272,12 @@ public:
 	void NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	bool SetInputReadyMontage(const FMontageEventInfo& MontageEvent);
-	bool SetInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent);
+	bool PlayInputReadyMontage(const FMontageEventInfo& MontageEvent);
+	bool PlayInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
+	void StopInputReadyMontage();
+	void StopInputReadyMontage_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	bool ClaimPlayMontage(const FMontageEventInfo& MontageEvent);

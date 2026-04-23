@@ -252,12 +252,15 @@ EInputMouseCursorType AOperator::GetCursorScrollType_Implementation()
 void AOperator::ClaimInput(const FInputClaim& ClaimInfo)
 {
 	if (IsValid(CurrentInputClaim.TargetNode) && !CurrentInputClaim.TargetNode->bIsCancelable) return;
+	CurrentInputClaim.BroadcastEnd();
 	CurrentInputClaim = ClaimInfo;
+	CurrentInputClaim.BroadcastStart();
 	OnUpdateInput();
 }
 
 void AOperator::ForceRemoveInputClaim()
 {
+	CurrentInputClaim.BroadcastEnd();
 	CurrentInputClaim.Clear();
 	OnUpdateInput();
 }

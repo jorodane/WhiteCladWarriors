@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Generals/Structs/ActionStructures.h"
+#include "Generals/Structs/MontageStructures.h"
 #include "Generals/Structs/InputPackage.h"
 #include "ActionInputStructures.generated.h"
 
@@ -63,12 +64,10 @@ struct FInputClaim
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	EInputMouseCursorType TargetMouseCursorType = EInputMouseCursorType::Default;
 
-	void Clear()
-	{
-		TargetNode = nullptr;
-		TargetActionCursor.Clear();
-		TargetComponentArray.SetNum(0);
-		TargetMouseCursorDescription = TargetDescription = FText::GetEmpty();
-		TargetMouseCursorType = EInputMouseCursorType::Default;
-	}
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	FMontageEventInfo TargetReadyMontage;
+
+	void Clear();
+	void BroadcastStart();
+	void BroadcastEnd();
 };
