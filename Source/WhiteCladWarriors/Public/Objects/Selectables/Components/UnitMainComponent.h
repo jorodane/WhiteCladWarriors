@@ -27,8 +27,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueCom
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitMessage_Simple, const FName&, Message);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitMessage_Simple, const FName&, Message);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitMessage_Detail, const FName&, Message, const FName&, Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnUnitMessage_Montage, const FName&, Message, UAnimMontage*, Montage, bool, bIsStart);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageNotify, const FActionCursorFinder&, Cursor, FName, NotifyName);
@@ -133,6 +137,13 @@ public:
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitMessage_Simple OnUnitMessage_Simple;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnUnitMessage_Detail OnUnitMessage_Detail;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnUnitMessage_Montage OnUnitMessage_Montage;
+
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")

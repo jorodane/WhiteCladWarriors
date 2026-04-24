@@ -476,18 +476,22 @@ void UUnitMainComponent::UnitMessage(const FName& Message)
 
 void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 {
+
 }
 
 void UUnitMainComponent::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
+
 }
 
 void UUnitMainComponent::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
+	BroadcastMessage_Simple(NotifyName);
 }
 
 void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
+
 }
 
 

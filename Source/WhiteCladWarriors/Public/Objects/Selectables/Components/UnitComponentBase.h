@@ -40,6 +40,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void BroadcastMessage_Simple(const FName& Message);
+	void BroadcastMessage_Detail(const FName& Message, const FName& Detail);
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void ReceiveUnitMessage_Simple(const FName& Message);
