@@ -686,6 +686,17 @@ void AOperator::DeselectActorsWithoutNotify_Implementation()
 void AOperator::BroadcastSelectChange_Implementation()
 {
 	Algo::Sort(CurrentInputPackage.SelectedActors, [](AActor* Left, AActor* Right) -> bool { return ISelectable::Execute_GetSelectedorder(Left) < ISelectable::Execute_GetSelectedorder(Right);});
+	CurrentInputClaim.TargetComponentArray.RemoveAll([&](UUnitActionComponent* Current)->bool 
+		{ 
+			if (!IsValid(Current)) return true;
+			else if (!CurrentInputPackage.SelectedActors.Contains(Current->GetOwner()))
+			{
+				Current->OnInputEnd(CurrentInputClaim);
+				return true;
+			}
+			return false;
+		});
+	if (CurrentInputClaim.TargetComponentArray.IsEmpty()) CancelInputClaim();
 	OnSelectedChanged.Broadcast(CurrentInputPackage.SelectedActors);
 }
 
