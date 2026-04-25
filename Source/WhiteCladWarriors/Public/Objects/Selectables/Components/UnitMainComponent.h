@@ -225,6 +225,15 @@ public:
 	bool HasOperatorAuthority(AOperator* From);
 	bool HasOperatorAuthority_Implementation(AOperator* From);
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	bool HasMainAction();
+
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	bool HasInputReadyMontage();
+
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	bool HasActionMontage();
+
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
 	bool IsAlly(EUnitControlledType OtherType);
 	bool IsAlly_Implementation(EUnitControlledType OtherType);

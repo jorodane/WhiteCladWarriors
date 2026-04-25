@@ -202,6 +202,22 @@ bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From)
 	return PlayerController->ConnectedOperator == From;
 }
 
+bool UUnitMainComponent::HasMainAction()
+{
+	return MainAction.CheckValid();
+}
+
+bool UUnitMainComponent::HasInputReadyMontage()
+{
+	return InputReadyMontageEvent.bIsStarted;
+}
+
+bool UUnitMainComponent::HasActionMontage()
+{
+	return false;
+}
+
+
 bool UUnitMainComponent::IsAlly_Implementation(EUnitControlledType OtherType)
 {
 	if (OtherType == ControlledType) return true;
