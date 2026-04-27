@@ -8,10 +8,6 @@
 void UUnitComponentBase::BeginDestroy()
 {
 	BroadcastMessage_Removed();
-	if (IsValid(OwnerUnit))
-	{
-		OwnerUnit->OnUnitMessage_Simple.RemoveAll(this);
-	}
 	Super::BeginDestroy();
 }
 
@@ -25,14 +21,41 @@ void UUnitComponentBase::BroadcastMessage_Simple(const FName& Message)
 {
 	if (IsValid(OwnerUnit))
 	{
-		OwnerUnit->UnitMessage(Message);
+		OwnerUnit->UnitMessage_Simple(Message);
 	}
 }
 
-void UUnitComponentBase::ReceiveUnitMessage_Simple(const  FName& Message)
+void UUnitComponentBase::BroadcastMessage_Detail(const FName& Message, const FName& Context)
+{
+	if (IsValid(OwnerUnit))
+	{
+		OwnerUnit->UnitMessage_Detail(Message, Context);
+	}
+}
+void UUnitComponentBase::BroadcastMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
+{
+	if (IsValid(OwnerUnit))
+	{
+		OwnerUnit->UnitMessage_Montage(Montage, bIsStart, bIsInterrupted);
+	}
+}
+
+
+void UUnitComponentBase::ReceiveUnitMessage_Simple(const FName& Message)
 {
 	OnComponentMessage_Simple.Broadcast(this, Message);
 }
+
+void UUnitComponentBase::ReceiveUnitMessage_Detail(const FName& Message, const FName& Context)
+{
+	OnComponentMessage_Detail.Broadcast(this, Message, Context);
+}
+
+void UUnitComponentBase::ReceiveUnitMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
+{
+	OnComponentMessage_Montage.Broadcast(this, Montage, bIsStart, bIsInterrupted);
+}
+
 
 FVector UUnitComponentBase::GetLocation_Implementation()
 {
@@ -51,14 +74,6 @@ FVector UUnitComponentBase::GetDirection_Implementation(FVector Destination, boo
 
 UUnitMainComponent* UUnitComponentBase::SetOwnerUnit_Implementation(UUnitMainComponent* NewUnit)
 {
-	if (IsValid(OwnerUnit))
-	{
-		OwnerUnit->OnUnitMessage_Simple.RemoveAll(this);
-	}
-	if (IsValid(NewUnit))
-	{
-		NewUnit->OnUnitMessage_Simple.AddUniqueDynamic(this, &UUnitComponentBase::ReceiveUnitMessage_Simple);
-	}
 	return OwnerUnit = NewUnit;
 }
 

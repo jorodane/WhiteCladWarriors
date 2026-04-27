@@ -16,6 +16,8 @@ private:
 	static const FName MoveFailed;
 	static const FName AnimationSucceed;
 	static const FName AnimationFailed;
+	static const FName MontageNotifyBegin;
+	static const FName MontageNotifyEnd;
 	static const FName Die;
 	static const FName Revive;
 
@@ -30,6 +32,10 @@ public:
 	static FName GetActionMessage_AnimationSucceed()	{ return AnimationSucceed; }
 	UFUNCTION(BlueprintPure, Category = "Message")
 	static FName GetActionMessage_AnimationFailed()		{ return AnimationFailed; }
+	UFUNCTION(BlueprintPure, Category = "Message")
+	static FName GetActionMessage_MontageNotifyBegin()	{ return MontageNotifyBegin; }
+	UFUNCTION(BlueprintPure, Category = "Message")
+	static FName GetActionMessage_MontageNotifyEnd()	{ return MontageNotifyEnd; }
 	UFUNCTION(BlueprintPure, Category = "Message")
 	static FName GetActionMessage_Die()					{ return Die; }
 	UFUNCTION(BlueprintPure, Category = "Message")

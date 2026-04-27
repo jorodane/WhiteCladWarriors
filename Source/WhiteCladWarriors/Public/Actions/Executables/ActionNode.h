@@ -100,4 +100,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void OnActionMessage_Simple(const FActionCursorFinder& WantCursor, const FName& Message);
 	void OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
+	void OnActionMessage_Detail(const FActionCursorFinder& WantCursor, const FName& Message, const FName& Context);
+
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
+	void OnActionMessage_Montage(const FActionCursorFinder& WantCursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
+
 };

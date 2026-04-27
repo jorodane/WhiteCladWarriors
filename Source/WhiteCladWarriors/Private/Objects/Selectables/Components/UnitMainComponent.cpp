@@ -434,11 +434,6 @@ void UUnitMainComponent::NotifyExecutorEnded_Implementation(UActionExecutor* End
 	}
 }
 
-void UUnitMainComponent::NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor)
-{
-	ClaimedMontageEvent.MontageToPlay = nullptr;
-}
-
 bool UUnitMainComponent::PlayInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
 	if (!IsValid(AnimInstance)) return false;
@@ -455,21 +450,24 @@ void UUnitMainComponent::StopInputReadyMontage_Implementation()
 	InputReadyMontageEvent.Clear();
 }
 
-bool UUnitMainComponent::ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent)
+bool UUnitMainComponent::PlayMainActionMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
-	if (IsValid(AnimInstance))
+	if (MainActionMontageEvent.bIsStarted) StopMainActionMontage(true);
+	MainActionMontageEvent = MontageEvent;
+	if (MainActionMontageEvent.Play(AnimInstance, false))
 	{
-
+		UnitMessage_Montage(MainActionMontageEvent.MontageToPlay, true, false);
+		return true;
 	}
-	return true;
+	return false;
 }
 
-bool UUnitMainComponent::ClaimStopMontage_Implementation(UAnimMontage* WantMontage)
+bool UUnitMainComponent::StopMainActionMontage_Implementation(bool bIsInterrupted)
 {
-	if (IsValid(AnimInstance))
-	{
-		AnimInstance->Montage_Stop(0.2f, WantMontage);
-	}
+	if (!MainActionMontageEvent.bIsStarted) return true;
+	if (bIsInterrupted) UnitMessage_Montage(MainActionMontageEvent.MontageToPlay, false, true);
+	MainActionMontageEvent.Stop(AnimInstance);
+	MainActionMontageEvent.Clear();
 	return true;
 }
 
@@ -485,10 +483,33 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
-void UUnitMainComponent::UnitMessage(const FName& Message)
+void UUnitMainComponent::UnitMessage_Simple(const FName& Message)
 {
-	OnUnitMessage_Simple.Broadcast(Message);
+	for (UUnitComponentBase* CurrentComponent : GetComponents())
+	{
+		if (!IsValid(CurrentComponent)) continue;
+		CurrentComponent->ReceiveUnitMessage_Simple(Message);
+	}
 }
+
+void UUnitMainComponent::UnitMessage_Detail(const FName& Message, const FName& Context)
+{
+	for (UUnitComponentBase* CurrentComponent : GetComponents())
+	{
+		if (!IsValid(CurrentComponent)) continue;
+		CurrentComponent->ReceiveUnitMessage_Detail(Message, Context);
+	}
+}
+
+void UUnitMainComponent::UnitMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
+{
+	for (UUnitComponentBase* CurrentComponent : GetComponents())
+	{
+		if (!IsValid(CurrentComponent)) continue;
+		CurrentComponent->ReceiveUnitMessage_Montage(Montage, bIsStart, bIsInterrupted);
+	}
+}
+
 
 void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 {
@@ -497,17 +518,19 @@ void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 
 void UUnitMainComponent::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
-
+	if (bIsInterrupted) return;
+	StopMainActionMontage(false);
+	UnitMessage_Montage(Montage, false, false);
 }
 
 void UUnitMainComponent::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
-	BroadcastMessage_Simple(NotifyName);
+	UnitMessage_Detail(UReservedActionMessage::GetActionMessage_MontageNotifyBegin(), NotifyName);
 }
 
 void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)
 {
-
+	UnitMessage_Detail(UReservedActionMessage::GetActionMessage_MontageNotifyEnd(), NotifyName);
 }
 
 

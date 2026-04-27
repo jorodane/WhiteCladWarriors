@@ -11,14 +11,15 @@ void FMontageEventInfo::Clear()
 	bIsStarted = false;
 }
 
-void FMontageEventInfo::Play(UAnimInstance* Anim, bool bIsStopOtherMontage)
+bool FMontageEventInfo::Play(UAnimInstance* Anim, bool bIsStopOtherMontage)
 {
-	if (!IsValid(Anim)) return;
+	if (!IsValid(Anim)) return false;
 	if (IsValid(MontageToPlay))
 	{
 		Anim->Montage_Play(MontageToPlay, PlayRate, EMontagePlayReturnType::MontageLength, StartingPosition, false);
 		bIsStarted = true;
 	}
+	return bIsStarted;
 }
 
 void FMontageEventInfo::Stop(UAnimInstance* Anim)

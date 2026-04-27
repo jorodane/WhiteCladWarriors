@@ -29,10 +29,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueC
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitMessage_Simple, const FName&, Message);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitMessage_Detail, const FName&, Message, const FName&, Context);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnUnitMessage_Montage, const FName&, Message, UAnimMontage*, Montage, bool, bIsStart);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageNotify, const FActionCursorFinder&, Cursor, FName, NotifyName);
@@ -135,15 +131,6 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnMovementStart OnMovementStart;
 
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
-	FOnUnitMessage_Simple OnUnitMessage_Simple;
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
-	FOnUnitMessage_Detail OnUnitMessage_Detail;
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
-	FOnUnitMessage_Montage OnUnitMessage_Montage;
-
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Select")
@@ -174,9 +161,7 @@ protected:
 	FMainActionInfo MainAction;
 
 	FMontageEventInfo InputReadyMontageEvent;
-
-	FMontageEventInfo ClaimedMontageEvent;
-	FMontageEventInfo QueuedMontageEvent;
+	FMontageEventInfo MainActionMontageEvent;
 
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "UnitComponent", meta = (AllowPrivateAccess = true))
@@ -288,10 +273,6 @@ public:
 	void NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	void NotifyMontageNodePassed(const FActionCursorFinder& WantCursor);
-	void NotifyMontageNodePassed_Implementation(const FActionCursorFinder& WantCursor);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	bool PlayInputReadyMontage(const FMontageEventInfo& MontageEvent);
 	bool PlayInputReadyMontage_Implementation(const FMontageEventInfo& MontageEvent);
 
@@ -300,12 +281,12 @@ public:
 	void StopInputReadyMontage_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	bool ClaimPlayMontage(const FMontageEventInfo& MontageEvent);
-	bool ClaimPlayMontage_Implementation(const FMontageEventInfo& MontageEvent);
+	bool PlayMainActionMontage(const FMontageEventInfo& MontageEvent);
+	bool PlayMainActionMontage_Implementation(const FMontageEventInfo& MontageEvent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
-	bool ClaimStopMontage(UAnimMontage* WantMontage);
-	bool ClaimStopMontage_Implementation(UAnimMontage* WantMontage);
+	bool StopMainActionMontage(bool bIsInterrupted);
+	bool StopMainActionMontage_Implementation(bool bIsInterrupted);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	bool ClaimStartMovement(const FVector& Destination, AActor* TargetActor, float AcceptanceRadius, const FActionCursorFinder& WantCursor);
@@ -316,7 +297,13 @@ public:
 	bool ClaimStopMovement_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
-	void UnitMessage(const FName& Message);
+	void UnitMessage_Simple(const FName& Message);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void UnitMessage_Detail(const FName& Message, const FName& Context);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void UnitMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 	UFUNCTION()
 	void MontageStarted(UAnimMontage* Montage);

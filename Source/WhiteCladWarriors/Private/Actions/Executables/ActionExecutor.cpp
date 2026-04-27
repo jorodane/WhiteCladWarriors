@@ -41,7 +41,7 @@ void FActiveNodeMap::RemoveID(int ID)
 	NodeMap.Remove(ID);
 }
 
-void FActiveNodeMap::BroadcastMessage(const FActionCursorFinder& Cursor, FName Message)
+void FActiveNodeMap::BroadcastFunction(const FActionCursorFinder& Cursor, TFunctionRef<void(UActionNode*, const FActionCursorFinder&)> Function)
 {
 	if (IsEmpty()) return;
 	TMap<int, FActiveNodeInfo> ReceivedNodeMap = NodeMap;
@@ -51,13 +51,39 @@ void FActiveNodeMap::BroadcastMessage(const FActionCursorFinder& Cursor, FName M
 		const FActiveNodeInfo& CurrentInfo = CurrentPair.Value;
 		if (CurrentInfo.CurrentListeningState != ENodeListeningState::Listening) continue;
 
-		if (UActionNode* CurrentNode = CurrentInfo.CurrentNode)
+		UActionNode* CurrentNode = CurrentInfo.CurrentNode;
+		if (IsValid(CurrentNode))
 		{
 			FActionCursorFinder NewCursor = Cursor;
 			NewCursor.CurrentID = CurrentPair.Key;
-			CurrentNode->OnActionMessage_Simple(NewCursor, Message);
+			Function(CurrentNode, NewCursor);
 		}
 	}
+}
+
+void FActiveNodeMap::BroadcastMessage_Simple(const FActionCursorFinder& Cursor, FName Message)
+{
+	BroadcastFunction(Cursor, 
+	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+	{
+		CurrentNode->OnActionMessage_Simple(NewCursor, Message);
+	});
+}
+void FActiveNodeMap::BroadcastMessage_Detail(const FActionCursorFinder& Cursor, FName Message, const FName& Context)
+{
+	BroadcastFunction(Cursor,
+	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+	{
+		CurrentNode->OnActionMessage_Detail(NewCursor, Message, Context);
+	});
+}
+void FActiveNodeMap::BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
+{
+	BroadcastFunction(Cursor,
+	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+	{
+		CurrentNode->OnActionMessage_Montage(NewCursor, Montage, bIsStart, bIsInterrupted);
+	});
 }
 
 void UActionExecutor::SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message)
@@ -246,6 +272,8 @@ void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, U
 	if (!IsValid(TargetComponent)) return;
 	TargetComponent->OnComponentRemoved.AddUniqueDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
 	TargetComponent->OnComponentMessage_Simple.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Simple);
+	TargetComponent->OnComponentMessage_Detail.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Detail);
+	TargetComponent->OnComponentMessage_Montage.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Montage);
 	CursorMap.Add(TargetComponent, StartNode);
 }
 
@@ -257,6 +285,8 @@ void UActionExecutor::RemoveComponentFromMap(UUnitActionComponent* TargetCompone
 	{
 		TargetComponent->OnComponentRemoved.RemoveAll(this);
 		TargetComponent->OnComponentMessage_Simple.RemoveAll(this);
+		TargetComponent->OnComponentMessage_Detail.RemoveAll(this);
+		TargetComponent->OnComponentMessage_Montage.RemoveAll(this);
 	}
 	CursorMap.Remove(TargetComponent);
 	CheckCursorMap();
@@ -301,7 +331,7 @@ UActionNode* UActionExecutor::GetNode(UUnitActionComponent* TargetComponent, int
 
 
 
-void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, FName Message)
+void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, const FName& Message)
 {
 	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(From))
 	{
@@ -309,11 +339,36 @@ void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, FN
 
 		if (FActiveNodeMap* CurrentCursor = GetCursor(AsActionComponent))
 		{
-			CurrentCursor->BroadcastMessage(BaseFinder, Message);
+			CurrentCursor->BroadcastMessage_Simple(BaseFinder, Message);
 		}
 	}
 }
 
+void UActionExecutor::OnMessageFromComponent_Detail(UUnitComponentBase* From, const FName& Message, const FName& Context)
+{
+	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(From))
+	{
+		FActionCursorFinder BaseFinder = CreateCursorFinder(AsActionComponent);
+
+		if (FActiveNodeMap* CurrentCursor = GetCursor(AsActionComponent))
+		{
+			CurrentCursor->BroadcastMessage_Detail(BaseFinder, Message, Context);
+		}
+	}
+}
+
+void UActionExecutor::OnMessageFromComponent_Montage(UUnitComponentBase* From, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
+{
+	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(From))
+	{
+		FActionCursorFinder BaseFinder = CreateCursorFinder(AsActionComponent);
+
+		if (FActiveNodeMap* CurrentCursor = GetCursor(AsActionComponent))
+		{
+			CurrentCursor->BroadcastMessage_Montage(BaseFinder, Montage, bIsStart, bIsInterrupted);
+		}
+	}
+}
 
 UActionExecutor* UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
 {

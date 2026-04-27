@@ -9,5 +9,7 @@ const FName UReservedActionMessage::MoveSucceed			= TEXT("MoveSucceed");
 const FName UReservedActionMessage::MoveFailed			= TEXT("MoveFailed");
 const FName UReservedActionMessage::AnimationSucceed	= TEXT("AnimationSucceed");
 const FName UReservedActionMessage::AnimationFailed		= TEXT("AnimationFailed");
+const FName UReservedActionMessage::MontageNotifyBegin	= TEXT("MontageNotifyBegin");
+const FName UReservedActionMessage::MontageNotifyEnd	= TEXT("MontageNotifyEnd");
 const FName UReservedActionMessage::Die					= TEXT("Die");
 const FName UReservedActionMessage::Revive				= TEXT("Revive");

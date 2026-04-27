@@ -8,7 +8,10 @@
 #include "UnitComponentBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnComponentRemoved, UUnitComponentBase*, TargetComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentMessage_Simple, UUnitComponentBase*, From, FName, Message);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnComponentMessage_Simple, UUnitComponentBase*, From, const FName&, Message);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnComponentMessage_Detail, UUnitComponentBase*, From, const FName&, Message, const FName&, Context);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnComponentMessage_Montage, UUnitComponentBase*, From, UAnimMontage*, Montage, bool, bIsStart, bool, bIsInterrupted);
 
 class AOperator;
 class UWidget;
@@ -27,6 +30,12 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Unit")
 	FOnComponentMessage_Simple OnComponentMessage_Simple;
 
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Unit")
+	FOnComponentMessage_Detail OnComponentMessage_Detail;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Unit")
+	FOnComponentMessage_Montage OnComponentMessage_Montage;
+
 	UPROPERTY(BlueprintReadOnly, Category = "UnitComponent")
 	UUnitMainComponent* OwnerUnit;
 
@@ -40,10 +49,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void BroadcastMessage_Simple(const FName& Message);
-	void BroadcastMessage_Detail(const FName& Message, const FName& Detail);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void BroadcastMessage_Detail(const FName& Message, const FName& Context);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void BroadcastMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void ReceiveUnitMessage_Simple(const FName& Message);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void ReceiveUnitMessage_Detail(const FName& Message, const FName& Context);
+
+	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
+	void ReceiveUnitMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
 	FVector GetLocation();

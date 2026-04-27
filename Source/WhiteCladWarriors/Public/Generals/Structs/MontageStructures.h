@@ -28,6 +28,6 @@ struct FMontageEventInfo
 	bool bIsStarted = false;
 
 	void Clear();
-	void Play(UAnimInstance* Anim, bool bIsStopOtherMontage = true);
+	bool Play(UAnimInstance* Anim, bool bIsStopOtherMontage = true);
 	void Stop(UAnimInstance* Anim);
 };

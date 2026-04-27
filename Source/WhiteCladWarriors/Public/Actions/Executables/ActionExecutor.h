@@ -68,7 +68,10 @@ struct FActiveNodeMap
 	inline void RemoveID(int ID);
 	inline bool IsEmpty() const { return NodeMap.IsEmpty(); }
 
-	void BroadcastMessage(const FActionCursorFinder& Cursor, FName Message);
+	void BroadcastFunction(const FActionCursorFinder& Cursor, TFunctionRef<void(UActionNode*, const FActionCursorFinder&)> Function);
+	void BroadcastMessage_Simple(const FActionCursorFinder& Cursor, FName Message);
+	void BroadcastMessage_Detail(const FActionCursorFinder& Cursor, FName Message, const FName& Context);
+	void BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 	FActiveNodeMap() { }
 	FActiveNodeMap(UActionNode* Node) { SetNode(Node, 0); }
@@ -179,7 +182,13 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void OnMessageFromComponent_Simple(UUnitComponentBase* From, FName Message);
+	void OnMessageFromComponent_Simple(UUnitComponentBase* From, const FName& Message);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void OnMessageFromComponent_Detail(UUnitComponentBase* From, const FName& Message, const FName& Context);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void OnMessageFromComponent_Montage(UUnitComponentBase* From, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 
 public:
