@@ -21,41 +21,44 @@ public:
 	TObjectPtr<UActionNode> RootNode = nullptr;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	FKey ActionHotKey;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	FName ActionNameDefine;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	FText ActionNameUI;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	FText ActionNameUIWithKeyFormat;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	FSlateBrush ActionIcon;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	float ActionCooldown;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	int ActionMaxStack = 1;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	int UIOrder = 100;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	bool bIsMainAction = true;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	bool bIsSmartKey = false;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	bool bShowStack = false;
 
-	UPROPERTY(EditAnywhere, Category = "Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	bool bShowHotKey = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
+	bool bIsImportantAction = false;
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")

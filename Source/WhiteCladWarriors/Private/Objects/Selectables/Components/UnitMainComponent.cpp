@@ -88,7 +88,11 @@ bool FMainActionInfo::Cancel(bool bWantStopMovement)
 	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
 	{
 		Cursor.CurrentExecutor->CancelNode(Cursor);
-		//TargetComponent->OnEndMainAction(Executor, bWantStopMovement);
+		UUnitMainComponent* TargetUnit;
+		if (TargetComponent->TryGetOwnerUnit(TargetUnit))
+		{
+			TargetUnit->StopMainActionMontage(true);
+		}
 	}
 	Clear();
 	return true;

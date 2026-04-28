@@ -434,7 +434,6 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 {
 	if(!IsValid(TargetAction)) return;
 
-	for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 
 	FInputClaim ResultInput;
 	TArray<bool> ComponentResult;
@@ -449,6 +448,7 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 			if (CheckResult)
 			{
 				TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+				for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 			}
 			TargetAction->SpawnCheckEffect(CheckResult, this, CurrentInputPackage, TypeResult, ReasonResult);
 		}
@@ -461,6 +461,7 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 	else
 	{
 		TargetAction->ExecuteAction(this, TargetComponent);
+		for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 	}
 }
 
@@ -829,12 +830,14 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 	else
 	{
 		if (ExecuteActionComponentMap.IsEmpty()) return;
+
 		for (auto& CurrentPair : ExecuteActionComponentMap)
 		{
 			AActionBase* CurrentAction = CurrentPair.Key;
 			TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
 			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
 			const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
+			for (UUnitActionComponent* CurrentComponent : ResultArray) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 			CommandAction(CurrentAction, ResultArray, true);
 		}
 	}
