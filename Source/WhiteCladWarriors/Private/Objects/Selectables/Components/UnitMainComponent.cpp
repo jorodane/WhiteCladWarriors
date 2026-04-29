@@ -523,8 +523,11 @@ void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 void UUnitMainComponent::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
 	if (bIsInterrupted) return;
-	StopMainActionMontage(false);
-	UnitMessage_Montage(Montage, false, false);
+
+	if (MainActionMontageEvent.bIsStarted && Montage == MainActionMontageEvent.MontageToPlay)
+	{
+		StopMainActionMontage(false);
+	}
 }
 
 void UUnitMainComponent::MontageNotifyBegin(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload)

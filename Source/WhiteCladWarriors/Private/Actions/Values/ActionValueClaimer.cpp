@@ -28,7 +28,7 @@ FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, con
 	break;
 	case EPositionGetterType::ActorPosition:
 	{
-		if (IsValid(Executor)) 
+		if (IsValid(Executor))
 		{
 			AActor* ResultActor = Executor->GetSavedActor(WantCursor, PositionTag);
 			if (IsValid(ResultActor)) Result = ResultActor->GetActorLocation();
@@ -41,6 +41,18 @@ FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, con
 		{
 			const FInputPackage& LocalInput = Executor->Operator->GetInputPackage();
 			Result = LocalInput.MouseTerrainPosition;
+		}
+	}
+	break;
+	case EPositionGetterType::SocketPosition:
+	{
+		if (IsValid(Executor) && IsValid(Component))
+		{
+			UUnitMainComponent* OwnerUnit;
+			if(Component->TryGetOwnerUnit(OwnerUnit) && IsValid(OwnerUnit))
+			{
+				Result = OwnerUnit->GetMesh()->GetSocketLocation(PositionTag);
+			}
 		}
 	}
 	break;

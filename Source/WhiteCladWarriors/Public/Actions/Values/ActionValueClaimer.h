@@ -243,7 +243,7 @@ class UValueClaimer : public UObject
 UENUM(BlueprintType)
 enum class EPositionGetterType : uint8
 {
-	SavedPosition, WorldPosition, SelfPosition, ActorPosition, CursorPosition
+	SavedPosition, WorldPosition, SelfPosition, ActorPosition, CursorPosition, SocketPosition
 };
 
 UENUM(BlueprintType)
