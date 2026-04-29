@@ -138,6 +138,7 @@ class UValueGetterLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> ZeroVector;
 	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> ForwardVector;
 	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> BackwardVector;
 	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> RightVector;
@@ -196,6 +197,8 @@ public:
 		return Result;
 	}
 
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UVectorGetter* GetSimpleZeroVector() { return Get()->ZeroVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
 	static UVectorGetter* GetSimpleForwardVector() { return Get()->ForwardVector; }
 	UFUNCTION(BlueprintPure, Category = "Value")
@@ -256,31 +259,90 @@ class UPositionClaimer : public UValueClaimer
 
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
-	FName PositionTag;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
-	EPositionGetterType PositionType;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	EPositionSpaceType AdditiveSpace;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TObjectPtr<UVectorGetter> AdditivePosition;
 
+public:
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	void Set(FName WantPositionTag, EPositionGetterType WantPositionType, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	void Set(EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
-		PositionTag = WantPositionTag;
-		PositionType = WantPositionType;
 		AdditiveSpace = WantAdditiveSpace;
 		AdditivePosition = WantAdditivePosition;
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const;
 
 	UFUNCTION(BlueprintPure, Category = "Value")
 	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
+};
+
+UCLASS(BlueprintType)
+class UPositionClaimer_AveragePosition : public UPositionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	TArray<UPositionClaimer*> TargetPositions;
+
+public:
+	void Set(const TArray<UPositionClaimer*>& WantPositions, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		TargetPositions = WantPositions;
+		AdditiveSpace = WantAdditiveSpace;
+		AdditivePosition = WantAdditivePosition;
+	}
+
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+};
+
+UCLASS(BlueprintType)
+class UPositionClaimer_SelfPosition : public UPositionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+};
+
+UCLASS(BlueprintType)
+class UPositionClaimer_SavedPosition : public UPositionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	FName PositionTag;
+
+public:
+	void Set(FName WantPositionTag, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		PositionTag = WantPositionTag;
+		AdditiveSpace = WantAdditiveSpace;
+		AdditivePosition = WantAdditivePosition;
+	}
+
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+};
+
+UCLASS(BlueprintType)
+class UPositionClaimer_ActorPosition : public UPositionClaimer_SavedPosition
+{
+	GENERATED_BODY()
+
+public:
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+};
+
+UCLASS(BlueprintType)
+class UPositionClaimer_SocketPosition : public UPositionClaimer_SavedPosition
+{
+	GENERATED_BODY()
+
+public:
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
 };
 
 UCLASS(Abstract, BlueprintType)
@@ -498,10 +560,50 @@ public:
 	static UPositionClaimer* ClaimSelfDownPosition() { return Get()->SelfDownPosition; };
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer(UObject* Owner, FName WantPositionTag, EPositionGetterType WantPositionType, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer* MakePositionClaimer(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer* Result = NewObject<UPositionClaimer>(Owner);
-		if (Result) Result->Set(WantPositionTag,WantPositionType,WantAdditiveSpace,WantAdditivePosition);
+		if (Result) Result->Set(WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer* MakePositionClaimer_AveragePosition(UObject* Owner, const TArray<UPositionClaimer*>& WantPositions, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_AveragePosition* Result = NewObject<UPositionClaimer_AveragePosition>(Owner);
+		if (Result) Result->Set(WantPositions, WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer* MakePositionClaimer_SelfPosition(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_SelfPosition* Result = NewObject<UPositionClaimer_SelfPosition>(Owner);
+		if (Result) Result->Set(WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer* MakePositionClaimer_SavedPosition(UObject* Owner, FName WantSavedTag, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_SavedPosition* Result = NewObject<UPositionClaimer_SavedPosition>(Owner);
+		if (Result) Result->Set(WantSavedTag, WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer* MakePositionClaimer_ActorPosition(UObject* Owner, FName WantActorName, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_ActorPosition* Result = NewObject<UPositionClaimer_ActorPosition>(Owner);
+		if (Result) Result->Set(WantActorName, WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer* MakePositionClaimer_SocketPosition(UObject* Owner, FName WantSocketName, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_SocketPosition* Result = NewObject<UPositionClaimer_SocketPosition>(Owner);
+		if (Result) Result->Set(WantSocketName, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
 
