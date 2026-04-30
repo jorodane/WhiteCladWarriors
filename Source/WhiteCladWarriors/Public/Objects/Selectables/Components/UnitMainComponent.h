@@ -142,6 +142,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Hero")
 	FText ClassName;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TMap<FName, FName> TaggedActionMap;
+
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
 	TMap<FName, UFillableValueComponent*> FillValueMap;
 
@@ -234,6 +237,8 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionFromKey(FKey WantKey) const;
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	FName GetActionFromTag(FName WantTag) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<FActionTargetContainer> GetActionContainerFromKey(FKey WantKey) const;

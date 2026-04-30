@@ -32,16 +32,16 @@ class WHITECLADWARRIORS_API UActionNode : public UObject
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadWrite, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> NextNode;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadWrite, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> CanceledNode;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadWrite, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> BlockedNode;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	UPROPERTY(BlueprintReadWrite, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TMap<FName, FLinkedNodeInfo> LinkedNodes;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))

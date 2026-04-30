@@ -7,6 +7,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "ActionValueClaimer.generated.h"
 
+class AActionBase;
+class UActorClaimer;
 class UActionExecutor;
 class UUnitActionComponent;
 
@@ -244,12 +246,6 @@ class UValueClaimer : public UObject
 };
 
 UENUM(BlueprintType)
-enum class EPositionGetterType : uint8
-{
-	SavedPosition, WorldPosition, SelfPosition, ActorPosition, CursorPosition, SocketPosition
-};
-
-UENUM(BlueprintType)
 enum class EPositionSpaceType : uint8 { Self, World };
 
 UCLASS(BlueprintType)
@@ -285,12 +281,14 @@ class UPositionClaimer_AveragePosition : public UPositionClaimer
 	GENERATED_BODY()
 
 public:
-	TArray<UPositionClaimer*> TargetPositions;
+	UPositionClaimer* PositionLeft;
+	UPositionClaimer* PositionRight;
 
 public:
-	void Set(const TArray<UPositionClaimer*>& WantPositions, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	void Set(UPositionClaimer* WantLeftPosition, UPositionClaimer* WantRightPosition, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
-		TargetPositions = WantPositions;
+		PositionLeft = WantLeftPosition;
+		PositionRight = WantRightPosition;
 		AdditiveSpace = WantAdditiveSpace;
 		AdditivePosition = WantAdditivePosition;
 	}
@@ -328,11 +326,22 @@ public:
 };
 
 UCLASS(BlueprintType)
-class UPositionClaimer_ActorPosition : public UPositionClaimer_SavedPosition
+class UPositionClaimer_ActorPosition : public UPositionClaimer
 {
 	GENERATED_BODY()
 
 public:
+	UActorClaimer* TargetActor;
+
+public:
+
+	void Set(UActorClaimer* WantClaimer, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		TargetActor = WantClaimer;
+		AdditiveSpace = WantAdditiveSpace;
+		AdditivePosition = WantAdditivePosition;
+	}
+
 	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
 };
 
@@ -434,6 +443,34 @@ public:
 		AngleShift = WantAngleShift;
 	}
 	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
+};
+
+UCLASS(BlueprintType)
+class UActionClaimer : public UValueClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	FName ActionTag;
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void Set(FName WantTag)
+	{
+		ActionTag = WantTag;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value")
+	virtual AActionBase* GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const;
+};
+
+UCLASS(BlueprintType)
+class UActionClaimer_UnitTagged : public UActionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	virtual AActionBase* GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
 };
 
 UCLASS(BlueprintType)
@@ -568,10 +605,10 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_AveragePosition(UObject* Owner, const TArray<UPositionClaimer*>& WantPositions, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer* MakePositionClaimer_AveragePosition(UObject* Owner, UPositionClaimer* WantPositionLeft, UPositionClaimer* WantPositionRight, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_AveragePosition* Result = NewObject<UPositionClaimer_AveragePosition>(Owner);
-		if (Result) Result->Set(WantPositions, WantAdditiveSpace, WantAdditivePosition);
+		if (Result) Result->Set(WantPositionLeft, WantPositionRight, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
 
@@ -592,10 +629,10 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_ActorPosition(UObject* Owner, FName WantActorName, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer* MakePositionClaimer_ActorPosition(UObject* Owner, UActorClaimer* WantActor, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_ActorPosition* Result = NewObject<UPositionClaimer_ActorPosition>(Owner);
-		if (Result) Result->Set(WantActorName, WantAdditiveSpace, WantAdditivePosition);
+		if (Result) Result->Set(WantActor, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
 

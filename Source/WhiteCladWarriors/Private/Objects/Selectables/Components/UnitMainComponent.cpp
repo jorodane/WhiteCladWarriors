@@ -278,6 +278,18 @@ TArray<AActionBase*> UUnitMainComponent::GetActionFromKey(FKey WantKey) const
 	return Result;
 }
 
+FName UUnitMainComponent::GetActionFromTag(FName WantTag) const
+{
+	if (const FName* Result = TaggedActionMap.Find(WantTag))
+	{
+		return *Result;
+	}
+	else
+	{
+		return NAME_None;
+	}
+}
+
 TArray<FActionTargetContainer> UUnitMainComponent::GetActionContainerFromKey(FKey WantKey) const
 {
 	TArray<FActionTargetContainer> Result;

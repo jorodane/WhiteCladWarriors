@@ -3,9 +3,11 @@
 
 #include "Actions/Values/ActionValueClaimer.h"
 #include "Actions/Executables/ActionExecutor.h"
+#include "Actions/ActionBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Players/Operator.h"
+#include "Settings/ActionSetting.h"
 
 FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
@@ -51,14 +53,15 @@ FVector UPositionClaimer_AveragePosition::GetPosition(const FActionCursorFinder&
 
 	FVector SumVector = FVector::ZeroVector;
 	int SumCount = 0;
-	if (!TargetPositions.IsEmpty())
+	if (IsValid(PositionLeft))
 	{
-		for (UPositionClaimer* CurrentPosition : TargetPositions)
-		{
-			if (!IsValid(CurrentPosition)) continue;
-			SumVector += CurrentPosition->GetPosition(WantCursor, Component, DefaultValue);
-			SumCount++;
-		}
+		SumVector+=PositionLeft->GetPosition(WantCursor, Component, DefaultValue);
+		++SumCount;
+	}
+	if (IsValid(PositionRight))
+	{
+		SumVector += PositionRight->GetPosition(WantCursor, Component, DefaultValue);
+		++SumCount;
 	}
 	if (SumCount > 0) Result = SumVector / SumCount;
 	if (AdditivePosition) Result += GetAdditivePosition(Component);
@@ -85,13 +88,17 @@ FVector UPositionClaimer_SavedPosition::GetPosition(const FActionCursorFinder& W
 
 FVector UPositionClaimer_ActorPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
-	FVector Result = DefaultValue;
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
-	if (IsValid(Executor))
+	FVector Result;
+
+	if (IsValid(TargetActor))
 	{
-		AActor* ResultActor = Executor->GetSavedActor(WantCursor, PositionTag);
-		if (IsValid(ResultActor)) Result = ResultActor->GetActorLocation();
+		if (AActor* ResultActor = TargetActor->GetActor(WantCursor, Component))
+		{
+			if (IsValid(ResultActor)) Result = ResultActor->GetActorLocation();
+		}
 	}
+	else Result = DefaultValue;
+
 	if (AdditivePosition) Result += GetAdditivePosition(Component);
 	return Result;
 }
@@ -147,6 +154,21 @@ FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursor
 	else return DefaultDirection;
 }
 
+AActionBase* UActionClaimer::GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+{
+	return UActionSetting::GetAction(ActionTag);
+}
+
+AActionBase* UActionClaimer_UnitTagged::GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+{
+	FName Finder;
+
+	if (UUnitMainComponent* Unit = Component->GetOwnerUnit()) Finder = Unit->GetActionFromTag(ActionTag);
+	else Finder = ActionTag;
+
+	return UActionSetting::GetAction(Finder);
+}
+
 AActor* UActorClaimer::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
 {
 	UActionExecutor* Executor = WantCursor.CurrentExecutor;
@@ -191,8 +213,7 @@ void UValueClaimerLibrary::InitSample()
 {
 	if (IsValid(SelfPosition)) return;
 
-	SelfPosition = NewObject<UPositionClaimer>(this, TEXT("SelfPosition"));
-	SelfPosition->Set(EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleZeroVector());
+	SelfPosition = NewObject<UPositionClaimer_SelfPosition>(this, TEXT("SelfPosition"));
 
 	SelfForwardPosition = NewObject<UPositionClaimer>(this, TEXT("SelfForwardPosition"));
 	SelfForwardPosition->Set(EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleForwardVector());
