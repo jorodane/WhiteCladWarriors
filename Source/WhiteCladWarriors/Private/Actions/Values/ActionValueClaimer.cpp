@@ -68,6 +68,35 @@ FVector UPositionClaimer_AveragePosition::GetPosition(const FActionCursorFinder&
 	return Result;
 }
 
+FVector UPositionClaimer_SeparatedPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+{
+	FVector Result = DefaultValue;
+
+	bool SameXY = PositionX == PositionY;
+	bool SameXZ = PositionX == PositionZ;
+	bool SameYZ = PositionY == PositionZ;
+	bool ValidX = IsValid(PositionX);
+
+	if (SameXY && SameXZ && PositionX == nullptr && ValidX) return Result;
+
+	FVector ResultX;
+	if (ValidX) ResultX = PositionX->GetPosition(WantCursor, Component, DefaultValue);
+	FVector ResultY;
+	if (SameXY) ResultY = ResultX;
+	else if (IsValid(PositionY)) ResultY = PositionY->GetPosition(WantCursor, Component, DefaultValue);
+	FVector ResultZ;
+	if (SameXZ) ResultZ = ResultX;
+	if (SameYZ) ResultZ = ResultY;
+	else if (IsValid(PositionZ)) ResultZ = PositionZ->GetPosition(WantCursor, Component, DefaultValue);
+	
+	Result.X = ResultX.X;
+	Result.Y = ResultY.Y;
+	Result.Z = ResultZ.Z;
+
+	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	return Result;
+}
+
 FVector UPositionClaimer_SelfPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;

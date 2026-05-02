@@ -297,6 +297,29 @@ public:
 };
 
 UCLASS(BlueprintType)
+class UPositionClaimer_SeparatedPosition : public UPositionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPositionClaimer* PositionX;
+	UPositionClaimer* PositionY;
+	UPositionClaimer* PositionZ;
+
+public:
+	void Set(UPositionClaimer* WantX, UPositionClaimer* WantY, UPositionClaimer* WantZ, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		PositionX = WantX;
+		PositionY = WantY;
+		PositionZ = WantZ;
+		AdditiveSpace = WantAdditiveSpace;
+		AdditivePosition = WantAdditivePosition;
+	}
+
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+};
+
+UCLASS(BlueprintType)
 class UPositionClaimer_SelfPosition : public UPositionClaimer
 {
 	GENERATED_BODY()
@@ -605,7 +628,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_AveragePosition(UObject* Owner, UPositionClaimer* WantPositionLeft, UPositionClaimer* WantPositionRight, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_AveragePosition* MakePositionClaimer_AveragePosition(UObject* Owner, UPositionClaimer* WantPositionLeft, UPositionClaimer* WantPositionRight, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_AveragePosition* Result = NewObject<UPositionClaimer_AveragePosition>(Owner);
 		if (Result) Result->Set(WantPositionLeft, WantPositionRight, WantAdditiveSpace, WantAdditivePosition);
@@ -613,7 +636,15 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_SelfPosition(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_SeparatedPosition* MakePositionClaimer_SeparatedPosition(UObject* Owner, UPositionClaimer* WantX, UPositionClaimer* WantY, UPositionClaimer* WantZ, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_SeparatedPosition* Result = NewObject<UPositionClaimer_SeparatedPosition>(Owner);
+		if (Result) Result->Set(WantX, WantY, WantZ, WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer_SelfPosition* MakePositionClaimer_SelfPosition(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_SelfPosition* Result = NewObject<UPositionClaimer_SelfPosition>(Owner);
 		if (Result) Result->Set(WantAdditiveSpace, WantAdditivePosition);
@@ -621,7 +652,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_SavedPosition(UObject* Owner, FName WantSavedTag, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_SavedPosition* MakePositionClaimer_SavedPosition(UObject* Owner, FName WantSavedTag, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_SavedPosition* Result = NewObject<UPositionClaimer_SavedPosition>(Owner);
 		if (Result) Result->Set(WantSavedTag, WantAdditiveSpace, WantAdditivePosition);
@@ -629,7 +660,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_ActorPosition(UObject* Owner, UActorClaimer* WantActor, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_ActorPosition* MakePositionClaimer_ActorPosition(UObject* Owner, UActorClaimer* WantActor, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_ActorPosition* Result = NewObject<UPositionClaimer_ActorPosition>(Owner);
 		if (Result) Result->Set(WantActor, WantAdditiveSpace, WantAdditivePosition);
@@ -637,7 +668,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer* MakePositionClaimer_SocketPosition(UObject* Owner, FName WantSocketName, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_SocketPosition* MakePositionClaimer_SocketPosition(UObject* Owner, FName WantSocketName, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_SocketPosition* Result = NewObject<UPositionClaimer_SocketPosition>(Owner);
 		if (Result) Result->Set(WantSocketName, WantAdditiveSpace, WantAdditivePosition);
@@ -657,6 +688,22 @@ public:
 	{
 		UDirectionClaimer_SavedDirection* Result = NewObject<UDirectionClaimer_SavedDirection>(Owner);
 		if (Result) Result->Set(WantFrom, WantTag, WantAngleShift);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UActionClaimer* MakeActionClaimer(UObject* Owner, FName WantTag)
+	{
+		UActionClaimer* Result = NewObject<UActionClaimer>(Owner);
+		if (Result) Result->Set(WantTag);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UActionClaimer_UnitTagged* MakeActionClaimer_UnitTagged(UObject* Owner, FName WantTag)
+	{
+		UActionClaimer_UnitTagged* Result = NewObject<UActionClaimer_UnitTagged>(Owner);
+		if (Result) Result->Set(WantTag);
 		return Result;
 	}
 
