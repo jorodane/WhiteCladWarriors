@@ -62,9 +62,10 @@ void AOperator::UnPossessed()
 	if (LocalOperator == this) LocalOperator = nullptr;
 }
 
-void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll)
+void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll, bool bIsClickForced)
 {
-	bool bIsClick = (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
+	bool bIsClick = bIsClickForced || (CurrentInputPackage.DragStartPosition - CurrentInputPackage.MouseTerrainPosition).SquaredLength() < CLICK_CHECK_SQUARE_DISTANCE;
+	if(!bIsClick) CurrentInputPackage.MouseClickActor = nullptr;
 	if (IsInputClaimed())
 	{
 		if (bIsReservationMode) 
@@ -108,7 +109,6 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		double CurrentTime = GetWorld()->GetTimeSeconds();
 		bool bIsDoubleClick = IsValid(CurrentInputPackage.MouseHitActor) && CurrentInputPackage.MouseHitActor == CurrentInputPackage.MouseClickActor && (CurrentTime - LastLeftClickTime) < DOUBLE_CLICK_DELAY;
 		LastLeftClickTime = CurrentTime;
-		CurrentInputPackage.MouseClickActor = CurrentInputPackage.MouseHitActor;
 		if (GetFocusActors(bIsClick, bIsDoubleClick, bIsSelectAllMode, OutResultArray, OutResultSingle, OutAllSame, OutOnlySingle))
 		{
 			if (bIsClick && bIsAdditive && !(bIsSelectAll || bIsDoubleClick))
@@ -120,6 +120,10 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 				SelectActors(OutResultArray, OutOnlySingle, bIsAdditive);
 			}
 		}
+		else if (IsValid(CurrentInputPackage.MouseClickActor))
+		{
+			SelectActor(CurrentInputPackage.MouseClickActor, true);
+		};
 		//else if (!bIsAdditive)
 		//{
 		//	DeselectActors(); //Remove All On Ground Click
@@ -134,6 +138,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 	{
 		PlayerController->SetCursor(GetCursorType());
 	}
+	CurrentInputPackage.MouseClickActor = nullptr;
 }
 
 
@@ -150,12 +155,15 @@ void AOperator::OnRightClick_Implementation(bool bIsMapClick)
 void AOperator::OnMapClick_Implementation(bool bIsDown, bool bIsRightClick, FVector ClickLocation)
 {
 	CurrentInputPackage.MouseHitActor = CurrentInputPackage.MouseClickActor = nullptr;
-	if(bIsDown) CurrentInputPackage.DragStartPosition = ClickLocation;
+	if (bIsDown)
+	{
+		CurrentInputPackage.DragStartPosition = ClickLocation;
+	}
 	else 
 	{
 		CurrentInputPackage.MouseTerrainPosition = ClickLocation;
 		if (bIsRightClick) OnRightClick(true);
-		else OnLeftClick(true, bIsAdditiveMode, bIsSelectAllMode);
+		else OnLeftClick(true, bIsAdditiveMode, bIsSelectAllMode, true);
 	}
 }
 
@@ -450,7 +458,6 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 				TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
 				for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 			}
-			TargetAction->SpawnCheckEffect(CheckResult, this, CurrentInputPackage, TypeResult, ReasonResult);
 		}
 		else
 		{
@@ -869,7 +876,6 @@ void AOperator::ReservationAction(AActionBase* TargetAction, TArray<AActor*> Tar
 					{
 						AsUnit->ReservationEnqueue(Reservator);
 					}
-					TargetAction->SpawnCheckEffect(CheckResult, this, Input, TypeResult, ReasonResult);
 				}
 				else
 				{

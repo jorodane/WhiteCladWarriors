@@ -19,7 +19,7 @@ TArray<AActor*> AAreaSelector::GetActorsInArea_Implementation(AOperator* Operato
 		{
 			if (!CurrentActor->GetClass()->ImplementsInterface(USelectable::StaticClass())) continue;
 
-			if (ISelectable::Execute_CheckSelectable(CurrentActor, Operator, bIsSingleSelected))
+			if (ISelectable::Execute_CheckSelectable(CurrentActor, Operator, false))
 			{
 				Result.AddUnique(CurrentActor);
 				if (bIsAllSame)

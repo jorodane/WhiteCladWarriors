@@ -48,7 +48,8 @@ bool UActionSelectorNode::ReceiveInput(const FActionCursorFinder& WantCursor, co
 			Result = OnReceiveDirection(WantCursor, CurrentTag, Input.MouseTerrainPosition);
 			break;
 		case EInputType::SingleTarget:
-			Result = OnReceiveActor(WantCursor, CurrentTag, Input.MouseHitActor);
+			if(IsValid(Input.MouseHitActor)) Result = OnReceiveActor(WantCursor, CurrentTag, Input.MouseHitActor);
+			else if(IsValid(Input.MouseClickActor)) Result = OnReceiveActor(WantCursor, CurrentTag, Input.MouseClickActor);
 			break;
 		case EInputType::MultiTarget:
 			//Result = OnReceiveActorArray(WantCursor, CurrentTag, Input.SelectedActors);

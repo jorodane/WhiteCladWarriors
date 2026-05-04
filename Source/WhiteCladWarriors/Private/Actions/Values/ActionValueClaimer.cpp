@@ -79,16 +79,19 @@ FVector UPositionClaimer_SeparatedPosition::GetPosition(const FActionCursorFinde
 
 	if (SameXY && SameXZ && PositionX == nullptr && ValidX) return Result;
 
-	FVector ResultX;
+	FVector ResultX = DefaultValue;
 	if (ValidX) ResultX = PositionX->GetPosition(WantCursor, Component, DefaultValue);
+	else		ResultX = DefaultValue;
 	FVector ResultY;
 	if (SameXY) ResultY = ResultX;
 	else if (IsValid(PositionY)) ResultY = PositionY->GetPosition(WantCursor, Component, DefaultValue);
+	else		ResultY = DefaultValue;
 	FVector ResultZ;
 	if (SameXZ) ResultZ = ResultX;
 	if (SameYZ) ResultZ = ResultY;
 	else if (IsValid(PositionZ)) ResultZ = PositionZ->GetPosition(WantCursor, Component, DefaultValue);
-	
+	else		ResultZ = DefaultValue;
+
 	Result.X = ResultX.X;
 	Result.Y = ResultY.Y;
 	Result.Z = ResultZ.Z;

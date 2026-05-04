@@ -61,7 +61,7 @@ protected:
 	bool bIsImportantAction = false;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
 	void SpawnCheckEffect(bool Result, AOperator* Operator, const FInputPackage& Input, EInputType ResultType, const FText& FailReason) const;
 
 

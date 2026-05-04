@@ -159,8 +159,8 @@ public:
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
-	void OnLeftClick(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll);
-	virtual void OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll);
+	void OnLeftClick(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll, bool bIsClickForced);
+	virtual void OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, bool bIsSelectAll, bool bIsClickForced);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Input")
 	void OnRightClick(bool bIsMapClick);
