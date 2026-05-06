@@ -68,7 +68,7 @@ FVector UPositionClaimer_AveragePosition::GetPosition(const FActionCursorFinder&
 	return Result;
 }
 
-FVector UPositionClaimer_SeparatedPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_CombinePosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
 

@@ -297,7 +297,7 @@ public:
 };
 
 UCLASS(BlueprintType)
-class UPositionClaimer_SeparatedPosition : public UPositionClaimer
+class UPositionClaimer_CombinePosition : public UPositionClaimer
 {
 	GENERATED_BODY()
 
@@ -636,9 +636,9 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer_SeparatedPosition* MakePositionClaimer_SeparatedPosition(UObject* Owner, UPositionClaimer* WantX, UPositionClaimer* WantY, UPositionClaimer* WantZ, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_CombinePosition* MakePositionClaimer_CombinePosition(UObject* Owner, UPositionClaimer* WantX, UPositionClaimer* WantY, UPositionClaimer* WantZ, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
-		UPositionClaimer_SeparatedPosition* Result = NewObject<UPositionClaimer_SeparatedPosition>(Owner);
+		UPositionClaimer_CombinePosition* Result = NewObject<UPositionClaimer_CombinePosition>(Owner);
 		if (Result) Result->Set(WantX, WantY, WantZ, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
