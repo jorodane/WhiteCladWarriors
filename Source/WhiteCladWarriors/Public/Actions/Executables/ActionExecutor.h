@@ -197,4 +197,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void DestroyExecutor(UActionExecutor* TargetExecutor);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void CompleteCursor(const FActionCursorFinder& WantCursor);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void CancelCursor(const FActionCursorFinder& WantCursor);
 };

@@ -261,6 +261,9 @@ public:
 	bool SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable = true, bool bIsStopMovement = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
+	bool StopMainAction() { return SetMainAction(FActionCursorFinder::None); }
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement);
 
 	UFUNCTION(BlueprintCallable, Category = "Action") 

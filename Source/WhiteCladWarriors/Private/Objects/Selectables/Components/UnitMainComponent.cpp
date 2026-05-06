@@ -481,7 +481,7 @@ bool UUnitMainComponent::PlayMainActionMontage_Implementation(const FMontageEven
 bool UUnitMainComponent::StopMainActionMontage_Implementation(bool bIsInterrupted)
 {
 	if (!MainActionMontageEvent.bIsStarted) return true;
-	if (bIsInterrupted) UnitMessage_Montage(MainActionMontageEvent.MontageToPlay, false, true);
+	UnitMessage_Montage(MainActionMontageEvent.MontageToPlay, false, bIsInterrupted);
 	MainActionMontageEvent.Stop(AnimInstance);
 	MainActionMontageEvent.Clear();
 	return true;
@@ -535,7 +535,6 @@ void UUnitMainComponent::MontageStarted(UAnimMontage* Montage)
 void UUnitMainComponent::MontageEnded(UAnimMontage* Montage, bool bIsInterrupted)
 {
 	if (bIsInterrupted) return;
-
 	if (MainActionMontageEvent.bIsStarted && Montage == MainActionMontageEvent.MontageToPlay)
 	{
 		StopMainActionMontage(false);

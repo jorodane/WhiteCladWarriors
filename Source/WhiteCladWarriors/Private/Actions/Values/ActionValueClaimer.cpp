@@ -201,7 +201,18 @@ AActionBase* UActionClaimer_UnitTagged::GetAction(const FActionCursorFinder& Wan
 	return UActionSetting::GetAction(Finder);
 }
 
-AActor* UActorClaimer::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActor* UActorClaimer_SelfActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+{
+	if (!IsValid(Component))
+	{
+		Component = WantCursor.CurrentComponent;
+		if (!IsValid(Component)) return nullptr;
+	}
+
+	return Component->GetOwner();
+}
+
+AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
 {
 	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	if (!IsValid(Executor)) return nullptr;
@@ -264,4 +275,6 @@ void UValueClaimerLibrary::InitSample()
 
 	SelfDownPosition = NewObject<UPositionClaimer>(this, TEXT("SelfDownPosition"));
 	SelfDownPosition->Set(EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleDownVector());
+
+	SelfActor = NewObject<UActorClaimer_SelfActor>(this, TEXT("SelfActor"));
 }

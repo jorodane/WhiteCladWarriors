@@ -502,6 +502,26 @@ class UActorClaimer : public UValueClaimer
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Value")
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const { return nullptr; }
+};
+
+UCLASS(BlueprintType)
+class UActorClaimer_SelfActor : public UActorClaimer
+{
+	GENERATED_BODY()
+
+public:
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
+};
+
+
+UCLASS(BlueprintType)
+class UActorClaimer_SavedActor : public UActorClaimer
+{
+	GENERATED_BODY()
+
+public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	FName ActorTag;
 
@@ -511,9 +531,9 @@ public:
 		ActorTag = WantTag;
 	}
 
-	UFUNCTION(BlueprintPure, Category = "Value")
-	AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const;
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
 };
+
 
 UCLASS(BlueprintType)
 class UActorArrayClaimer : public UValueClaimer
@@ -594,6 +614,7 @@ class UValueClaimerLibrary : public UBlueprintFunctionLibrary
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfLeftPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfUpPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfDownPosition;
+	UPROPERTY() TObjectPtr<UActorClaimer>	 SelfActor;
 
 public:
 	void InitSample();
@@ -618,6 +639,8 @@ public:
 	static UPositionClaimer* ClaimSelfUpPosition() { return Get()->SelfUpPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
 	static UPositionClaimer* ClaimSelfDownPosition() { return Get()->SelfDownPosition; };
+	UFUNCTION(BlueprintPure, Category = "Value")
+	static UActorClaimer*	 ClaimSelfActor() { return Get()->SelfActor; };
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UPositionClaimer* MakePositionClaimer(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
@@ -708,9 +731,17 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UActorClaimer* MakeActorClaimer(UObject* Owner, FName WantTag)
+	static UActorClaimer_SelfActor* MakeActorClaimer_SelfActor(UObject* Owner)
 	{
-		UActorClaimer* Result = NewObject<UActorClaimer>(Owner);
+		UActorClaimer_SelfActor* Result = NewObject<UActorClaimer_SelfActor>(Owner);
+		return Result;
+	}
+
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UActorClaimer_SavedActor* MakeActorClaimer_SavedActor(UObject* Owner, FName WantTag)
+	{
+		UActorClaimer_SavedActor* Result = NewObject<UActorClaimer_SavedActor>(Owner);
 		if (Result) Result->Set(WantTag);
 		return Result;
 	}

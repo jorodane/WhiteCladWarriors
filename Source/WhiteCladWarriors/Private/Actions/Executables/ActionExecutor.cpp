@@ -395,3 +395,13 @@ void UActionExecutor::DestroyExecutor(UActionExecutor* TargetExecutor)
 {
 	if(IsValid(TargetExecutor))	TargetExecutor->ConditionalBeginDestroy();
 }
+
+void UActionExecutor::CompleteCursor(const FActionCursorFinder& WantCursor)
+{
+	if (IsValid(WantCursor.CurrentExecutor)) WantCursor.CurrentExecutor->CompleteNode(WantCursor);
+}
+
+void UActionExecutor::CancelCursor(const FActionCursorFinder& WantCursor)
+{
+	if (IsValid(WantCursor.CurrentExecutor)) WantCursor.CurrentExecutor->CancelNode(WantCursor);
+}
