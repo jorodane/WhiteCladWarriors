@@ -110,6 +110,9 @@ TArray<UActionBehaviorNode*> UActionSelectorNode::GetIndicatorNodes()
 TMap<UActionBehaviorNode*, FIndicatorClaim> UActionSelectorNode::GetIndicatorClaim(const FInputClaim& TargetInput)
 {
 	TMap<UActionBehaviorNode*, FIndicatorClaim> Result;
-	for (UActionBehaviorNode* CurrentNode : IndicatorNodes) Result.Add(CurrentNode, CurrentNode->GetIndicatorClaim(TargetInput));
+	for (UActionBehaviorNode* CurrentNode : IndicatorNodes)
+	{
+		Result.Append(CurrentNode->GetIndicatorClaim(TargetInput));
+	}
 	return Result;
 }

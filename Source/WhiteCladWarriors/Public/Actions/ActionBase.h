@@ -58,6 +58,9 @@ protected:
 	bool bShowHotKey = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
+	bool bIsGeneralAction = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	bool bIsImportantAction = false;
 
 public:

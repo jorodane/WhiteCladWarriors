@@ -11,6 +11,7 @@
 class AActionIndicatorShowerBase;
 class AUnitBase;
 class UUnitActionComponent;
+class UActionBehaviorNode;
 /**
  * 
  */
@@ -21,12 +22,12 @@ class WHITECLADWARRIORS_API UActionBehaviorNode : public UActionNode
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
-	FIndicatorClaim GetIndicatorClaim(const FInputClaim& TargetInput);
+	TMap<UActionBehaviorNode*, FIndicatorClaim> GetIndicatorClaim(const FInputClaim& TargetInput);
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")
-	void UpdateIndicatorArray(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower, bool bIsIconPreview);
-	void UpdateIndicatorArray_Implementation(const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers, bool bIsIconPreview);
+	void UpdateIndicatorArray(UActionBehaviorNode* TargetNode, const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShower, bool bIsIconPreview);
+	void UpdateIndicatorArray_Implementation(UActionBehaviorNode* TargetNode, const FInputClaim& TargetInput, const FInputPackage& InputPackage, const TArray<AActionIndicatorShowerBase*>& TargetShowers, bool bIsIconPreview);
 
 	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
-	void UpdateIndicatorSingle(const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, UUnitMainComponent* TargetUnit, int Index, bool bIsIconPreview);
+	void UpdateIndicatorSingle(UActionBehaviorNode* TargetNode, const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, UUnitMainComponent* TargetUnit, int Index, bool bIsIconPreview);
 };
