@@ -148,7 +148,8 @@ USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMesh
 		if(IsValid(AnimInstance))
 		{
 			AnimInstance->OnMontageStarted.AddDynamic(this, &UUnitMainComponent::MontageStarted);
-			AnimInstance->OnMontageEnded.AddDynamic(this, &UUnitMainComponent::MontageEnded);
+			//AnimInstance->OnMontageEnded.AddDynamic(this, &UUnitMainComponent::MontageEnded);
+			AnimInstance->OnMontageBlendingOut.AddDynamic(this, &UUnitMainComponent::MontageEnded);
 			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UUnitMainComponent::MontageNotifyBegin);
 			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UUnitMainComponent::MontageNotifyEnd);
 		}
@@ -469,7 +470,12 @@ void UUnitMainComponent::StopInputReadyMontage_Implementation()
 
 bool UUnitMainComponent::PlayMainActionMontage_Implementation(const FMontageEventInfo& MontageEvent)
 {
-	if (MainActionMontageEvent.bIsStarted) StopMainActionMontage(true);
+	if (!IsValid(MontageEvent.MontageToPlay)) return false;
+	if (MainActionMontageEvent.bIsStarted)
+	{
+		if(MainActionMontageEvent.MontageToPlay != MontageEvent.MontageToPlay) StopMainActionMontage(true);
+		else UnitMessage_Montage(MainActionMontageEvent.MontageToPlay, false, true);
+	}
 	MainActionMontageEvent = MontageEvent;
 	if (MainActionMontageEvent.Play(AnimInstance, false))
 	{
