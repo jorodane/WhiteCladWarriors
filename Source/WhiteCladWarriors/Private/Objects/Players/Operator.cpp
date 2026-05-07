@@ -354,6 +354,11 @@ void AOperator::ResetCameraRotation_Implementation()
 	SetActorRotation(FQuat::Identity);
 }
 
+void AOperator::ResetCameraLength_Implementation()
+{
+	SetCameraLength(DEFAULT_CAMERALENGTH);
+}
+
 void AOperator::EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier)
 {
 	if (!FPlatformApplicationMisc::IsThisApplicationForeground()) return;
@@ -390,9 +395,19 @@ bool AOperator::IsFocusHero()
 	return FocusActor == HeroActor; 
 }
 
+bool AOperator::IsSingleSelected()
+{
+	return CurrentInputPackage.SelectedActors.Num() == 1;
+}
+
+bool AOperator::IsOnlySelectActor(AActor* Target)
+{
+	return IsSingleSelected() && CurrentInputPackage.SelectedActors[0] == Target;
+}
+
 bool AOperator::IsOnlySelectHero()
 {
-	return CurrentInputPackage.SelectedActors.Num() == 1 && CurrentInputPackage.SelectedActors[0] == HeroActor;
+	return IsOnlySelectActor(HeroActor);
 }
 
 void AOperator::SetHoveredWorldObject_Implementation(UObject* NewObject)

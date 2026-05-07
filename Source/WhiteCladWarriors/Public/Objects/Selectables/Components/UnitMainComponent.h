@@ -328,7 +328,6 @@ public:
 	void Die();
 	virtual void Die_Implementation();
 
-
 public:
 	bool IsSelectable_Implementation(AOperator* Operator) { return true; }
 	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }

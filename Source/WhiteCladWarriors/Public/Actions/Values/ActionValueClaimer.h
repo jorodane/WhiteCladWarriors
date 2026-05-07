@@ -435,7 +435,7 @@ public:
 	TObjectPtr<UVectorGetter> DirectionTo;
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	void Set(UPositionClaimer* WantFrom, EPositionSpaceType WantSpace, UVectorGetter* WantDirection, UFloatGetter* WantAngleShift)
+	void Set(UPositionClaimer* WantFrom, EPositionSpaceType WantSpace, UVectorGetter* WantDirection, UFloatGetter* WantAngleShift = nullptr)
 	{
 		From = WantFrom;
 		DirectionSpace = WantSpace;
@@ -614,6 +614,15 @@ class UValueClaimerLibrary : public UBlueprintFunctionLibrary
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfLeftPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfUpPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfDownPosition;
+
+
+	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfForwardDirection;
+	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfBackwardDirection;
+	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfRightDirection;
+	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfLeftDirection;
+	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfUpDirection;
+	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfDownDirection;
+
 	UPROPERTY() TObjectPtr<UActorClaimer>	 SelfActor;
 
 public:

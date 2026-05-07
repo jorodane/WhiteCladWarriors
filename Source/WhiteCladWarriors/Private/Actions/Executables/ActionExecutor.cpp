@@ -171,7 +171,7 @@ bool UActionExecutor::SetInputArray(TArray<FActionCursorFinder> CursorArray, UAc
 	return Result;
 }
 
-void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth)
+void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsSubNode, int RecursiveDepth)
 {
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
@@ -190,7 +190,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		}
 		else if (!bCanEnter)
 		{
-			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, RecursiveDepth - 1);
+			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, false, RecursiveDepth - 1);
 			else EndNode(WantCursor, OriginNode);
 			return;
 		}
@@ -207,19 +207,22 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		}
 		else if (!bCanEnter)
 		{
-			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, RecursiveDepth - 1);
+			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, false, RecursiveDepth - 1);
 			return;
 		}
 		Result = CursorMap.Add(TargetComponent, TargetNode).GetInfo(0);
 	}
-	const bool bIsMainAction = IsValid(TargetNode) ? TargetNode->bIsMainAction : false;
-	const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
+	if (!bIsSubNode)
+	{
+		const bool bIsMainAction = IsValid(TargetNode) ? TargetNode->bIsMainAction : false;
+		const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->bIsMainAction : false;
 
-	const bool bEnterMainLine =  bIsMainAction && !bWasMainAction;
-	const bool bExitMainLine  = !bIsMainAction &&  bWasMainAction;
+		const bool bEnterMainLine = bIsMainAction && !bWasMainAction;
+		const bool bExitMainLine = !bIsMainAction && bWasMainAction;
 
-	if (bExitMainLine) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
-	if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
+		if (bExitMainLine) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
+		if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
+	}
 	TargetNode->ClaimExecute(WantCursor);
 	if (Result) Result->TryListeningStart();
 }
@@ -229,7 +232,7 @@ UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FAct
 	ResultID = TargetInfo.AddNode(OriginNode);
 	UActionNode* Result = TargetInfo.GetNode(ResultID);
 	BaseCursor.CurrentID = ResultID;
-	EnterNode(BaseCursor, TargetNode);
+	EnterNode(BaseCursor, TargetNode, true);
 	return Result;
 }
 

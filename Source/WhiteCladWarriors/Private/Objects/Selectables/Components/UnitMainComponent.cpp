@@ -115,6 +115,7 @@ bool FMainActionInfo::CheckValid() const
 
 void UUnitMainComponent::BeginPlay()
 {
+	OwnerUnit = this;
 	for (UActorComponent* CurrentComponent : GetOwner()->GetComponents())
 	{
 		if (CurrentComponent == this) continue;

@@ -75,7 +75,7 @@ public:
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
 	UUnitMainComponent* GetOwnerUnit() const;
-	inline UUnitMainComponent* GetOwnerUnit_Implementation() const { return OwnerUnit; }
+	virtual inline UUnitMainComponent* GetOwnerUnit_Implementation() const { return OwnerUnit; }
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
 	UUnitMainComponent* SetOwnerUnit(UUnitMainComponent* NewUnit);

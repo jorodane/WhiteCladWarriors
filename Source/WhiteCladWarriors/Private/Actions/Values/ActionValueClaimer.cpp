@@ -276,5 +276,23 @@ void UValueClaimerLibrary::InitSample()
 	SelfDownPosition = NewObject<UPositionClaimer>(this, TEXT("SelfDownPosition"));
 	SelfDownPosition->Set(EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleDownVector());
 
+	SelfForwardDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfForwardDirection"));
+	SelfForwardDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleForwardVector());
+
+	SelfBackwardDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfBackwardDirection"));
+	SelfBackwardDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleBackwardVector());
+
+	SelfRightDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfRightDirection"));
+	SelfRightDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleRightVector());
+
+	SelfLeftDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfLeftDirection"));
+	SelfLeftDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleLeftVector());
+
+	SelfUpDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfUpDirection"));
+	SelfUpDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleUpVector());
+
+	SelfDownDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfDownDirection"));
+	SelfDownDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleDownVector());
+
 	SelfActor = NewObject<UActorClaimer_SelfActor>(this, TEXT("SelfActor"));
 }

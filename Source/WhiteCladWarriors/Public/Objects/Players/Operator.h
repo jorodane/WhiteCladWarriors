@@ -229,6 +229,11 @@ public:
 	void ResetCameraRotation();
 	virtual void ResetCameraRotation_Implementation();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Camera")
+	void ResetCameraLength();
+	virtual void ResetCameraLength_Implementation();
+
+
 	UFUNCTION(BlueprintCallable, Category = "Camera")
 	void EdgeScroll(FVector2D MousePosition, FVector2D ViewportSize, float Multiplier);
 
@@ -240,6 +245,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Camera")
 	bool IsFocusHero();
+
+	UFUNCTION(BlueprintPure, Category = "Select")
+	bool IsSingleSelected();
+
+	UFUNCTION(BlueprintPure, Category = "Select")
+	bool IsOnlySelectActor(AActor* Target);
 
 	UFUNCTION(BlueprintPure, Category = "Select")
 	bool IsOnlySelectHero();

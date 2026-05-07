@@ -144,7 +144,7 @@ public:
 	bool SetInputArray(TArray<FActionCursorFinder> CursorArray, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
+	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsSubNode = false, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
