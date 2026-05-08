@@ -13,3 +13,17 @@ void UGenericWidgetClaim::AssignGenericWidgetEvents(const FOnWidgetConnectedSing
 	if (Connected.IsBound()) OnWidgetConnected.AddUnique(Connected);
 	if (Updated.IsBound()) OnWidgetUpdated.AddUnique(Updated);
 }
+
+void UGenericWidgetClaim::UpdateWidget()
+{
+	OnWidgetUpdateClaim.Broadcast();
+}
+
+void UGenericWidgetClaim::UpdateWidgetRecursive()
+{
+	UpdateWidget();
+	for (UGenericWidgetClaim* currentChild : Children)
+	{
+		if (IsValid(currentChild)) currentChild->UpdateWidgetRecursive();
+	}
+}

@@ -46,6 +46,10 @@ public:
 	float SetValue_Implementation(float NewCurrentValue, float NewMaxValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
+	float AddValue(float Value);
+	float AddValue_Implementation(float Value);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
 	float BroadcastDirty();
 	float BroadcastDirty_Implementation();
 };

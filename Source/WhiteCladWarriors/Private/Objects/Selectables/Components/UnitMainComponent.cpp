@@ -506,6 +506,15 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
+float UUnitMainComponent::TakeDamage_Implementation(FDamageInfo Info)
+{
+	if (UFillableValueComponent* HPValue = FindFillValue(L"HP"))
+	{
+		return HPValue->AddValue(-Info.DamageValue);
+	}
+	return 0.0f;
+}
+
 void UUnitMainComponent::UnitMessage_Simple(const FName& Message)
 {
 	for (UUnitComponentBase* CurrentComponent : GetComponents())

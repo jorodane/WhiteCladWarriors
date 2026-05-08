@@ -54,6 +54,18 @@ float UFillableValueComponent::SetValue_Implementation(float NewCurrentValue, fl
 	else return GetPercent();
 }
 
+float UFillableValueComponent::AddValue_Implementation(float Value)
+{
+	if (Value == 0) return 0;
+	else if (Value > 0) Value = FMath::Min(Value, MaxValue - CurrentValue);
+	else if (Value < 0) Value = -FMath::Min(-Value, CurrentValue);
+
+	CurrentValue += Value;
+	BroadcastDirty();
+
+	return Value;
+}
+
 float UFillableValueComponent::BroadcastDirty_Implementation()
 {
 	float Ratio = GetPercent();

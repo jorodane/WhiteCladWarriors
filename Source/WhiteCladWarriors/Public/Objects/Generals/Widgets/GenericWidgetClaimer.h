@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWidgetConnected, UGenericWidgetBa
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWidgetConnectedSingle, UGenericWidgetBase*, NewWidget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWidgetUpdated, UGenericWidgetBase*, TargetWidget);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWidgetUpdatedSingle, UGenericWidgetBase*, TargetWidget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWidgetUpdateClaim, UGenericWidgetBase*, TargetWidget);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWidgetUpdateClaim);
 
 UENUM(BlueprintType)
 enum class EWidgetTransformType : uint8
@@ -74,6 +74,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Widget")
 	void AssignGenericWidgetEvents(const FOnWidgetConnectedSingle& Connected, const FOnWidgetUpdatedSingle& Updated);
+
+	UFUNCTION(BlueprintCallable, Category = "Widget")
+	void UpdateWidget();
+
+	UFUNCTION(BlueprintCallable, Category = "Widget")
+	void UpdateWidgetRecursive();
 };
 
 UCLASS(BlueprintType)

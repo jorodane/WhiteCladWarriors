@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Objects/Selectables/Components/UnitComponentBase.h"
+#include "Generals/Structs/DamageStructures.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Generals/Structs/MontageStructures.h"
@@ -303,6 +304,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	bool ClaimStopMovement();
 	bool ClaimStopMovement_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	float TakeDamage(FDamageInfo Info);
+	float TakeDamage_Implementation(FDamageInfo Info);
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void UnitMessage_Simple(const FName& Message);
