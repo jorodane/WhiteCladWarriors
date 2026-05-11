@@ -148,6 +148,7 @@ protected:
 
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
 	TMap<FName, UFillableValueComponent*> FillValueMap;
+	TMap<UUnitMainComponent*, float> DamageMap;
 
 	TQueue<FActionReservator> ActionQueue;
 
@@ -306,8 +307,8 @@ public:
 	bool ClaimStopMovement_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	float TakeDamage(FDamageInfo Info);
-	float TakeDamage_Implementation(FDamageInfo Info);
+	float TakeDamage(const FDamageInfo& Info);
+	float TakeDamage_Implementation(const FDamageInfo& Info);
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void UnitMessage_Simple(const FName& Message);

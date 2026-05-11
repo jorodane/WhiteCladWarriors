@@ -506,13 +506,13 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
-float UUnitMainComponent::TakeDamage_Implementation(FDamageInfo Info)
+float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info)
 {
-	if (UFillableValueComponent* HPValue = FindFillValue(L"HP"))
-	{
-		return HPValue->AddValue(-Info.DamageValue);
-	}
-	return 0.0f;
+	float Result = Info.DamageValue;
+	if (UFillableValueComponent* HPValue = FindFillValue(L"HP")) Result = HPValue->AddValue(-Result);
+	float* DamageStack = DamageMap.Find(Info.DamageInstigator);
+	if (DamageStack) *DamageStack += Result;
+	return Result;
 }
 
 void UUnitMainComponent::UnitMessage_Simple(const FName& Message)
