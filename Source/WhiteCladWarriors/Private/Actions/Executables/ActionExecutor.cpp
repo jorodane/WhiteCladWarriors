@@ -86,23 +86,90 @@ void FActiveNodeMap::BroadcastMessage_Montage(const FActionCursorFinder& Cursor,
 	});
 }
 
-void UActionExecutor::SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message)
+
+
+bool FExecutorValueMap::HasFloat(FName WantTag) const { return FloatMap.Contains(WantTag); }
+
+void FExecutorValueMap::SetFloat(FName WantTag, const float& WantFloat)
 {
-	UActionNode* CurrentNode = GetNode(WantCursor);
-	if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(WantCursor, Message);
+	float& Setter = FloatMap.FindOrAdd(WantTag);
+	Setter = WantFloat;
 }
 
-void UActionExecutor::SetPosition(FName WantTag, const FVector& WantPosition)
+float FExecutorValueMap::GetSavedFloat(const FActionCursorFinder& WantCursor, FName WantTag) const
+{
+	const float* Result = FloatMap.Find(WantTag);
+	if (Result) return *Result;
+	else return 0.0f;
+}
+
+
+
+bool FExecutorValueMap::HasPosition(FName WantTag) const { return PositionMap.Contains(WantTag); }
+
+void FExecutorValueMap::SetPosition(FName WantTag, const FVector& WantPosition)
 {
 	FVector& Setter = PositionMap.FindOrAdd(WantTag);
 	Setter = WantPosition;
 }
 
-FVector UActionExecutor::GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const
+FVector FExecutorValueMap::GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const
 {
 	const FVector* Result = PositionMap.Find(WantTag);
 	if (Result) return *Result;
 	else return FVector::ZeroVector;
+}
+
+
+bool FExecutorValueMap::HasDirection(const FActionCursorFinder& WantCursor, FName WantTag) const { return DirectionMap.Contains(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag)); }
+
+void FExecutorValueMap::SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection)
+{
+	FVector& Setter = DirectionMap.FindOrAdd(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag));
+	Setter = WantDirection;
+}
+
+FVector FExecutorValueMap::GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const
+{
+	const FVector* Result = DirectionMap.Find(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag));
+	if (Result) return *Result;
+	else return FVector::ZeroVector;
+}
+
+
+void FExecutorValueMap::AddActor(FName WantTag, AActor* WantActor)
+{
+	ActorMultiMap.AddUnique(WantTag, WantActor);
+}
+
+void FExecutorValueMap::RemoveActor(FName WantTag, AActor* WantActor)
+{
+	ActorMultiMap.RemoveSingle(WantTag, WantActor);
+}
+
+AActor* FExecutorValueMap::GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const
+{
+	AActor* const* Result = ActorMultiMap.Find(WantTag);
+	if (Result) return *Result;
+	else return nullptr;
+}
+
+TArray<AActor*> FExecutorValueMap::GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const
+{
+	TArray<AActor*> Result;
+	ActorMultiMap.MultiFind(WantTag, Result);
+	return Result;
+}
+
+
+
+
+
+
+void UActionExecutor::SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message)
+{
+	UActionNode* CurrentNode = GetNode(WantCursor);
+	if (IsValid(CurrentNode)) CurrentNode->OnActionMessage_Simple(WantCursor, Message);
 }
 
 TArray<UUnitActionComponent*> UActionExecutor::GetComponentArray() const
@@ -112,47 +179,6 @@ TArray<UUnitActionComponent*> UActionExecutor::GetComponentArray() const
 	return Result;
 }
 
-
-bool UActionExecutor::HasPosition(FName WantTag) const { return PositionMap.Contains(WantTag); }
-
-void UActionExecutor::SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection)
-{
-	FVector& Setter = DirectionMap.FindOrAdd(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag));
-	Setter = WantDirection;
-}
-
-FVector UActionExecutor::GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const
-{
-	const FVector* Result = DirectionMap.Find(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag));
-	if (Result) return *Result;
-	else return FVector::ZeroVector;
-}
-
-bool UActionExecutor::HasDirection(const FActionCursorFinder& WantCursor, FName WantTag) const { return DirectionMap.Contains(TPair<UUnitActionComponent*, FName>(WantCursor.CurrentComponent, WantTag)); }
-
-void UActionExecutor::AddActor(FName WantTag, AActor* WantActor)
-{
-	ActorMultiMap.AddUnique(WantTag, WantActor);
-}
-
-void UActionExecutor::RemoveActor(FName WantTag, AActor* WantActor)
-{
-	ActorMultiMap.RemoveSingle(WantTag, WantActor);
-}
-
-AActor* UActionExecutor::GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const
-{
-	AActor* const* Result = ActorMultiMap.Find(WantTag);
-	if (Result) return *Result;
-	else return nullptr;
-}
-
-TArray<AActor*> UActionExecutor::GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const
-{
-	TArray<AActor*> Result;
-	ActorMultiMap.MultiFind(WantTag, Result);
-	return Result;
-}
 
 bool UActionExecutor::SetInput(const FActionCursorFinder& WantCursor, UActionSelectorNode* WantNode, const FInputPackage& WantInput)
 {

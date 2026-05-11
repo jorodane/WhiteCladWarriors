@@ -77,6 +77,36 @@ struct FActiveNodeMap
 	FActiveNodeMap(UActionNode* Node) { SetNode(Node, 0); }
 };
 
+USTRUCT(BlueprintType)
+struct FExecutorValueMap
+{
+	GENERATED_BODY()
+
+	TMap<FName, float> FloatMap;
+	TMap<FName, FVector> PositionMap;
+	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
+	TMultiMap<FName, AActor*> ActorMultiMap;
+
+	bool			HasFloat(FName WantTag) const;
+	void			SetFloat(FName WantTag, const float& WantFloat);
+	float			GetSavedFloat(const FActionCursorFinder& WantCursor, FName WantTag) const;
+
+	bool			HasPosition(FName WantTag) const;
+	void			SetPosition(FName WantTag, const FVector& WantPosition);
+	FVector			GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const;
+
+	bool			HasDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
+	void			SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection);
+	FVector			GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
+
+	void			AddActor(FName WantTag, AActor* WantActor);
+	void			RemoveActor(FName WantTag, AActor* WantActor);
+	AActor*			GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const;
+
+	TArray<AActor*>	GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const;
+
+};
+
 
 UCLASS(Blueprintable, BlueprintType)
 class WHITECLADWARRIORS_API UActionExecutor : public UObject
@@ -95,47 +125,56 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<AActor*> CreatedActors;
 
-	TMap<FName, FVector> PositionMap;
-	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
-	TMultiMap<FName, AActor*> ActorMultiMap;
-
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	FExecutorValueMap ValueMap;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message);
 
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetPosition(FName WantTag, const FVector& WantPosition);
-
-	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) const;
-
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<UUnitActionComponent*> GetComponentArray() const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasPosition(FName WantTag) const;
+	bool HasFloat(FName WantTag) const {return ValueMap.HasFloat(WantTag);}
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection);
+	void SetFloat(FName WantTag, const float& WantFloat) { ValueMap.SetFloat(WantTag, WantFloat); }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	FVector GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
+	float GetSavedFloat(const FActionCursorFinder& WantCursor, FName WantTag) const { return ValueMap.GetSavedFloat(WantCursor, WantTag); }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasDirection(const FActionCursorFinder& WantCursor, FName WantTag) const;
+	bool HasPosition(FName WantTag) const { return ValueMap.HasPosition(WantTag); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddActor(FName WantTag, AActor* WantActor);
+	void SetPosition(FName WantTag, const FVector& WantPosition) { ValueMap.SetPosition(WantTag, WantPosition); }
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	FVector GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag) { return ValueMap.GetSavedPosition(WantCursor, WantTag); }
+
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	bool HasDirection(const FActionCursorFinder& WantCursor, FName WantTag) const { return ValueMap.HasDirection(WantCursor, WantTag); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void RemoveActor(FName WantTag, AActor* WantActor);
+	void SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection) { ValueMap.SetDirection(WantTag, WantCursor, WantDirection); }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	AActor* GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const;
+	FVector GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag) const { return ValueMap.GetSavedDirection(WantCursor, WantTag); }
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddActor(FName WantTag, AActor* WantActor) { ValueMap.AddActor(WantTag, WantActor); }
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void RemoveActor(FName WantTag, AActor* WantActor) { ValueMap.RemoveActor(WantTag, WantActor); }
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	TArray<AActor*> GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const;
+	AActor* GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag) const { return ValueMap.GetSavedActor(WantCursor, WantTag); }
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	TArray<AActor*> GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag) const { return ValueMap.GetSavedActorArray(WantCursor, WantTag); }
+
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetInput(const FActionCursorFinder& WantCursor, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
