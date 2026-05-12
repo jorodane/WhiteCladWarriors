@@ -27,4 +27,5 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetEvent(const FActionDelegate& NewEvent);
+	virtual void SetEvent_Implementation(const FActionDelegate& NewEvent) {}
 };

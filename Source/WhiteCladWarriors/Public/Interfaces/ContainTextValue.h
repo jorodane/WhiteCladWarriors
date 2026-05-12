@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainTextValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetText(const FText& Value);
+	virtual void SetText_Implementation(const FText& Value) {}
 };

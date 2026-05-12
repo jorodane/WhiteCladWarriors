@@ -33,4 +33,5 @@ class WHITECLADWARRIORS_API IInfoConnectable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
 	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget(EInfoWidgetType WantType, AOperator* Operator) const;
+	virtual TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const { return TArray<UOrderedGenericWidgetClaim*>(); }
 };

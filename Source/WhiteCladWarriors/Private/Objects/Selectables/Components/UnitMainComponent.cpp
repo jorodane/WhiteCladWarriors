@@ -506,6 +506,17 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
+bool UUnitMainComponent::ClaimAttackTarget_Implementation(AActor* TargetActor)
+{
+	if (IsValid(TargetActor) && TargetActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsAttackable(TargetActor, this))
+	{
+		OnAttackTargetChanged.Broadcast(TargetActor);
+		return true;
+	}
+	OnAttackTargetChanged.Broadcast(nullptr);
+	return false;
+}
+
 float* UUnitMainComponent::GetDamageReference(UUnitMainComponent* From)
 {
 	return DamageMap.Find(From);

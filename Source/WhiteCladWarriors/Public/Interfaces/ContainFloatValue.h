@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainFloatValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetFloat(float Value);
+	virtual void SetFloat_Implementation(float Value) {}
 };

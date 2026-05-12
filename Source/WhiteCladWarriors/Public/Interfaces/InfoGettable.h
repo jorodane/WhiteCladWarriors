@@ -26,10 +26,13 @@ class WHITECLADWARRIORS_API IInfoGettable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Info")
 	TSubclassOf<UUserWidget> GetTargetInfoClass();
+	virtual TSubclassOf<UUserWidget> GetTargetInfoClass_Implementation() { return nullptr; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Info")
 	void OnInfoConnected(UUserWidget* NewWidget);
+	virtual void OnInfoConnected_Implementation(UUserWidget* NewWidget) {}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Info")
 	void OnInfoDisconnected(UUserWidget* OldWidget);
+	virtual void OnInfoDisconnected_Implementation(UUserWidget* OldWidget) {}
 };

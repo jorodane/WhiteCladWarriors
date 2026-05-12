@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainImageValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetImage(const FSlateBrush& Value);
+	virtual void SetImage_Implementation(const FSlateBrush& Value) {}
 };

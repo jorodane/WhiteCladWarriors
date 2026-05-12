@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainActorValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetActor(AActor* Value);
+	virtual void SetActor_Implementation(AActor* Value) {}
 };

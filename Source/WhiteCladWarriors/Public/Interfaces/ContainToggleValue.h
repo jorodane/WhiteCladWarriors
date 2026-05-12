@@ -26,5 +26,6 @@ class WHITECLADWARRIORS_API IContainToggleValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetToggle(bool InitialValue, const FToggleDelegate& OnToggled);
+	virtual void SetToggle_Implementation(bool InitialValue, const FToggleDelegate& OnToggled) {}
 
 };

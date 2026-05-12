@@ -25,14 +25,18 @@ class WHITECLADWARRIORS_API IDamageable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
 	float TakeDamage(const FDamageInfo& Info, bool& bIsKill);
+	virtual float TakeDamage_Implementation(const FDamageInfo& Info, bool& bIsKill) { return 0.0f; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
 	bool GetIsAttackable(UUnitMainComponent* From);
+	virtual bool GetIsAttackable_Implementation(UUnitMainComponent* From) { return false; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
 	bool GetIsDamageable(UUnitMainComponent* From);
+	virtual bool GetIsDamageable_Implementation(UUnitMainComponent* From) { return false; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
 	bool GetIsDie();
+	virtual bool GetIsDie_Implementation() { return false; }
 
 };

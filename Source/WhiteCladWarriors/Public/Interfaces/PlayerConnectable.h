@@ -26,10 +26,13 @@ class WHITECLADWARRIORS_API IPlayerConnectable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnPlayerConnected(AIngameController* NewPlayer);
+	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer) {}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	void OnPlayerDisconnected(AIngameController* OldPlayer);
+	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer) {}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Player")
 	AIngameController* GetConnectedPlayerController();
+	virtual AIngameController* GetConnectedPlayerController_Implementation() { return nullptr; }
 };

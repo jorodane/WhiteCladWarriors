@@ -25,7 +25,9 @@ class WHITECLADWARRIORS_API IMapSettingConnectable
 protected:
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable, Category = "MapSetting")
 	void OnAttached(AMapSetting* NewOwner);
+	virtual void OnAttached_Implementation(AMapSetting* NewOwner) {}
 
-	UFUNCTION(BlueprintNativeEvent,BlueprintCallable, Category = "MapSetting")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "MapSetting")
 	void OnDetached(AMapSetting* OldOwner);
+	virtual void OnDetached_Implementation(AMapSetting* OldOwner) {}
 };

@@ -24,7 +24,9 @@ class WHITECLADWARRIORS_API IPoolable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
 	void OnPoolEnqueue();
+	virtual void OnPoolEnqueue_Implementation() {}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
 	void OnPoolDequeue();
+	virtual void OnPoolDequeue_Implementation() {}
 };

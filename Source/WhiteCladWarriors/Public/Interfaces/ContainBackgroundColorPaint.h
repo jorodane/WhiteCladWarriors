@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainBackgroundColorPaint
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetColor")
 	void SetBackgroundColor(FLinearColor WantColor);
+	virtual void SetBackgroundColor_Implementation(FLinearColor WantColor) {}
 };

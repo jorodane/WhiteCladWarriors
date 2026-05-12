@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainObjectValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetObject(UObject* Value);
+	virtual void SetObject_Implementation(UObject* Value) {}
 };

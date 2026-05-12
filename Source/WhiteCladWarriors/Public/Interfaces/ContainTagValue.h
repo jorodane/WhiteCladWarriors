@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainTagValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetTag(const FText& Value);
+	virtual void SetTag_Implementation(const FText& Value) {}
 };

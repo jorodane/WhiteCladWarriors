@@ -26,4 +26,5 @@ class WHITECLADWARRIORS_API IInspectable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
 	TArray<UObject*> GetInspectorTargets();
+	virtual TArray<UObject*> GetInspectorTargets_Implementation() { return TArray<UObject*>(); }
 };

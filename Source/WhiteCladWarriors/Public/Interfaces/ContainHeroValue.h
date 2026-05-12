@@ -26,4 +26,5 @@ class WHITECLADWARRIORS_API IContainHeroValue
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetValue")
 	void SetHero(UHeroMainComponent* Value);
+	virtual void SetHero_Implementation(UHeroMainComponent* Value) {}
 };

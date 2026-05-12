@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IStoppable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void SetStop();
+	virtual void SetStop_Implementation() {}
 };

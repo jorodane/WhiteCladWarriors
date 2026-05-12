@@ -24,4 +24,5 @@ class WHITECLADWARRIORS_API IContainTitleColorPaint
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SetColor")
 	void SetTitleColor(FLinearColor WantColor);
+	virtual void SetTitleColor_Implementation(FLinearColor WantColor) {}
 };
