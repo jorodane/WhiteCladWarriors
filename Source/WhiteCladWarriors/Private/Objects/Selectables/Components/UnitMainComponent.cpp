@@ -506,14 +506,47 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
-float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info)
+float* UUnitMainComponent::GetDamageReference(UUnitMainComponent* From)
 {
-	float Result = Info.DamageValue;
-	if (UFillableValueComponent* HPValue = FindFillValue(L"HP")) Result = HPValue->AddValue(-Result);
-	float* DamageStack = DamageMap.Find(Info.DamageInstigator);
-	if (DamageStack) *DamageStack += Result;
-	return Result;
+	return DamageMap.Find(From);
 }
+
+float UUnitMainComponent::GetDamageValue_Implementation(UUnitMainComponent* From)
+{
+	if (float* DamageRef = GetDamageReference(From)) return *DamageRef;
+	else return 0.0f;
+}
+
+float UUnitMainComponent::GetDamagePercent_Implementation(UUnitMainComponent* From)
+{
+	if (TotalTakeDamage <= 0.0f) return 0.0f;
+	return GetDamageValue(From) / TotalTakeDamage;
+}
+
+float UUnitMainComponent::AddDamageValue_Implementation(UUnitMainComponent* From, float Value)
+{
+	if (float* DamageRef = GetDamageReference(From))
+	{
+		float Origin = *DamageRef;
+		*DamageRef = FMath::Max(Origin + Value, 0.0f);
+		Value = *DamageRef - Origin;
+	}
+	TotalTakeDamage += Value;
+	return Value;
+}
+
+void UUnitMainComponent::ResetDamageFrom_Implementation(UUnitMainComponent* From)
+{
+	if (float* DamageRef = GetDamageReference(From)) TotalTakeDamage -= *DamageRef;
+	DamageMap.Remove(From);
+}
+
+void UUnitMainComponent::ResetDamageValue_Implementation()
+{
+	TotalTakeDamage = 0.0f;
+	DamageMap.Empty();
+}
+
 
 void UUnitMainComponent::UnitMessage_Simple(const FName& Message)
 {
@@ -570,6 +603,7 @@ void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPoin
 
 void UUnitMainComponent::Die_Implementation() 
 { 
+	bIsDie = true;
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
 		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastMessage_Removed();
@@ -590,6 +624,42 @@ TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementa
 	};
 	return Result;
 }
+
+
+float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, bool& bIsKill)
+{
+	UUnitMainComponent* From = Info.DamageInstigator;
+	if (!IDamageable::Execute_GetIsDamageable(this, From)) return 0.0f;
+	FDamageInfo ResultInfo = Info;
+	float& Result = ResultInfo.DamageValue;
+	AddDamageValue(From, Result);
+	if (UFillableValueComponent* HPValue = FindFillValue(L"HP")) Result = HPValue->AddValue(-Result);
+	OnUnitDamage.Broadcast(this, ResultInfo);
+	bIsKill = IDamageable::Execute_GetIsDie(this);
+	return -Result;
+}
+
+bool UUnitMainComponent::GetIsAttackable_Implementation(UUnitMainComponent* From)
+{
+	if (!IDamageable::Execute_GetIsDamageable(this, From)) return false;
+
+	return true;
+}
+
+bool UUnitMainComponent::GetIsDamageable_Implementation(UUnitMainComponent* From)
+{
+	if (IDamageable::Execute_GetIsDie(this)) return false;
+	return true;
+}
+
+bool UUnitMainComponent::GetIsDie_Implementation()
+{
+	if (bIsDie) return true;
+	if (UFillableValueComponent* HPValue = FindFillValue(L"HP")) return HPValue->GetIsEmpty();
+	return false;
+}
+
+
 
 void UUnitMainComponent::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
 {

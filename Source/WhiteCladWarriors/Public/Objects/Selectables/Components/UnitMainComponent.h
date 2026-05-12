@@ -10,6 +10,7 @@
 #include "Generals/Structs/MontageStructures.h"
 #include "GameFramework/Character.h"
 #include "Styling/SlateBrush.h"
+#include "Interfaces/Damageable.h"
 #include "Interfaces/Selectable.h"
 #include "Interfaces/InfoConnectable.h"
 #include "Interfaces/PlayerConnectable.h"
@@ -28,6 +29,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueCom
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
@@ -111,7 +113,7 @@ enum class EUnitControlledType : uint8
 };
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, public ISelectable, public IPlayerConnectable
+class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, public ISelectable, public IDamageable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -122,6 +124,9 @@ public:
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "FillValue")
 	FOnFillValueRemoved OnFillValueRemoved;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnUnitDamage OnUnitDamage;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitDie OnUnitDie;
@@ -171,6 +176,11 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "UnitComponent", meta = (AllowPrivateAccess = true))
 	EUnitControlledType ControlledType;
+
+	UPROPERTY(BlueprintreadOnly, Category = "Damage")
+	float TotalTakeDamage = 0;
+
+	bool bIsDie = false;
 
 
 protected:
@@ -306,9 +316,27 @@ public:
 	bool ClaimStopMovement();
 	bool ClaimStopMovement_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	float TakeDamage(const FDamageInfo& Info);
-	float TakeDamage_Implementation(const FDamageInfo& Info);
+	float* GetDamageReference(UUnitMainComponent* From);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Damage")
+	float GetDamageValue(UUnitMainComponent* From);
+	float GetDamageValue_Implementation(UUnitMainComponent* From);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Damage")
+	float GetDamagePercent(UUnitMainComponent* From);
+	float GetDamagePercent_Implementation(UUnitMainComponent* From);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
+	float AddDamageValue(UUnitMainComponent* From, float Value);
+	float AddDamageValue_Implementation(UUnitMainComponent* From, float Value);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
+	void ResetDamageFrom(UUnitMainComponent* From);
+	void ResetDamageFrom_Implementation(UUnitMainComponent* From);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Damage")
+	void ResetDamageValue();
+	void ResetDamageValue_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "UnitComponent")
 	void UnitMessage_Simple(const FName& Message);
@@ -335,11 +363,20 @@ public:
 	virtual void Die_Implementation();
 
 public:
-	bool IsSelectable_Implementation(AOperator* Operator) { return true; }
-	FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
-	FText GetSelectedName_Implementation() { return SelectedName; }
-	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const;
+	virtual bool IsSelectable_Implementation(AOperator* Operator) { return true; }
+	virtual FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
+	virtual FText GetSelectedName_Implementation() { return SelectedName; }
+	virtual TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const;
+
+	virtual float TakeDamage_Implementation(const FDamageInfo& Info, bool& bIsKill);
+	virtual bool GetIsAttackable_Implementation(UUnitMainComponent* From);
+	virtual bool GetIsDamageable_Implementation(UUnitMainComponent* From);
+	virtual bool GetIsDie_Implementation();
+
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
 	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
+
+
+
 };

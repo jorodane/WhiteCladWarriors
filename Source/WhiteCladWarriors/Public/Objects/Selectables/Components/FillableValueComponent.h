@@ -26,6 +26,14 @@ public:
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
+	bool GetIsEmpty() const;
+	inline bool GetIsEmpty_Implementation() const { return CurrentValue <= 0.0f; }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
+	bool GetIsFull() const;
+	inline bool GetIsFull_Implementation() const { return CurrentValue >= MaxValue; }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
 	float GetPercent() const;
 	float GetPercent_Implementation() const;
 
