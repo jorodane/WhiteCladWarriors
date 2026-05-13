@@ -35,6 +35,7 @@ bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
 bool UActionSelectorNode::ReceiveInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input)
 { 
 	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	if (!IsValid(Executor)) return false;
 	bool Result = false;
 	for (const FSelectorInput& CurrentInputType : InputTypes)
 	{

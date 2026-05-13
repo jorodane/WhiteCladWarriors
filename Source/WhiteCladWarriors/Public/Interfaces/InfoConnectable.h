@@ -34,4 +34,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
 	TArray<UOrderedGenericWidgetClaim*> GetInfoWidget(EInfoWidgetType WantType, AOperator* Operator) const;
 	virtual TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const { return TArray<UOrderedGenericWidgetClaim*>(); }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GenericWidget")
+	FVector GetInfoWorldPosition() const;
+	FVector GetInfoWorldPosition_Implementation() const { return FVector::ZeroVector; }
 };

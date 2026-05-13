@@ -41,7 +41,7 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 {
 	if (!IsValid(Cursor.CurrentAction)) return bIsValid = false;
 	RunningComponents = StartComponents;
-	Cursor.CurrentExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, Input);
+	Cursor.CurrentExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, FExecutorValueMap(), Input);
 	bIsValid = IsValid(Cursor.CurrentExecutor);
 	return bIsValid;
 }
@@ -202,29 +202,29 @@ TArray<UFillableValueComponent*> UUnitMainComponent::FindAllFillValue()
 	return Result;
 }
 
-bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From)
+bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From) const
 {
 	if (PlayerController == nullptr || From == nullptr) return false;
 	return PlayerController->ConnectedOperator == From;
 }
 
-bool UUnitMainComponent::HasMainAction()
+bool UUnitMainComponent::HasMainAction() const
 {
 	return MainAction.CheckValid();
 }
 
-bool UUnitMainComponent::HasInputReadyMontage()
+bool UUnitMainComponent::HasInputReadyMontage() const
 {
 	return InputReadyMontageEvent.bIsStarted;
 }
 
-bool UUnitMainComponent::HasActionMontage()
+bool UUnitMainComponent::HasActionMontage() const
 {
 	return false;
 }
 
 
-bool UUnitMainComponent::IsAlly_Implementation(EUnitControlledType OtherType)
+bool UUnitMainComponent::IsAlly_Implementation(EUnitControlledType OtherType) const
 {
 	if (OtherType == ControlledType) return true;
 
@@ -235,7 +235,7 @@ bool UUnitMainComponent::IsAlly_Implementation(EUnitControlledType OtherType)
 	else return true;
 }
 
-EUnitAllyType UUnitMainComponent::GetAllyType_Implementation(AOperator* From)
+EUnitAllyType UUnitMainComponent::GetAllyTypeFromOperator_Implementation(AOperator* From) const
 {
 	if (PlayerController == nullptr)
 	{
@@ -258,6 +258,20 @@ EUnitAllyType UUnitMainComponent::GetAllyType_Implementation(AOperator* From)
 		return EUnitAllyType::Ally;
 	}
 }
+
+EUnitAllyType UUnitMainComponent::GetAllyTypeFromUnit_Implementation(UUnitMainComponent* From) const
+{
+	if (!IsValid(From)) return EUnitAllyType::Normal;
+	else
+	{
+		EUnitControlledType FromController = From->ControlledType;
+		if (From->PlayerController == PlayerController) return EUnitAllyType::Own;
+		else if (ControlledType == EUnitControlledType::Neutral || FromController == EUnitControlledType::Neutral) return EUnitAllyType::Normal;
+		else if (IsAlly(FromController)) return EUnitAllyType::Ally;
+		else return EUnitAllyType::Enemy;
+	}
+}
+
 
 
 TArray<AActionBase*> UUnitMainComponent::GetActionList() const
@@ -652,9 +666,9 @@ float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, boo
 
 bool UUnitMainComponent::GetIsAttackable_Implementation(UUnitMainComponent* From)
 {
+	if (!IsValid(From)) return false;
 	if (!IDamageable::Execute_GetIsDamageable(this, From)) return false;
-
-	return true;
+	return GetAllyTypeFromUnit(From) == EUnitAllyType::Enemy;
 }
 
 bool UUnitMainComponent::GetIsDamageable_Implementation(UUnitMainComponent* From)
@@ -682,4 +696,16 @@ void UUnitMainComponent::OnPlayerConnected_Implementation(AIngameController* New
 void UUnitMainComponent::OnPlayerDisconnected_Implementation(AIngameController* OldPlayer)
 {
 	PlayerController = nullptr;
+}
+
+UUnitMainComponent* UUnitMainComponent::GetUnit(AActor* Target)
+{
+	if (IsValid(Target)) return Target->GetComponentByClass<UUnitMainComponent>();
+	return nullptr;
+}
+
+bool UUnitMainComponent::TryGetUnit(AActor* Target, UUnitMainComponent*& OutResult)
+{
+	OutResult = GetUnit(Target);
+	return OutResult != nullptr;
 }

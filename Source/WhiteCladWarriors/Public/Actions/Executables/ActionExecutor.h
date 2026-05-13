@@ -82,8 +82,11 @@ struct FExecutorValueMap
 {
 	GENERATED_BODY()
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TMap<FName, float> FloatMap;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TMap<FName, FVector> PositionMap;
+
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
 
@@ -232,7 +235,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	static UActionExecutor* CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
+	static UActionExecutor* CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void DestroyExecutor(UActionExecutor* TargetExecutor);

@@ -470,7 +470,7 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 			bool CheckResult = TargetAction->IsValidInputForStart(CurrentInputPackage, this, TargetComponent, ComponentResult, TypeResult, ReasonResult);
 			if (CheckResult)
 			{
-				TargetAction->ExecuteActionWithInput(this, TargetComponent, CurrentInputPackage);
+				TargetAction->ExecuteActionWithInput(this, TargetComponent, FExecutorValueMap(), CurrentInputPackage);
 				for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 			}
 		}
@@ -482,7 +482,7 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 	}
 	else
 	{
-		TargetAction->ExecuteAction(this, TargetComponent);
+		TargetAction->ExecuteAction(this, TargetComponent, FExecutorValueMap());
 		for (UUnitActionComponent* CurrentComponent : TargetComponent) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 	}
 }

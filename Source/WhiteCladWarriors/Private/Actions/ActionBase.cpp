@@ -70,14 +70,14 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 	return Cast<UActionSelectorNode>(RootNode);
 }
 
-UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
+UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues)
 {
 	const TArray<UUnitActionComponent*>& ClaimedComponents = TargetComponents;
 	UActionExecutor* NewExecutor = nullptr;
 	if (ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
@@ -87,7 +87,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 	return NewExecutor;
 }
 
-UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
+UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input)
 {
 	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	const FInputPackage& ClaimedInput = Input;
@@ -95,7 +95,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	if(ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);

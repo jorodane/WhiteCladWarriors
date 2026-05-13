@@ -3,6 +3,7 @@
 
 #include "Actions/Executables/ActionExecutor.h"
 #include "Actions/Executables/ActionSelectorNode.h"
+#include "Actions/ActionBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Players/Operator.h"
@@ -399,16 +400,17 @@ void UActionExecutor::OnMessageFromComponent_Montage(UUnitComponentBase* From, U
 	}
 }
 
-UActionExecutor* UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
+UActionExecutor* UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues)
 {
-	if(!IsValid(TargetOperator)) return nullptr;
+	if(!IsValid(TargetAction)) return nullptr;
 	TargetComponents.RemoveAll([&](UUnitActionComponent* CurrentComponent)->bool{ return !IsValid(CurrentComponent);});
 	if(TargetComponents.Num() == 0) return nullptr;
 
-	UActionExecutor* Result = NewObject<UActionExecutor>(TargetOperator);
+	UActionExecutor* Result = NewObject<UActionExecutor>(TargetAction);
 	if(!IsValid(Result)) return nullptr;
 	Result->Action = TargetAction;
 	Result->Operator = TargetOperator;
+	Result->ValueMap = DefaultValues;
 	for (UUnitActionComponent* CurrentComponent : TargetComponents)
 	{
 		if (!IsValid(CurrentComponent)) continue;

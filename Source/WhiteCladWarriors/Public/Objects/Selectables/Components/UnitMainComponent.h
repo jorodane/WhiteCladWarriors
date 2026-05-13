@@ -226,25 +226,29 @@ public:
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget_Implementation(EInfoWidgetType WantType) { return TArray<UOrderedGenericWidgetClaim*>(); }
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
-	bool HasOperatorAuthority(AOperator* From);
-	bool HasOperatorAuthority_Implementation(AOperator* From);
+	bool HasOperatorAuthority(AOperator* From) const;
+	bool HasOperatorAuthority_Implementation(AOperator* From) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool HasMainAction();
+	bool HasMainAction() const;
 
 	UFUNCTION(BlueprintPure, Category = "Animation")
-	bool HasInputReadyMontage();
+	bool HasInputReadyMontage() const;
 
 	UFUNCTION(BlueprintPure, Category = "Animation")
-	bool HasActionMontage();
+	bool HasActionMontage() const;
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
-	bool IsAlly(EUnitControlledType OtherType);
-	bool IsAlly_Implementation(EUnitControlledType OtherType);
+	bool IsAlly(EUnitControlledType OtherType) const;
+	bool IsAlly_Implementation(EUnitControlledType OtherType) const;
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
-	EUnitAllyType GetAllyType(AOperator* From);
-	EUnitAllyType GetAllyType_Implementation(AOperator* From);
+	EUnitAllyType GetAllyTypeFromOperator(AOperator* From);
+	EUnitAllyType GetAllyTypeFromOperator_Implementation(AOperator* From) const;
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Variable")
+	EUnitAllyType GetAllyTypeFromUnit(UUnitMainComponent* From);
+	EUnitAllyType GetAllyTypeFromUnit_Implementation(UUnitMainComponent* From) const;
 
 
 	UFUNCTION(BlueprintPure, Category = "Action")
@@ -385,6 +389,11 @@ public:
 	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
 
+public:
+	UFUNCTION(BlueprintCallable, Category = "Unit")
+	static UUnitMainComponent* GetUnit(AActor* Target);
 
+	UFUNCTION(BlueprintCallable, Category = "Unit", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	static bool TryGetUnit(AActor* Target, UUnitMainComponent*& OutResult);
 
 };
