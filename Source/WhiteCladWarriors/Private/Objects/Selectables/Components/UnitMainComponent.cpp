@@ -113,6 +113,12 @@ bool FMainActionInfo::CheckValid() const
 	return Cursor.CheckValid();
 }
 
+UUnitMainComponent::UUnitMainComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
+
 void UUnitMainComponent::BeginPlay()
 {
 	OwnerUnit = this;
@@ -121,9 +127,40 @@ void UUnitMainComponent::BeginPlay()
 		if (CurrentComponent == this) continue;
 		AddUnitComponent(Cast<UUnitComponentBase>(CurrentComponent));
 	}
-	SetMesh(GetMesh());
+	if (ACharacter* OwnerAsCharacter = Cast<ACharacter>(GetOwner()))
+	{
+		SetMesh(OwnerAsCharacter->GetMesh());
+	};
 
 	Super::BeginPlay();
+}
+
+void UUnitMainComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	USkeletalMeshComponent* CurrentMesh = GetMesh();
+	if (IsValid(CurrentMesh))
+	{
+		FRotator ResultRotation(0.0, -90.0, 0.0);
+
+		FVector FocusLocation;
+		if (!CurrentMesh->IsAnySimulatingPhysics())
+		{
+			if (GetFocusLocation(FocusLocation))
+			{
+				FVector FocusDirection = (FocusLocation - CurrentMesh->GetComponentLocation()).GetSafeNormal2D();
+				double FocusRadian = FMath::Atan2(FocusDirection.Y, FocusDirection.X);
+				ResultRotation.Yaw += FMath::RadiansToDegrees(FocusRadian);
+				CurrentMesh->SetWorldRotation(ResultRotation);
+			}
+			else
+			{
+				FRotator LastRotator = CurrentMesh->GetRelativeRotation();
+				CurrentMesh->SetRelativeRotation(FMath::Lerp(ResultRotation, LastRotator, 0.95));
+			}
+		}
+	}
 }
 
 TArray<UUnitComponentBase*> UUnitMainComponent::GetComponents() const
@@ -133,11 +170,7 @@ TArray<UUnitComponentBase*> UUnitMainComponent::GetComponents() const
 
 USkeletalMeshComponent* UUnitMainComponent::GetMesh_Implementation() const
 {
-	if (ACharacter* OwnerAsCharacter = Cast<ACharacter>(GetOwner()))
-	{
-		return OwnerAsCharacter->GetMesh();
-	};
-	return nullptr;
+	return Mesh;
 }
 
 USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMeshComponent* NewMesh)
@@ -153,9 +186,9 @@ USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMesh
 			AnimInstance->OnPlayMontageNotifyBegin.AddDynamic(this, &UUnitMainComponent::MontageNotifyBegin);
 			AnimInstance->OnPlayMontageNotifyEnd.AddDynamic(this, &UUnitMainComponent::MontageNotifyEnd);
 		}
-		return CurrentMesh;
 	}
-	return nullptr;
+	Mesh = NewMesh;
+	return Mesh;
 }
 
 bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValueComponent* Target)
@@ -220,7 +253,7 @@ bool UUnitMainComponent::HasInputReadyMontage() const
 
 bool UUnitMainComponent::HasActionMontage() const
 {
-	return false;
+	return MainActionMontageEvent.bIsStarted;
 }
 
 
@@ -265,7 +298,7 @@ EUnitAllyType UUnitMainComponent::GetAllyTypeFromUnit_Implementation(UUnitMainCo
 	else
 	{
 		EUnitControlledType FromController = From->ControlledType;
-		if (From->PlayerController == PlayerController) return EUnitAllyType::Own;
+		if (IsValid(PlayerController) && From->PlayerController == PlayerController) return EUnitAllyType::Own;
 		else if (ControlledType == EUnitControlledType::Neutral || FromController == EUnitControlledType::Neutral) return EUnitAllyType::Normal;
 		else if (IsAlly(FromController)) return EUnitAllyType::Ally;
 		else return EUnitAllyType::Enemy;
@@ -273,6 +306,24 @@ EUnitAllyType UUnitMainComponent::GetAllyTypeFromUnit_Implementation(UUnitMainCo
 }
 
 
+bool UUnitMainComponent::GetFocusLocation_Implementation(FVector& OutResult) const
+{
+	if (IsValid(FocusTarget))
+	{
+		OutResult = FocusTarget->GetActorLocation();
+	}
+	else if (HasActionMontage() && IsValid(MainActionMontageEvent.FocusTarget))
+	{
+		OutResult = MainActionMontageEvent.FocusTarget->GetActorLocation();
+	}
+	else if (HasInputReadyMontage())
+	{
+		OutResult = AOperator::GetLocalInputPackage().MouseTerrainPosition;
+	}
+	else return false;
+	
+	return true;
+}
 
 TArray<AActionBase*> UUnitMainComponent::GetActionList() const
 {
@@ -520,14 +571,14 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
-bool UUnitMainComponent::ClaimAttackTarget_Implementation(AActor* TargetActor)
+bool UUnitMainComponent::ClaimAttackTarget_Implementation(AOperator* Operator, AActor* TargetActor)
 {
 	if (IsValid(TargetActor) && TargetActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsAttackable(TargetActor, this))
 	{
-		OnAttackTargetChanged.Broadcast(TargetActor);
+		OnAttackTargetChanged.Broadcast(Operator, TargetActor);
 		return true;
 	}
-	OnAttackTargetChanged.Broadcast(nullptr);
+	OnAttackTargetChanged.Broadcast(Operator, nullptr);
 	return false;
 }
 

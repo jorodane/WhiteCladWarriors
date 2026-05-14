@@ -14,6 +14,9 @@ struct FMontageEventInfo
 	TObjectPtr<UAnimMontage> MontageToPlay = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	TObjectPtr<AActor> FocusTarget = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	float PlayRate = 1.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")

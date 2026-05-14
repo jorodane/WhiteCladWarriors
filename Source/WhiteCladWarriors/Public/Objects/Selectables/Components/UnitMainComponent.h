@@ -31,7 +31,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueC
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttackTargetChanged, AActor*, TargetActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackTargetChanged, AOperator*, Operator, AActor*, TargetActor);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
@@ -169,8 +169,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Player", meta = (AllowPrivateAccess = true))
 	TObjectPtr<AIngameController> PlayerController;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = true))
+	TObjectPtr<USkeletalMeshComponent> Mesh;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UAnimInstance> AnimInstance;
+	UPROPERTY(BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
+	TObjectPtr<AActor> FocusTarget;
 
 	FMainActionInfo MainAction;
 
@@ -186,9 +191,12 @@ protected:
 
 	bool bIsDie = false;
 
+public:
+	UUnitMainComponent();
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Component")
@@ -250,6 +258,9 @@ public:
 	EUnitAllyType GetAllyTypeFromUnit(UUnitMainComponent* From);
 	EUnitAllyType GetAllyTypeFromUnit_Implementation(UUnitMainComponent* From) const;
 
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Focus")
+	bool GetFocusLocation(FVector& OutResult) const;
+	bool GetFocusLocation_Implementation(FVector& OutResult) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	TArray<AActionBase*> GetActionList() const;
@@ -325,8 +336,8 @@ public:
 	bool ClaimStopMovement_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	bool ClaimAttackTarget(AActor* TargetActor);
-	bool ClaimAttackTarget_Implementation(AActor* TargetActor);
+	bool ClaimAttackTarget(AOperator* Operator, AActor* TargetActor);
+	bool ClaimAttackTarget_Implementation(AOperator* Operator, AActor* TargetActor);
 
 	float* GetDamageReference(UUnitMainComponent* From);
 
