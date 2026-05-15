@@ -247,8 +247,8 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		const bool bEnterMainLine = bIsMainAction && !bWasMainAction;
 		const bool bExitMainLine = !bIsMainAction && bWasMainAction;
 
-		if (bExitMainLine) TargetComponent->EndMainAction(this, OriginNode->bIsStopMovementOnEnd);
-		if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart);
+		if (bExitMainLine) TargetComponent->EndMainAction(this);
+		if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->bIsCancelable, TargetNode->bIsStopMovementOnStart, TargetNode->bIsStopActionMontageOnStart, TargetNode->bIsStopActionMontageOnEnd);
 	}
 	TargetNode->ClaimExecute(WantCursor);
 	if (Result) Result->TryListeningStart();
@@ -269,7 +269,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(Executor, OldNode->bIsStopMovementOnEnd);
+	if (IsValid(OldNode) && OldNode->bIsMainAction) TargetComponent->EndMainAction(Executor);
 	if (FActiveNodeMap* CursorFinder = GetCursor(TargetComponent))
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;

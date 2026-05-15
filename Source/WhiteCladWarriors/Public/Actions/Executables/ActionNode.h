@@ -48,13 +48,16 @@ public:
 	bool bIsMainAction = false;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsCancelable = false;
+	bool bIsCancelable = true;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	bool bIsStopMovementOnStart = false;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsStopMovementOnEnd = false;
+	bool bIsStopActionMontageOnStart = true;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	bool bIsStopActionMontageOnEnd = true;
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")

@@ -17,15 +17,15 @@ bool UUnitActionComponent::GetMainActionCancelable()
 	return false;
 }
 
-bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement)
+bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement, bool bIsStopActionMontageOnStart, bool bIsStopActionMontageOnEnd)
 {
-	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->SetMainAction(WantCursor, bIsCancelable, bIsStopMovement);
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->SetMainAction(WantCursor, bIsCancelable, bIsStopMovement, bIsStopActionMontageOnStart, bIsStopActionMontageOnEnd);
 	return false;
 }
 
-void UUnitActionComponent::EndMainAction(UActionExecutor* Executor, bool bIsStopMovement)
+void UUnitActionComponent::EndMainAction(UActionExecutor* Executor)
 {
-	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(Executor, this, bIsStopMovement);
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(Executor, this);
 }
 
 void UUnitActionComponent::OnInputStart_Implementation(const FInputClaim& StartedInput)

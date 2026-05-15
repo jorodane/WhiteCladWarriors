@@ -86,17 +86,22 @@ struct FMainActionInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsStopMovement = false;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsStopActionMontageOnStart = true;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsStopActionMontageOnEnd = true;
+
 	void Clear();
 
-	void Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable = true, bool bWantIsStopMovement = false);
+	void Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable, bool bWantIsStopMovement, bool bWantIsStopActionMontageOnStart, bool bWantIsStopActionMontageOnEnd);
 
 	void Clear(const UActionExecutor* OldExecutor);
 
 	void SetActionMessage_Simple(FName Message);
 
-	bool Cancel(bool bWantStopMovement);
+	bool Cancel();
 
-	void End(bool bWantStopMovement);
+	void End();
 
 	bool CheckValid() const;
 };
@@ -238,10 +243,16 @@ public:
 	bool HasOperatorAuthority_Implementation(AOperator* From) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
+	FMainActionInfo GetMainActionInfo() const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
 	bool HasMainAction() const;
 
 	UFUNCTION(BlueprintPure, Category = "Animation")
 	bool HasInputReadyMontage() const;
+
+	UFUNCTION(BlueprintPure, Category = "Animation")
+	FMontageEventInfo GetActionMontageInfo() const;
 
 	UFUNCTION(BlueprintPure, Category = "Animation")
 	bool HasActionMontage() const;
@@ -289,13 +300,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
-	bool SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable = true, bool bIsStopMovement = false);
+	bool SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable = true, bool bIsStopMovement = false, bool bIsStopActionMontageOnStart = true, bool bIsStopActionMontageOnEnd = true);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool StopMainAction() { return SetMainAction(FActionCursorFinder::None); }
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement);
+	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent);
 
 	UFUNCTION(BlueprintCallable, Category = "Action") 
 	void ReservationEnqueue(const FActionReservator& Reservation);

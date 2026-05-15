@@ -63,11 +63,13 @@ void FMainActionInfo::Clear()
 	bIsStopMovement = false;
 }
 
-void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable, bool bWantIsStopMovement)
+void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable, bool bWantIsStopMovement, bool bWantIsStopActionMontageOnStart, bool bWantIsStopActionMontageOnEnd)
 {
 	Cursor = WantCursor;
 	bIsCancelable = bWantIsCancelable;
 	bIsStopMovement = bWantIsStopMovement;
+	bIsStopActionMontageOnStart = bWantIsStopActionMontageOnStart;
+	bIsStopActionMontageOnEnd = bWantIsStopActionMontageOnEnd;
 }
 
 void FMainActionInfo::Clear(const UActionExecutor* OldExecutor) 
@@ -80,7 +82,7 @@ void FMainActionInfo::SetActionMessage_Simple(FName Message)
 	if (CheckValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
 }
 
-bool FMainActionInfo::Cancel(bool bWantStopMovement)
+bool FMainActionInfo::Cancel()
 {
 	if(!CheckValid()) return true;
 	if (!bIsCancelable) return false;
@@ -89,7 +91,7 @@ bool FMainActionInfo::Cancel(bool bWantStopMovement)
 	{
 		Cursor.CurrentExecutor->CancelNode(Cursor);
 		UUnitMainComponent* TargetUnit;
-		if (TargetComponent->TryGetOwnerUnit(TargetUnit))
+		if (bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
 		{
 			TargetUnit->StopMainActionMontage(true);
 		}
@@ -98,11 +100,11 @@ bool FMainActionInfo::Cancel(bool bWantStopMovement)
 	return true;
 }
 
-void FMainActionInfo::End(bool bWantStopMovement)
+void FMainActionInfo::End()
 {
 	if (CheckValid())
 	{
-		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor, bWantStopMovement);
+		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor);
 		Clear();
 	}
 }
@@ -241,6 +243,11 @@ bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From) co
 	return PlayerController->ConnectedOperator == From;
 }
 
+FMainActionInfo UUnitMainComponent::GetMainActionInfo() const
+{
+	return MainAction;
+}
+
 bool UUnitMainComponent::HasMainAction() const
 {
 	return MainAction.CheckValid();
@@ -249,6 +256,11 @@ bool UUnitMainComponent::HasMainAction() const
 bool UUnitMainComponent::HasInputReadyMontage() const
 {
 	return InputReadyMontageEvent.bIsStarted;
+}
+
+FMontageEventInfo UUnitMainComponent::GetActionMontageInfo() const
+{
+	return MainActionMontageEvent;
 }
 
 bool UUnitMainComponent::HasActionMontage() const
@@ -429,30 +441,29 @@ void UUnitMainComponent::AddUnitComponent(UUnitComponentBase* NewComponent)
 
 bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
 {
-	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable);
+	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable, Info.bIsStopMovement, Info.bIsStopActionMontageOnStart, Info.bIsStopActionMontageOnEnd);
 	else return SetMainAction(FActionCursorFinder::None);
 }
 
 bool UUnitMainComponent::GetMainActionCancelable_Implementation() const 
 { return MainAction.bIsCancelable; };
 
-bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement)
+bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement, bool bIsStopActionMontageOnStart, bool bIsStopActionMontageOnEnd)
 {
-	bool Result = MainAction.Cancel(bIsStopMovement);
+	bool Result = MainAction.Cancel();
 	if (Result)
 	{
 		if(bIsStopMovement) ClaimStopMovement();
-		MainAction.Set(WantCursor, bIsCancelable, bIsStopMovement);
+		MainAction.Set(WantCursor, bIsCancelable, bIsStopMovement, bIsStopActionMontageOnStart, bIsStopActionMontageOnEnd);
 	}
 	return Result;
 }
 
-void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent, bool bIsStopMovement)
+void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent)
 {
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
-	if (bIsStopMovement) ClaimStopMovement();
-	MainAction.End(bIsStopMovement);
+	MainAction.End();
 
 	if (CurrentReservatedAction.bIsValid)
 	{
