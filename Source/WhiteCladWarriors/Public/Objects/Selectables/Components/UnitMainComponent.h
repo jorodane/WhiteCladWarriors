@@ -28,7 +28,7 @@ class UFillableValueComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnitDie, UUnitMainComponent*, TargetUnit);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackTargetChanged, AOperator*, Operator, AActor*, TargetActor);
@@ -393,8 +393,8 @@ public:
 	void MontageNotifyEnd(FName NotifyName, const FBranchingPointNotifyPayload& BranchingPointPayload);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
-	void Die();
-	virtual void Die_Implementation();
+	void Die(const FDamageInfo& LastAttackDamageInfo);
+	virtual void Die_Implementation(const FDamageInfo& LastAttackDamageInfo);
 
 public:
 	virtual bool IsSelectable_Implementation(AOperator* Operator) { return true; }

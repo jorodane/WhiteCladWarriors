@@ -688,14 +688,14 @@ void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPoin
 }
 
 
-void UUnitMainComponent::Die_Implementation() 
+void UUnitMainComponent::Die_Implementation(const FDamageInfo& LastAttackDamageInfo)
 { 
 	bIsDie = true;
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
 		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastMessage_Removed();
 	}
-	OnUnitDie.Broadcast(this); 
+	OnUnitDie.Broadcast(this, LastAttackDamageInfo);
 }
 
 TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const
@@ -720,8 +720,16 @@ float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, boo
 	FDamageInfo ResultInfo = Info;
 	float& Result = ResultInfo.DamageValue;
 	AddDamageValue(From, Result);
-	if (UFillableValueComponent* HPValue = FindFillValue(L"HP")) Result = HPValue->AddValue(-Result);
-	OnUnitDamage.Broadcast(this, ResultInfo);
+	if (UFillableValueComponent* HPValue = FindFillValue(L"HP"))
+	{
+		Result = HPValue->AddValue(-Result);
+		if (HPValue->GetIsEmpty()) OnUnitDie.Broadcast(this, Info);
+		else OnUnitDamage.Broadcast(this, ResultInfo);
+	}
+	else
+	{
+		OnUnitDamage.Broadcast(this, ResultInfo);
+	}
 	bIsKill = IDamageable::Execute_GetIsDie(this);
 	return -Result;
 }

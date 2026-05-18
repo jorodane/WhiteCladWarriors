@@ -354,6 +354,10 @@ public:
 	void DeselectUnit_Implementation(UUnitMainComponent* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
+	void DeselectUnitOnDie(UUnitMainComponent* Target, const FDamageInfo& LastAttackDamageInfo);
+	void DeselectUnitOnDie_Implementation(UUnitMainComponent* Target, const FDamageInfo& LastAttackDamageInfo);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectActors();
 	virtual void DeselectActors_Implementation();
 

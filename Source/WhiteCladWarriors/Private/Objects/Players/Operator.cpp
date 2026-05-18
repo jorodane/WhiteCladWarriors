@@ -637,7 +637,7 @@ void AOperator::SelectActorWithoutNotify_Implementation(AActor* Target, bool bIs
 	{
 		if (UUnitMainComponent* TargetAsUnit = Target->GetComponentByClass<UUnitMainComponent>())
 		{
-			TargetAsUnit->OnUnitDie.AddUniqueDynamic(this, &AOperator::DeselectUnit);
+			TargetAsUnit->OnUnitDie.AddUniqueDynamic(this, &AOperator::DeselectUnitOnDie);
 		}
 	}
 
@@ -687,6 +687,10 @@ void AOperator::DeselectUnit_Implementation(UUnitMainComponent* Target)
 		Target->OnUnitDie.RemoveAll(this);
 		DeselectActor(Target->GetOwner());
 	}
+};
+void AOperator::DeselectUnitOnDie_Implementation(UUnitMainComponent* Target, const FDamageInfo& LastAttackDamageInfo)
+{
+	DeselectUnit(Target);
 };
 
 void AOperator::DeselectActors_Implementation()

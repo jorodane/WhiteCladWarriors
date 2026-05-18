@@ -16,6 +16,9 @@ struct FDamageInfo
 	float DamageValue;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
+	FVector DamageDirection;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
 	AActor* DamageCauser;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
