@@ -33,8 +33,8 @@ public:
 	bool GetMainActionCancelable();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	bool TrySetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement, bool bIsStopActionMontageOnStart, bool bIsStopActionMontageOnEnd);
-	bool TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement, bool bIsStopActionMontageOnStart, bool bIsStopActionMontageOnEnd);
+	bool TrySetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings);
+	bool TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(UActionExecutor* Executor);

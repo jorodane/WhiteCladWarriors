@@ -69,3 +69,35 @@ public:
 public:
 	int GetOrder() const;
 };
+
+USTRUCT(BlueprintType)
+struct FActionExecuteSettingContainer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsMainAction = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsCancelable = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsStopMovementOnStart = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsStopActionMontageOnStart = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsStopActionMontageOnEnd = true;
+
+public:
+	void Clear() 
+	{
+		bIsMainAction = false;
+		bIsCancelable = true;
+		bIsStopMovementOnStart = false;
+		bIsStopActionMontageOnStart = true;
+		bIsStopActionMontageOnEnd = true;
+	}
+};

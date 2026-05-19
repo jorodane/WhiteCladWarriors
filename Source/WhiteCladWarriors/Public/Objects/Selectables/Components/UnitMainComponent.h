@@ -81,19 +81,11 @@ struct FMainActionInfo
 	FActionCursorFinder Cursor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsCancelable = true;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsStopMovement = false;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsStopActionMontageOnStart = true;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsStopActionMontageOnEnd = true;
+	FActionExecuteSettingContainer Settings;
 
 	void Clear();
 
-	void Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable, bool bWantIsStopMovement, bool bWantIsStopActionMontageOnStart, bool bWantIsStopActionMontageOnEnd);
+	void Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting);
 
 	void Clear(const UActionExecutor* OldExecutor);
 
@@ -300,10 +292,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
-	bool SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable = true, bool bIsStopMovement = false, bool bIsStopActionMontageOnStart = true, bool bIsStopActionMontageOnEnd = true);
+	bool SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool StopMainAction() { return SetMainAction(FActionCursorFinder::None); }
+	bool StopMainAction();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent);

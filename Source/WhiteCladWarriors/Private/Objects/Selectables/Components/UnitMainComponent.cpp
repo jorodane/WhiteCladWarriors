@@ -59,17 +59,13 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 void FMainActionInfo::Clear()
 {
 	Cursor.Clear();
-	bIsCancelable = true;
-	bIsStopMovement = false;
+	Settings.Clear();
 }
 
-void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, bool bWantIsCancelable, bool bWantIsStopMovement, bool bWantIsStopActionMontageOnStart, bool bWantIsStopActionMontageOnEnd)
+void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting)
 {
 	Cursor = WantCursor;
-	bIsCancelable = bWantIsCancelable;
-	bIsStopMovement = bWantIsStopMovement;
-	bIsStopActionMontageOnStart = bWantIsStopActionMontageOnStart;
-	bIsStopActionMontageOnEnd = bWantIsStopActionMontageOnEnd;
+	Settings = WantSetting;
 }
 
 void FMainActionInfo::Clear(const UActionExecutor* OldExecutor) 
@@ -85,13 +81,13 @@ void FMainActionInfo::SetActionMessage_Simple(FName Message)
 bool FMainActionInfo::Cancel()
 {
 	if(!CheckValid()) return true;
-	if (!bIsCancelable) return false;
+	if (!Settings.bIsCancelable) return false;
 
 	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
 	{
 		Cursor.CurrentExecutor->CancelNode(Cursor);
 		UUnitMainComponent* TargetUnit;
-		if (bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
+		if (Settings.bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
 		{
 			TargetUnit->StopMainActionMontage(true);
 		}
@@ -441,22 +437,27 @@ void UUnitMainComponent::AddUnitComponent(UUnitComponentBase* NewComponent)
 
 bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
 {
-	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.bIsCancelable, Info.bIsStopMovement, Info.bIsStopActionMontageOnStart, Info.bIsStopActionMontageOnEnd);
-	else return SetMainAction(FActionCursorFinder::None);
+	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.Settings);
+	else return StopMainAction();
 }
 
 bool UUnitMainComponent::GetMainActionCancelable_Implementation() const 
-{ return MainAction.bIsCancelable; };
+{ return MainAction.Settings.bIsCancelable; };
 
-bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement, bool bIsStopActionMontageOnStart, bool bIsStopActionMontageOnEnd)
+bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings)
 {
 	bool Result = MainAction.Cancel();
 	if (Result)
 	{
-		if(bIsStopMovement) ClaimStopMovement();
-		MainAction.Set(WantCursor, bIsCancelable, bIsStopMovement, bIsStopActionMontageOnStart, bIsStopActionMontageOnEnd);
+		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
+		MainAction.Set(WantCursor, Settings);
 	}
 	return Result;
+}
+
+bool UUnitMainComponent::StopMainAction()
+{
+	return MainAction.Cancel();
 }
 
 void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent)

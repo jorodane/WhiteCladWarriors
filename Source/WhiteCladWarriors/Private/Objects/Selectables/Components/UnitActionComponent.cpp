@@ -17,9 +17,9 @@ bool UUnitActionComponent::GetMainActionCancelable()
 	return false;
 }
 
-bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, bool bIsCancelable, bool bIsStopMovement, bool bIsStopActionMontageOnStart, bool bIsStopActionMontageOnEnd)
+bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings)
 {
-	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->SetMainAction(WantCursor, bIsCancelable, bIsStopMovement, bIsStopActionMontageOnStart, bIsStopActionMontageOnEnd);
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->SetMainAction(WantCursor, Settings);
 	return false;
 }
 

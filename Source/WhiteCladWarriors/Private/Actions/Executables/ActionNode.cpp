@@ -7,7 +7,7 @@
 
 bool UActionNode::GetCanEnter_Implementation(const FActionCursorFinder& WantCursor)
 {
-	return !(bIsMainAction && !WantCursor.CurrentComponent->GetMainActionCancelable());
+	return !(Settings.bIsMainAction && !WantCursor.CurrentComponent->GetMainActionCancelable());
 }
 
 void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination)

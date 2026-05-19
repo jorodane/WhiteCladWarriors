@@ -45,19 +45,7 @@ public:
 	TMap<FName, FLinkedNodeInfo> LinkedNodes;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsMainAction = false;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsCancelable = true;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsStopMovementOnStart = false;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsStopActionMontageOnStart = true;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	bool bIsStopActionMontageOnEnd = true;
+	FActionExecuteSettingContainer Settings;
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")
