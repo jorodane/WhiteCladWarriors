@@ -193,6 +193,23 @@ USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMesh
 	return Mesh;
 }
 
+float UUnitMainComponent::SetFloatValue(FName WantTag, float Value)
+{
+	return FloatValueMap.Add(WantTag, Value);
+}
+
+float UUnitMainComponent::AddFloatValue(FName WantTag, float Value)
+{
+	float& Map = FloatValueMap.FindOrAdd(WantTag, 0);
+	return Map += Value;
+}
+
+float UUnitMainComponent::GetFloatValue(FName WantTag, float DefaultValue)
+{
+	return FloatValueMap.FindOrAdd(WantTag, DefaultValue);
+}
+
+
 bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValueComponent* Target)
 {
 	if (!FillValueMap.Contains(WantTag))
@@ -320,9 +337,9 @@ EUnitAllyType UUnitMainComponent::GetAllyTypeFromUnit_Implementation(UUnitMainCo
 
 bool UUnitMainComponent::GetFocusLocation_Implementation(FVector& OutResult) const
 {
-	if (IsValid(FocusTarget))
+	if (IsValid(CurrentIntention.TargetActor))
 	{
-		OutResult = FocusTarget->GetActorLocation();
+		OutResult = CurrentIntention.TargetActor->GetActorLocation();
 	}
 	else if (HasActionMontage() && IsValid(MainActionMontageEvent.FocusTarget))
 	{

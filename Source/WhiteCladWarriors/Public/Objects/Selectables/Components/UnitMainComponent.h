@@ -152,8 +152,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	TMap<FName, FName> TaggedActionMap;
 
+	UPROPERTY(BlueprintReadOnly, Category = "ValueMap")
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
+
 	TMap<FName, UFillableValueComponent*> FillValueMap;
+
+	TMap<FName, float> FloatValueMap;
 	TMap<UUnitMainComponent*, float> DamageMap;
 
 	TQueue<FActionReservator> ActionQueue;
@@ -171,8 +175,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UAnimInstance> AnimInstance;
-	UPROPERTY(BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
-	TObjectPtr<AActor> FocusTarget;
 
 	FMainActionInfo MainAction;
 	FActionIntentContainer CurrentIntention;
@@ -211,6 +213,15 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Mesh")
 	float GetHalfHeight();
 	float GetHalfHeight_Implementation() { return 0.0f; }
+
+	UFUNCTION(BlueprintCallable, Category = "ValueMap")
+	float SetFloatValue(FName WantTag, float Value);
+
+	UFUNCTION(BlueprintCallable, Category = "ValueMap")
+	float AddFloatValue(FName WantTag, float Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueMap")
+	float GetFloatValue(FName WantTag, float DefaultValue);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
 	bool AddFillValue(FName WantTag, UFillableValueComponent* Target);
