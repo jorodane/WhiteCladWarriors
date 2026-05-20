@@ -450,6 +450,7 @@ bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, co
 	if (Result)
 	{
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
+		if(Settings.bIsResetFocus) OnAttackTargetChanged.Broadcast(WantCursor.CurrentOperator, nullptr);
 		MainAction.Set(WantCursor, Settings);
 	}
 	return Result;

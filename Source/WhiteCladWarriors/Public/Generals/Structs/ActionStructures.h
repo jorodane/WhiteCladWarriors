@@ -83,6 +83,9 @@ public:
 	bool bIsCancelable = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	bool bIsResetFocus = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsStopMovementOnStart = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
@@ -96,6 +99,7 @@ public:
 	{
 		bIsMainAction = false;
 		bIsCancelable = true;
+		bIsResetFocus = true;
 		bIsStopMovementOnStart = false;
 		bIsStopActionMontageOnStart = true;
 		bIsStopActionMontageOnEnd = true;

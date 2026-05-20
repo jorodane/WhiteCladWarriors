@@ -31,7 +31,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueC
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackTargetChanged, AOperator*, Operator, AActor*, TargetActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnActionIntentChanged, AOperator*, Operator, AActor*, TargetActor, FString, IntentType);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
@@ -136,7 +136,7 @@ public:
 	FOnMovementStart OnMovementStart;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
-	FOnAttackTargetChanged OnAttackTargetChanged;
+	FOnActionIntentChanged OnActionIntentChanged;
 
 
 protected:
