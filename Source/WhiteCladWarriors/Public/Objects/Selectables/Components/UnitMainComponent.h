@@ -28,10 +28,10 @@ class UFillableValueComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionIntentChanged, const FActionIntentContainer&, Claimer);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnActionIntentChanged, AOperator*, Operator, AActor*, TargetActor, FString, IntentType);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
@@ -175,6 +175,7 @@ protected:
 	TObjectPtr<AActor> FocusTarget;
 
 	FMainActionInfo MainAction;
+	FActionIntentContainer CurrentIntention;
 
 	FMontageEventInfo InputReadyMontageEvent;
 	FMontageEventInfo MainActionMontageEvent;
@@ -339,8 +340,16 @@ public:
 	bool ClaimStopMovement_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
-	bool ClaimAttackTarget(AOperator* Operator, AActor* TargetActor);
-	bool ClaimAttackTarget_Implementation(AOperator* Operator, AActor* TargetActor);
+	bool ClaimIntention(FActionIntentContainer Claimer);
+	bool ClaimIntention_Implementation(FActionIntentContainer Claimer);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	bool ClaimIntentionReset();
+	bool ClaimIntentionReset_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	void NotifyIntentionChanged(const FActionIntentContainer& NewIntention);
+	void NotifyIntentionChanged_Implementation(const FActionIntentContainer& NewIntention);
 
 	float* GetDamageReference(UUnitMainComponent* From);
 

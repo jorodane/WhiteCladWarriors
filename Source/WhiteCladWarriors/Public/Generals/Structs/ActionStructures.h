@@ -71,6 +71,42 @@ public:
 };
 
 USTRUCT(BlueprintType)
+struct FActionIntentContainer
+{
+	GENERATED_BODY()
+
+public:
+	static const FActionIntentContainer None;
+
+public:
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	AOperator* Operator = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	AActor* TargetActor = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	FName IntentType = NAME_None;
+
+public:
+	void Clear()
+	{
+		Operator = nullptr;
+		TargetActor = nullptr;
+		IntentType = NAME_None;
+	}
+
+	bool operator==(const FActionIntentContainer& other)
+	{
+		return
+			Operator == other.Operator &&
+			TargetActor == other.TargetActor &&
+			IntentType == other.IntentType;
+	}
+};
+
+USTRUCT(BlueprintType)
 struct FActionExecuteSettingContainer
 {
 	GENERATED_BODY()
@@ -83,7 +119,7 @@ public:
 	bool bIsCancelable = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsResetFocus = true;
+	bool bIsResetIntent = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsStopMovementOnStart = false;
@@ -99,7 +135,7 @@ public:
 	{
 		bIsMainAction = false;
 		bIsCancelable = true;
-		bIsResetFocus = true;
+		bIsResetIntent = true;
 		bIsStopMovementOnStart = false;
 		bIsStopActionMontageOnStart = true;
 		bIsStopActionMontageOnEnd = true;

@@ -33,4 +33,5 @@ struct FMontageEventInfo
 	void Clear();
 	bool Play(UAnimInstance* Anim, bool bIsStopOtherMontage = true);
 	void Stop(UAnimInstance* Anim);
+	void Stop();
 };

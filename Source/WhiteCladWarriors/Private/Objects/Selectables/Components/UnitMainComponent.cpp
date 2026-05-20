@@ -152,10 +152,14 @@ void UUnitMainComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 				ResultRotation.Yaw += FMath::RadiansToDegrees(FocusRadian);
 				CurrentMesh->SetWorldRotation(ResultRotation);
 			}
-			else
+			else if(!MainActionMontageEvent.bIsStarted)
 			{
 				FRotator LastRotator = CurrentMesh->GetRelativeRotation();
 				CurrentMesh->SetRelativeRotation(FMath::Lerp(ResultRotation, LastRotator, 0.95));
+			}
+			else
+			{
+				CurrentMesh->SetRelativeRotation(ResultRotation);
 			}
 		}
 	}
@@ -450,7 +454,7 @@ bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, co
 	if (Result)
 	{
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
-		if(Settings.bIsResetFocus) OnAttackTargetChanged.Broadcast(WantCursor.CurrentOperator, nullptr);
+		if (Settings.bIsResetIntent) ClaimIntentionReset();
 		MainAction.Set(WantCursor, Settings);
 	}
 	return Result;
@@ -584,17 +588,33 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
-bool UUnitMainComponent::ClaimAttackTarget_Implementation(AOperator* Operator, AActor* TargetActor)
+bool UUnitMainComponent::ClaimIntention_Implementation(FActionIntentContainer Claimer)
 {
+	bool Result = false;
+	AActor* TargetActor = Claimer.TargetActor;
 	if (IsValid(TargetActor) && TargetActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsAttackable(TargetActor, this))
 	{
-		OnAttackTargetChanged.Broadcast(Operator, TargetActor);
-		return true;
+		Result = true;
 	}
-	OnAttackTargetChanged.Broadcast(Operator, nullptr);
-	return false;
+	else
+	{
+		Claimer.TargetActor = nullptr;
+		Result = true;
+	}
+	NotifyIntentionChanged(Claimer);
+	return Result;
 }
 
+bool UUnitMainComponent::ClaimIntentionReset_Implementation()
+{
+	NotifyIntentionChanged(FActionIntentContainer::None);
+	return true;
+}
+void UUnitMainComponent::NotifyIntentionChanged_Implementation(const FActionIntentContainer& NewIntention)
+{
+	if(CurrentIntention != NewIntention) OnActionIntentChanged.Broadcast(NewIntention);
+	CurrentIntention = NewIntention;
+}
 float* UUnitMainComponent::GetDamageReference(UUnitMainComponent* From)
 {
 	return DamageMap.Find(From);
@@ -693,6 +713,9 @@ void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPoin
 void UUnitMainComponent::Die_Implementation(const FDamageInfo& LastAttackDamageInfo)
 { 
 	bIsDie = true;
+	ClaimIntentionReset();
+	MainAction.Cancel();
+	MainActionMontageEvent.Stop(AnimInstance);
 	for (UActorComponent* CurrentComponent : GetComponents())
 	{
 		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastMessage_Removed();

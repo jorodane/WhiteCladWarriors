@@ -4,6 +4,7 @@
 #include "Actions/Executables/ActionExecutor.h"
 
 const FActionCursorFinder FActionCursorFinder::None;
+const FActionIntentContainer FActionIntentContainer::None;
 
 
 bool FActionCursorFinder::CheckValid() const
@@ -50,3 +51,4 @@ int FActionTargetContainer::GetOrder() const
 {
 	return IsValid(this->Action) ? this->Action->GetUIOrder() : 0;
 }
+
