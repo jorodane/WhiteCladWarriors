@@ -56,61 +56,6 @@ bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponen
 	return !bIsValid;
 }
 
-void FMainActionInfo::Clear()
-{
-	Cursor.Clear();
-	Settings.Clear();
-}
-
-void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting)
-{
-	Cursor = WantCursor;
-	Settings = WantSetting;
-}
-
-void FMainActionInfo::Clear(const UActionExecutor* OldExecutor) 
-{ 
-	if (Cursor.CheckExecutor(OldExecutor)) Clear();
-}
-
-void FMainActionInfo::SetActionMessage_Simple(FName Message)
-{
-	if (CheckValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
-}
-
-bool FMainActionInfo::Cancel()
-{
-	if(!CheckValid()) return true;
-	if (!Settings.bIsCancelable) return false;
-
-	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
-	{
-		Cursor.CurrentExecutor->CancelNode(Cursor);
-		UUnitMainComponent* TargetUnit;
-		if (Settings.bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
-		{
-			TargetUnit->StopMainActionMontage(true);
-		}
-	}
-	Clear();
-	return true;
-}
-
-void FMainActionInfo::End()
-{
-	if (CheckValid())
-	{
-		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor);
-		Clear();
-	}
-}
-
-
-bool FMainActionInfo::CheckValid() const
-{
-	return Cursor.CheckValid();
-}
-
 UUnitMainComponent::UUnitMainComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -455,15 +400,18 @@ void UUnitMainComponent::AddUnitComponent(UUnitComponentBase* NewComponent)
 	}
 };
 
+bool UUnitMainComponent::GetMainActionCancelable_Implementation() const
+{
+	return MainAction.Settings.bIsCancelable;
+};
 
 bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
 {
-	if(Info.CheckValid()) return SetMainAction(Info.Cursor, Info.Settings);
-	else return StopMainAction();
+	bool Result = false;
+	if(Info.CheckValid())	Result = SetMainAction(Info.Cursor, Info.Settings);
+	else					Result = StopMainAction();
+	return Result;
 }
-
-bool UUnitMainComponent::GetMainActionCancelable_Implementation() const 
-{ return MainAction.Settings.bIsCancelable; };
 
 bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings)
 {
@@ -473,20 +421,23 @@ bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, co
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
 		if (Settings.bIsResetIntent) ClaimIntentionReset();
 		MainAction.Set(WantCursor, Settings);
+		OnMainActionChanged.Broadcast(MainAction);
 	}
 	return Result;
 }
 
 bool UUnitMainComponent::StopMainAction()
 {
-	return MainAction.Cancel();
+	bool Result = MainAction.Cancel();
+	if(Result) OnMainActionChanged.Broadcast(MainAction);
+	return Result;
 }
 
 void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent)
 {
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
-	MainAction.End();
+	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction);
 
 	if (CurrentReservatedAction.bIsValid)
 	{

@@ -70,41 +70,7 @@ public:
 	int GetOrder() const;
 };
 
-USTRUCT(BlueprintType)
-struct FActionIntentContainer
-{
-	GENERATED_BODY()
 
-public:
-	static const FActionIntentContainer None;
-
-public:
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	AOperator* Operator = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	AActor* TargetActor = nullptr;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	FName IntentType = NAME_None;
-
-public:
-	void Clear()
-	{
-		Operator = nullptr;
-		TargetActor = nullptr;
-		IntentType = NAME_None;
-	}
-
-	bool operator==(const FActionIntentContainer& other)
-	{
-		return
-			Operator == other.Operator &&
-			TargetActor == other.TargetActor &&
-			IntentType == other.IntentType;
-	}
-};
 
 USTRUCT(BlueprintType)
 struct FActionExecuteSettingContainer
@@ -140,4 +106,61 @@ public:
 		bIsStopActionMontageOnStart = true;
 		bIsStopActionMontageOnEnd = true;
 	}
+};
+
+USTRUCT(BlueprintType)
+struct FActionIntentContainer
+{
+	GENERATED_BODY()
+
+public:
+	static const FActionIntentContainer None;
+
+public:
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	AOperator* OrderedOperator = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	AActor* TargetActor = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	FName IntentType = NAME_None;
+
+public:
+	void Clear() {*this = None;}
+
+	bool operator==(const FActionIntentContainer& other) const
+	{
+		return
+			OrderedOperator == other.OrderedOperator &&
+			TargetActor == other.TargetActor &&
+			IntentType == other.IntentType;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FMainActionInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	FActionCursorFinder Cursor;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	FActionExecuteSettingContainer Settings;
+
+	void Clear();
+
+	void Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting);
+
+	void Clear(const UActionExecutor* OldExecutor);
+
+	void SetActionMessage_Simple(FName Message);
+
+	bool Cancel();
+
+	bool End();
+
+	bool CheckValid() const;
 };

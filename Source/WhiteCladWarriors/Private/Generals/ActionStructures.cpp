@@ -1,5 +1,7 @@
 
 #include "Generals/Structs/ActionStructures.h"
+#include "Objects/Selectables/Components/UnitActionComponent.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Actions/ActionBase.h"
 #include "Actions/Executables/ActionExecutor.h"
 
@@ -52,3 +54,59 @@ int FActionTargetContainer::GetOrder() const
 	return IsValid(this->Action) ? this->Action->GetUIOrder() : 0;
 }
 
+void FMainActionInfo::Clear()
+{
+	Cursor.Clear();
+	Settings.Clear();
+}
+
+void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting)
+{
+	Cursor = WantCursor;
+	Settings = WantSetting;
+}
+
+void FMainActionInfo::Clear(const UActionExecutor* OldExecutor)
+{
+	if (Cursor.CheckExecutor(OldExecutor)) Clear();
+}
+
+void FMainActionInfo::SetActionMessage_Simple(FName Message)
+{
+	if (CheckValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
+}
+
+bool FMainActionInfo::Cancel()
+{
+	if (!CheckValid()) return true;
+	if (!Settings.bIsCancelable) return false;
+
+	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
+	{
+		Cursor.CurrentExecutor->CancelNode(Cursor);
+		UUnitMainComponent* TargetUnit;
+		if (Settings.bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
+		{
+			TargetUnit->StopMainActionMontage(true);
+		}
+	}
+	Clear();
+	return true;
+}
+
+bool FMainActionInfo::End()
+{
+	if (CheckValid())
+	{
+		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor);
+		Clear();
+		return true;
+	}
+	return false;
+}
+
+
+bool FMainActionInfo::CheckValid() const
+{
+	return Cursor.CheckValid();
+}

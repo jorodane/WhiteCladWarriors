@@ -25,20 +25,6 @@ class UActionExecutor;
 class UActionNode;
 class UFillableValueComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionIntentChanged, const FActionIntentContainer&, Claimer);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
-
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageNotify, const FActionCursorFinder&, Cursor, FName, NotifyName);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnMontageStart, const FActionCursorFinder&, Cursor);
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageEnd, const FActionCursorFinder&, Cursor, bool, bIsInterrupted);
-
 USTRUCT(BlueprintType)
 struct FActionReservator
 {
@@ -68,35 +54,23 @@ struct FActionReservator
 	bool CheckValid();
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
 	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
-
-
 };
 
-USTRUCT(BlueprintType)
-struct FMainActionInfo
-{
-	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	FActionCursorFinder Cursor;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	FActionExecuteSettingContainer Settings;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionIntentChanged, const FActionIntentContainer&, Claimer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMainActionChanged, const FMainActionInfo&, NewMainAction);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);
 
-	void Clear();
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMovementStop);
 
-	void Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting);
-
-	void Clear(const UActionExecutor* OldExecutor);
-
-	void SetActionMessage_Simple(FName Message);
-
-	bool Cancel();
-
-	void End();
-
-	bool CheckValid() const;
-};
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageNotify, const FActionCursorFinder&, Cursor, FName, NotifyName);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnMontageStart, const FActionCursorFinder&, Cursor);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnMontageEnd, const FActionCursorFinder&, Cursor, bool, bIsInterrupted);
 
 UENUM(BlueprintType)
 enum class EUnitAllyType : uint8
@@ -134,6 +108,9 @@ public:
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnMovementStart OnMovementStart;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnMainActionChanged OnMainActionChanged;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnActionIntentChanged OnActionIntentChanged;
@@ -176,7 +153,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Animation", meta = (AllowPrivateAccess = true))
 	TObjectPtr<UAnimInstance> AnimInstance;
 
+	UPROPERTY(BlueprintReadOnly, Category = "MainAction", meta = (AllowPrivateAccess = true))
 	FMainActionInfo MainAction;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Intention", meta = (AllowPrivateAccess = true))
 	FActionIntentContainer CurrentIntention;
 
 	FMontageEventInfo InputReadyMontageEvent;
@@ -350,15 +330,15 @@ public:
 	bool ClaimStopMovement();
 	bool ClaimStopMovement_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Intent")
 	bool ClaimIntention(FActionIntentContainer Claimer);
 	bool ClaimIntention_Implementation(FActionIntentContainer Claimer);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Intent")
 	bool ClaimIntentionReset();
 	bool ClaimIntentionReset_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Intent")
 	void NotifyIntentionChanged(const FActionIntentContainer& NewIntention);
 	void NotifyIntentionChanged_Implementation(const FActionIntentContainer& NewIntention);
 
