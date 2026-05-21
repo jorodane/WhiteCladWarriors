@@ -61,7 +61,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueCom
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionIntentChanged, const FActionIntentContainer&, Claimer);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMainActionChanged, const FMainActionInfo&, NewMainAction);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainActionChanged, const FMainActionInfo&, NewMainAction, bool, bIsValid);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDamage, UUnitMainComponent*, TargetUnit, const FDamageInfo&, Info);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnMovementStart, const FVector&, Destination, AActor*, TargetActor, float, AcceptanceRadius, const FActionCursorFinder&, WantCursor);

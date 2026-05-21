@@ -421,7 +421,7 @@ bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, co
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
 		if (Settings.bIsResetIntent) ClaimIntentionReset();
 		MainAction.Set(WantCursor, Settings);
-		OnMainActionChanged.Broadcast(MainAction);
+		OnMainActionChanged.Broadcast(MainAction, true);
 	}
 	return Result;
 }
@@ -429,7 +429,7 @@ bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, co
 bool UUnitMainComponent::StopMainAction()
 {
 	bool Result = MainAction.Cancel();
-	if(Result) OnMainActionChanged.Broadcast(MainAction);
+	if(Result) OnMainActionChanged.Broadcast(MainAction, false);
 	return Result;
 }
 
@@ -437,7 +437,7 @@ void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitAction
 {
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
-	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction);
+	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction, false);
 
 	if (CurrentReservatedAction.bIsValid)
 	{
