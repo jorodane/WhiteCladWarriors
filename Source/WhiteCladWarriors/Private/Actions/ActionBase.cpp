@@ -5,6 +5,7 @@
 #include "Actions/Executables/ActionSelectorNode.h"
 #include "Actions/Executables/ActionExecutor.h"
 #include "Generals/Structs/ActionInputStructures.h"
+#include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
 FText AActionBase::GetActionNameUIWithKey()
@@ -23,6 +24,17 @@ bool AActionBase::IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const
 {
 	AsSelectorNode = RootNodeAsSelector();
 	return IsValid(AsSelectorNode);
+}
+
+bool AActionBase::IsExecutable_Implementation(UUnitActionComponent* CurrentTarget) const
+{
+	if (!IsValid(CurrentTarget)) return false;
+	if (UUnitMainComponent* AsUnit = CurrentTarget->OwnerUnit)
+	{
+		if (!IsValid(AsUnit)) return false;
+		if (!AsUnit->GetActionExecutable()) return false;
+	}
+	return true;
 }
 
 bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const
@@ -72,8 +84,10 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 
 UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues)
 {
-	const TArray<UUnitActionComponent*>& ClaimedComponents = TargetComponents;
+	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	UActionExecutor* NewExecutor = nullptr;
+	if (ClaimedComponents.IsEmpty()) return NewExecutor;
+	ClaimedComponents.RemoveAll([this](UUnitActionComponent* Target) {return IsNotExecutable(Target); });
 	if (ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
@@ -92,7 +106,9 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	const FInputPackage& ClaimedInput = Input;
 	UActionExecutor* NewExecutor = nullptr;
-	if(ClaimedComponents.IsEmpty()) return NewExecutor;
+	if (ClaimedComponents.IsEmpty()) return NewExecutor;
+	ClaimedComponents.RemoveAll([this](UUnitActionComponent* Target) {return IsNotExecutable(Target); });
+	if (ClaimedComponents.IsEmpty()) return NewExecutor;
 	if (IsValid(RootNode))
 	{
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);

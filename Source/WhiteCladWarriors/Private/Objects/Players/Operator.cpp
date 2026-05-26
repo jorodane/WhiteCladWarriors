@@ -489,7 +489,8 @@ void AOperator::CommandAction(AActionBase* TargetAction, const TArray<UUnitActio
 
 void AOperator::CommandActionForSelectedComponents(AActionBase* TargetAction, bool bIsStartImmediately)
 {
-	CommandAction(TargetAction, GetAvailableComponentList(TargetAction), bIsStartImmediately);
+	TArray<UUnitActionComponent*> AvailableComponents = GetAvailableComponentList(TargetAction);
+	CommandAction(TargetAction, AvailableComponents, bIsStartImmediately);
 }
 
 TArray<FActionTargetContainer> AOperator::GetAvailableActionList()
@@ -848,7 +849,7 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 			AActionBase* CurrentAction = CurrentPair.Key;
 			TSet<AActor*>& CurrentList = CurrentPair.Value;
 			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
-			const TArray<AActor*> ResultArray = CurrentList.Array();
+			TArray<AActor*> ResultArray = CurrentList.Array();
 
 			ReservationAction(CurrentAction, ResultArray, CurrentInputPackage, true);
 		}
@@ -862,7 +863,7 @@ void AOperator::SimpleAction(const FInputPackage& Input)
 			AActionBase* CurrentAction = CurrentPair.Key;
 			TSet<UUnitActionComponent*>& CurrentList = CurrentPair.Value;
 			if (!IsValid(CurrentAction) || CurrentList.Num() == 0) continue;
-			const TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
+			TArray<UUnitActionComponent*> ResultArray = CurrentList.Array();
 			for (UUnitActionComponent* CurrentComponent : ResultArray) if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 			CommandAction(CurrentAction, ResultArray, true);
 		}

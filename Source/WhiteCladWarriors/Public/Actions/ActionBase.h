@@ -127,8 +127,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	inline bool			IsRootNodeSelector(UActionSelectorNode*& AsSelectorNode) const;
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
+	bool				IsExecutable(UUnitActionComponent* CurrentTarget) const;
+	bool				IsExecutable_Implementation(UUnitActionComponent* CurrentTarget) const;
+
 	UFUNCTION(BlueprintPure, Category = "Action")
-	inline bool			IsExecutable(UUnitActionComponent* CurrentTarget) const { return true; };
+	bool			IsNotExecutable(UUnitActionComponent* CurrentTarget) const { return !IsExecutable(CurrentTarget); };
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	bool			IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UUnitActionComponent*>& TargetComponent) const;

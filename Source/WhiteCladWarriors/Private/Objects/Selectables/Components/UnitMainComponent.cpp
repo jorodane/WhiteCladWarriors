@@ -402,8 +402,18 @@ void UUnitMainComponent::AddUnitComponent(UUnitComponentBase* NewComponent)
 
 bool UUnitMainComponent::GetMainActionCancelable_Implementation() const
 {
-	return MainAction.Settings.bIsCancelable;
+	return !MainAction.CheckValid() || MainAction.Settings.bIsCancelable;
 };
+
+bool UUnitMainComponent::GetMainActionExecutable_Implementation()
+{
+	return GetActionExecutable() && GetMainActionCancelable();
+}
+
+bool UUnitMainComponent::GetActionExecutable_Implementation()
+{
+	return !IDamageable::Execute_GetIsDie(this);
+}
 
 bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
 {
@@ -415,7 +425,7 @@ bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
 
 bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings)
 {
-	bool Result = MainAction.Cancel();
+	bool Result = GetMainActionExecutable() && MainAction.Cancel();
 	if (Result)
 	{
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();

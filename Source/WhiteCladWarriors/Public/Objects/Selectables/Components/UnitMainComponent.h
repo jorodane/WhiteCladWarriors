@@ -286,6 +286,13 @@ public:
 	bool GetMainActionCancelable() const;
 	virtual bool GetMainActionCancelable_Implementation() const;
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
+	bool GetMainActionExecutable();
+	virtual bool GetMainActionExecutable_Implementation();
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
+	bool GetActionExecutable();
+	virtual bool GetActionExecutable_Implementation();
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool SetMainAction(const FMainActionInfo& Info);
 	bool SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings);
