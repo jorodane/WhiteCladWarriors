@@ -65,7 +65,7 @@ bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Op
 	{
 		if (IsValid(CurrentComponent))
 		{
-			FActionCursorFinder MainFinder(this, Operator, nullptr, CurrentComponent, 0);
+			FActionCursorFinder MainFinder(this, Operator, nullptr, CurrentComponent, 0, false);
 
 			if (UActionSelectorNode* RootSelector = RootNodeAsSelector())
 			{
@@ -94,7 +94,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
-			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
+			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0, false);
 			RootNode->ClaimExecute(MainFinder);
 		}
 	}
@@ -114,7 +114,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
-			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0);
+			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0, false);
 			RootNode->ClaimExecuteWithInput(MainFinder, ClaimedInput);
 		}
 	}

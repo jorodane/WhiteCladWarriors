@@ -13,14 +13,14 @@ struct FDamageInfo
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
-	float DamageValue;
+	float DamageValue = 0.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
-	FVector DamageDirection;
+	FVector DamageDirection = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
-	AActor* DamageCauser;
+	AActor* DamageCauser = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
-	UUnitMainComponent* DamageInstigator;
+	UUnitMainComponent* DamageInstigator = nullptr;
 };

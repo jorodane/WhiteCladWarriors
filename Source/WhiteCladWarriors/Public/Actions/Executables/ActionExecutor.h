@@ -66,6 +66,7 @@ struct FActiveNodeMap
 	inline FActiveNodeInfo& SetNode(UActionNode* Node, int ID);
 
 	inline void RemoveID(int ID);
+	inline void RemoveSubNodes();
 	inline bool IsEmpty() const { return NodeMap.IsEmpty(); }
 
 	void BroadcastFunction(const FActionCursorFinder& Cursor, TFunctionRef<void(UActionNode*, const FActionCursorFinder&)> Function);
@@ -186,13 +187,16 @@ public:
 	bool SetInputArray(TArray<FActionCursorFinder> CursorArray, UActionSelectorNode* WantNode, const FInputPackage& WantInput);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsSubNode = false, int RecursiveDepth = 12);
+	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	UActionNode* GetCurrentNode(const FActionCursorFinder& WantCursor);
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode);
+	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bEndSubNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CompleteNode(const FActionCursorFinder& WantCursor);
@@ -216,7 +220,7 @@ public:
 	void CheckCursorMap();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0);
+	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
 	FActiveNodeMap* GetCursor(UUnitActionComponent* TargetComponent);
 	UActionNode* GetNode(const FActionCursorFinder& WantCursor);

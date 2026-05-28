@@ -20,6 +20,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TObjectPtr<UActionNode> RootNode = nullptr;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Action")
+	TObjectPtr<UActionNode> RootAsSubNode = nullptr;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	FKey ActionHotKey;

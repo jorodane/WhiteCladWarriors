@@ -30,13 +30,14 @@ bool FActionCursorFinder::CheckAction(const AActionBase* WantAction) const
 	return CurrentAction == WantAction;
 }
 
-void FActionCursorFinder::Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID)
+void FActionCursorFinder::Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode)
 {
 	CurrentAction = WantAction;
 	CurrentOperator = WantOperator;
 	CurrentExecutor = WantExecutor;
 	CurrentComponent = WantComponent;
 	CurrentID = WantID;
+	bIsSubNode = bAsSubNode;
 }
 
 
@@ -47,6 +48,7 @@ void FActionCursorFinder::Clear()
 	CurrentExecutor = nullptr;
 	CurrentComponent = nullptr;
 	CurrentID = 0;
+	bIsSubNode = false;
 }
 
 int FActionTargetContainer::GetOrder() const
