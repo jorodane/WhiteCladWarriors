@@ -447,6 +447,7 @@ void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitAction
 {
 	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
 
+	MainAction.Cancel();
 	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction, false);
 
 	if (CurrentReservatedAction.bIsValid)

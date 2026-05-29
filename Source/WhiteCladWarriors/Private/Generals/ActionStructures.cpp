@@ -62,16 +62,16 @@ void FMainActionInfo::Clear()
 	Settings.Clear();
 }
 
+void FMainActionInfo::Clear(const UActionExecutor* OldExecutor)
+{
+	if (Cursor.CheckExecutor(OldExecutor)) Clear();
+}
 void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting)
 {
 	Cursor = WantCursor;
 	Settings = WantSetting;
 }
 
-void FMainActionInfo::Clear(const UActionExecutor* OldExecutor)
-{
-	if (Cursor.CheckExecutor(OldExecutor)) Clear();
-}
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
@@ -100,7 +100,16 @@ bool FMainActionInfo::End()
 {
 	if (CheckValid())
 	{
-		Cursor.CurrentComponent->OnEndMainAction(Cursor.CurrentExecutor);
+		if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
+		{
+			if(IsValid(Cursor.CurrentExecutor)) Cursor.CurrentExecutor->CompleteNode(Cursor);
+			TargetComponent->OnEndMainAction(Cursor.CurrentExecutor);
+			UUnitMainComponent* TargetUnit;
+			if (Settings.bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
+			{
+				TargetUnit->StopMainActionMontage(true);
+			}
+		}
 		Clear();
 		return true;
 	}

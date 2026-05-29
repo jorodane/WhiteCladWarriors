@@ -155,9 +155,9 @@ struct FMainActionInfo
 
 	void Clear();
 
-	void Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting);
-
 	void Clear(const UActionExecutor* OldExecutor);
+
+	void Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting);
 
 	void SetActionMessage_Simple(FName Message);
 
