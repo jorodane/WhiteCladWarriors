@@ -35,6 +35,10 @@ void AMapSetting::PreInitializeComponents()
 
 void AMapSetting::BeginDestroy()
 {
+	for (UActorComponent* CurrentComponent : GetComponentsByInterface(UMapSettingConnectable::StaticClass()))
+	{
+		IMapSettingConnectable::Execute_OnDetached(CurrentComponent, this);
+	}
 	if (CurrentSetting == this) CurrentSetting = nullptr;
 	Super::BeginDestroy();
 }

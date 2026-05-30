@@ -3,6 +3,7 @@
 
 #include "Settings/ActionSetting.h"
 #include "Settings/MapSetting.h"
+#include "Actions/Executables/ActionExecutor.h"
 
 TObjectPtr<UActionSetting> UActionSetting::CurrentSetting = nullptr;
 
@@ -16,6 +17,7 @@ void UActionSetting::OnAttached_Implementation(AMapSetting* NewOwner)
 {
 	Owner = NewOwner;
 	CurrentSetting = this;
+	InitiateActions(NewOwner);
 }
 void UActionSetting::OnDetached_Implementation(AMapSetting* OldOwner)
 {
@@ -26,10 +28,57 @@ void UActionSetting::OnDetached_Implementation(AMapSetting* OldOwner)
 	}
 }
 
-void UActionSetting::InitiateActions_Implementation(const FMapInfo& WantInfo)
+void UActionSetting::InitiateActions_Implementation(AMapSetting* WantInfo)
 {
-
+	ExecutorReady(EXECUTOR_COUNT_ON_START);
 }
+
+bool UActionSetting::GetExecutor(uint64 ID, TObjectPtr<UActionExecutor>& Result)
+{
+	TObjectPtr<UActionExecutor>* Founded = ExecutorSpawned.Find(ID);
+	if (Founded) Result = *Founded;
+	return IsValid(Result);
+}
+
+uint64 UActionSetting::ActivateExecutorFromPool()
+{
+	uint64 ResultID = lastExecutorID++;
+
+	TObjectPtr<UActionExecutor> ResultExecutor = ExecutorWaitQueue.Pop(false);
+	if (!ResultExecutor)
+	{
+		ExecutorReady(EXECUTOR_COUNT_ON_ADD);
+		ResultExecutor = ExecutorReady();
+		if (!ResultExecutor) return -1;
+	}
+
+	ResultExecutor->ExecutorID = ResultID;
+	ExecutorSpawned.Add(ResultID, ResultExecutor);
+
+	return ResultID;
+}
+
+void UActionSetting::DeactivateExecutorToPool(uint64 ID)
+{
+	TObjectPtr<UActionExecutor> ResultExecutor;
+	if (ExecutorSpawned.RemoveAndCopyValue(ID, ResultExecutor))
+	{
+		ExecutorWaitQueue.Add(ResultExecutor);
+	}
+}
+
+void UActionSetting::ExecutorReady(int amount)
+{
+	for (int i = 0; i < amount; i++)
+	{
+		ExecutorWaitQueue.Add(ExecutorReady());
+	}
+}
+TObjectPtr<UActionExecutor> UActionSetting::ExecutorReady()
+{
+	return NewObject<UActionExecutor>(this);
+}
+
 
 AActionBase* UActionSetting::GetAction(FName WantName)
 {
@@ -42,32 +91,29 @@ AActionBase* UActionSetting::GetAction(FName WantName)
 	}
 	return nullptr;
 }
-//// Sets default values for this component's properties
-//UActionSetting::UActionSetting()
-//{
-//	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-//	// off to improve performance if you don't need them.
-//	PrimaryComponentTick.bCanEverTick = true;
-//
-//	// ...
-//}
-//
-//
-//// Called when the game starts
-//void UActionSetting::BeginPlay()
-//{
-//	Super::BeginPlay();
-//
-//	// ...
-//	
-//}
-//
-//
-//// Called every frame
-//void UActionSetting::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-//{
-//	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-//
-//	// ...
-//}
 
+bool UActionSetting::ClaimGetExecutor(uint64 ID, TWeakObjectPtr<UActionExecutor>& Result)
+{
+	if (CurrentSetting)
+	{
+		return CurrentSetting->ClaimGetExecutor(ID, Result);
+	}
+	return false;
+}
+
+uint64 UActionSetting::ClaimActivateExecutorFromPool()
+{
+	if (CurrentSetting)
+	{
+		return CurrentSetting->ActivateExecutorFromPool();
+	}
+	return -1;
+}
+
+void UActionSetting::ClaimDeactivateExecutorToPool(uint64 ID)
+{
+	if (CurrentSetting)
+	{
+		CurrentSetting->DeactivateExecutorToPool(ID);
+	}
+}

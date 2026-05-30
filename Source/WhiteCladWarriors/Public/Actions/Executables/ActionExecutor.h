@@ -132,6 +132,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	FExecutorValueMap ValueMap;
 
+	uint64 ExecutorID;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message);

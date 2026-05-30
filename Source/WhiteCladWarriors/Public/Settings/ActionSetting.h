@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#define EXECUTOR_COUNT_ON_START 50
+#define EXECUTOR_COUNT_ON_ADD 10
 
 #include "Interfaces/MapSettingConnectable.h"
 #include "MapInfo.h"
@@ -9,6 +11,7 @@
 
 class AActionBase;
 class AMapSetting;
+class UActionExecutor;
 
 UCLASS( Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WHITECLADWARRIORS_API UActionSetting : public UActorComponent, public IMapSettingConnectable
@@ -18,6 +21,14 @@ class WHITECLADWARRIORS_API UActionSetting : public UActorComponent, public IMap
 protected:
 	static TObjectPtr<UActionSetting> CurrentSetting;
 	TObjectPtr<AMapSetting> Owner;
+
+	uint64 lastExecutorID;
+
+	UPROPERTY()
+	TMap<uint64, TObjectPtr<UActionExecutor>> ExecutorSpawned;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UActionExecutor>> ExecutorWaitQueue;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
@@ -32,23 +43,24 @@ protected:
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void InitiateActions(const FMapInfo& WantInfo);
-	virtual void InitiateActions_Implementation(const FMapInfo& WantInfo);
+	void InitiateActions(AMapSetting* WantInfo);
+	virtual void InitiateActions_Implementation(AMapSetting* WantInfo);
+
+	bool GetExecutor(uint64 ID, TObjectPtr<UActionExecutor>& Result);
+	uint64 ActivateExecutorFromPool();
+	void DeactivateExecutorToPool(uint64 ID);
+
+protected:
+	void ExecutorReady(int amount);
+	TObjectPtr<UActionExecutor> ExecutorReady();
+
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static AActionBase* GetAction(FName WantName);
-//public:	
-//	// Sets default values for this component's properties
-//	UActionSetting();
-//
-//protected:
-//	// Called when the game starts
-//	virtual void BeginPlay() override;
-//
-//public:	
-//	// Called every frame
-//	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	bool ClaimGetExecutor(uint64 ID, TWeakObjectPtr<UActionExecutor>& Result);
+	uint64 ClaimActivateExecutorFromPool();
+	void ClaimDeactivateExecutorToPool(uint64 ID);
 		
 };
