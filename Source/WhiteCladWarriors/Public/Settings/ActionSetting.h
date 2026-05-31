@@ -22,10 +22,10 @@ protected:
 	static TObjectPtr<UActionSetting> CurrentSetting;
 	TObjectPtr<AMapSetting> Owner;
 
-	uint64 lastExecutorID;
+	int64 lastExecutorID;
 
 	UPROPERTY()
-	TMap<uint64, TObjectPtr<UActionExecutor>> ExecutorSpawned;
+	TMap<int64, TObjectPtr<UActionExecutor>> ExecutorSpawned;
 
 	UPROPERTY()
 	TArray<TObjectPtr<UActionExecutor>> ExecutorWaitQueue;
@@ -46,11 +46,10 @@ public:
 	void InitiateActions(AMapSetting* WantInfo);
 	virtual void InitiateActions_Implementation(AMapSetting* WantInfo);
 
-	bool GetExecutor(uint64 ID, TObjectPtr<UActionExecutor>& Result);
-	uint64 ActivateExecutorFromPool();
-	void DeactivateExecutorToPool(uint64 ID);
-
 protected:
+	bool GetExecutor(int64 ID, TObjectPtr<UActionExecutor>& Result);
+	int64 ActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result);
+	void DeactivateExecutorToPool(int64 ID);
 	void ExecutorReady(int amount);
 	TObjectPtr<UActionExecutor> ExecutorReady();
 
@@ -59,8 +58,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static AActionBase* GetAction(FName WantName);
 
-	bool ClaimGetExecutor(uint64 ID, TWeakObjectPtr<UActionExecutor>& Result);
-	uint64 ClaimActivateExecutorFromPool();
-	void ClaimDeactivateExecutorToPool(uint64 ID);
+	static bool ClaimGetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>& Result);
+	static int64 ClaimActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result);
+	static void ClaimDeactivateExecutorToPool(int64 ID);
 		
 };

@@ -27,7 +27,7 @@ struct FActionCursorFinder
 	TObjectPtr<AOperator> CurrentOperator = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	TObjectPtr<UActionExecutor> CurrentExecutor = nullptr;
+	int64 CurrentExecutorID = -1;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	TObjectPtr<UUnitActionComponent> CurrentComponent = nullptr;

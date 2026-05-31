@@ -33,16 +33,16 @@ void UActionSetting::InitiateActions_Implementation(AMapSetting* WantInfo)
 	ExecutorReady(EXECUTOR_COUNT_ON_START);
 }
 
-bool UActionSetting::GetExecutor(uint64 ID, TObjectPtr<UActionExecutor>& Result)
+bool UActionSetting::GetExecutor(int64 ID, TObjectPtr<UActionExecutor>& Result)
 {
 	TObjectPtr<UActionExecutor>* Founded = ExecutorSpawned.Find(ID);
 	if (Founded) Result = *Founded;
 	return IsValid(Result);
 }
 
-uint64 UActionSetting::ActivateExecutorFromPool()
+int64 UActionSetting::ActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result)
 {
-	uint64 ResultID = lastExecutorID++;
+	int64 ResultID = lastExecutorID++;
 
 	TObjectPtr<UActionExecutor> ResultExecutor = ExecutorWaitQueue.Pop(false);
 	if (!ResultExecutor)
@@ -55,10 +55,11 @@ uint64 UActionSetting::ActivateExecutorFromPool()
 	ResultExecutor->ExecutorID = ResultID;
 	ExecutorSpawned.Add(ResultID, ResultExecutor);
 
+	Result = ResultExecutor;
 	return ResultID;
 }
 
-void UActionSetting::DeactivateExecutorToPool(uint64 ID)
+void UActionSetting::DeactivateExecutorToPool(int64 ID)
 {
 	TObjectPtr<UActionExecutor> ResultExecutor;
 	if (ExecutorSpawned.RemoveAndCopyValue(ID, ResultExecutor))
@@ -92,7 +93,7 @@ AActionBase* UActionSetting::GetAction(FName WantName)
 	return nullptr;
 }
 
-bool UActionSetting::ClaimGetExecutor(uint64 ID, TWeakObjectPtr<UActionExecutor>& Result)
+bool UActionSetting::ClaimGetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>& Result)
 {
 	if (CurrentSetting)
 	{
@@ -101,16 +102,16 @@ bool UActionSetting::ClaimGetExecutor(uint64 ID, TWeakObjectPtr<UActionExecutor>
 	return false;
 }
 
-uint64 UActionSetting::ClaimActivateExecutorFromPool()
+int64 UActionSetting::ClaimActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result)
 {
 	if (CurrentSetting)
 	{
-		return CurrentSetting->ActivateExecutorFromPool();
+		return CurrentSetting->ActivateExecutorFromPool(Result);
 	}
 	return -1;
 }
 
-void UActionSetting::ClaimDeactivateExecutorToPool(uint64 ID)
+void UActionSetting::ClaimDeactivateExecutorToPool(int64 ID)
 {
 	if (CurrentSetting)
 	{

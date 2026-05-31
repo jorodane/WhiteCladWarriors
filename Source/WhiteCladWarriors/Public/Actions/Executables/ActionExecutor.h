@@ -240,11 +240,18 @@ public:
 
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	static UActionExecutor* CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues);
+	static  TWeakObjectPtr<UActionExecutor> CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void DestroyExecutor(UActionExecutor* TargetExecutor);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void DestroyExecutorFromID(int64 WantID);
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	static UActionExecutor* GetExecutorFromID(int64 WantID);
+	static TWeakObjectPtr<UActionExecutor> GetExecutorWeakPtrFromID(int64 WantID);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void CompleteCursor(const FActionCursorFinder& WantCursor);

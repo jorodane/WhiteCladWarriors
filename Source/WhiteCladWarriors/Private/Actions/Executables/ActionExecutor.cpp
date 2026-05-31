@@ -7,6 +7,7 @@
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Players/Operator.h"
+#include "Settings/ActionSetting.h"
 
 
 int FActiveNodeMap::AddNode(UActionNode* Node)
@@ -289,11 +290,10 @@ UActionNode* UActionExecutor::GetCurrentNode(const FActionCursorFinder& WantCurs
 
 void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bEndSubNode)
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (!WantCursor.bIsSubNode && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(Executor);
+	if (!WantCursor.bIsSubNode && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(this);
 	if (FActiveNodeMap* CursorFinder = GetCursor(TargetComponent))
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
@@ -321,7 +321,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 
 		if (Cursor.IsEmpty())
 		{
-			if (UUnitMainComponent* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(Executor, TargetComponent);
+			if (UUnitMainComponent* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(this, TargetComponent);
 			CursorMap.Remove(TargetComponent);
 			CheckCursorMap();
 		}
@@ -445,14 +445,14 @@ void UActionExecutor::OnMessageFromComponent_Montage(UUnitComponentBase* From, U
 	}
 }
 
-UActionExecutor* UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues)
+TWeakObjectPtr<UActionExecutor> UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues)
 {
 	if(!IsValid(TargetAction)) return nullptr;
 	TargetComponents.RemoveAll([&](UUnitActionComponent* CurrentComponent)->bool{ return !IsValid(CurrentComponent);});
 	if(TargetComponents.Num() == 0) return nullptr;
-
-	UActionExecutor* Result = NewObject<UActionExecutor>(TargetAction);
-	if(!IsValid(Result)) return nullptr;
+	TWeakObjectPtr<UActionExecutor> Result;
+	UActionSetting::ClaimActivateExecutorFromPool(Result);
+	if(!Result.IsValid()) return nullptr;
 	Result->Action = TargetAction;
 	Result->Operator = TargetOperator;
 	Result->ValueMap = DefaultValues;
@@ -460,7 +460,6 @@ UActionExecutor* UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOpe
 	{
 		if (!IsValid(CurrentComponent)) continue;
 		Result->AddComponentToMap(CurrentComponent, StartNode);
-		//if (IsValid(StartNode)) StartNode->ClaimExecute(Result, CurrentComponent);
 	}
 	return Result;
 
@@ -469,15 +468,36 @@ UActionExecutor* UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOpe
 
 void UActionExecutor::DestroyExecutor(UActionExecutor* TargetExecutor)
 {
-	if(IsValid(TargetExecutor))	TargetExecutor->ConditionalBeginDestroy();
+	if (IsValid(TargetExecutor))	DestroyExecutorFromID(TargetExecutor->ExecutorID);
+}
+
+void UActionExecutor::DestroyExecutorFromID(int64 WantID)
+{
+	UActionSetting::ClaimDeactivateExecutorToPool(WantID);
+}
+
+UActionExecutor* UActionExecutor::GetExecutorFromID(int64 WantID)
+{
+	TWeakObjectPtr<UActionExecutor> Result = GetExecutorWeakPtrFromID(WantID);
+	if (Result.IsValid()) return Result.Get();
+	else return nullptr;
+}
+
+TWeakObjectPtr<UActionExecutor> UActionExecutor::GetExecutorWeakPtrFromID(int64 WantID)
+{
+	TWeakObjectPtr<UActionExecutor> Result;
+	UActionSetting::ClaimGetExecutor(WantID, Result);
+	return Result;
 }
 
 void UActionExecutor::CompleteCursor(const FActionCursorFinder& WantCursor)
 {
-	if (IsValid(WantCursor.CurrentExecutor)) WantCursor.CurrentExecutor->CompleteNode(WantCursor);
+	TWeakObjectPtr<UActionExecutor> Target = GetExecutorWeakPtrFromID(WantCursor.CurrentExecutorID);
+	if (Target.IsValid()) Target->CompleteNode(WantCursor);
 }
 
 void UActionExecutor::CancelCursor(const FActionCursorFinder& WantCursor)
 {
-	if (IsValid(WantCursor.CurrentExecutor)) WantCursor.CurrentExecutor->CancelNode(WantCursor);
+	TWeakObjectPtr<UActionExecutor> Target = GetExecutorWeakPtrFromID(WantCursor.CurrentExecutorID);
+	if (Target.IsValid()) Target->CancelNode(WantCursor);
 }
