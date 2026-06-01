@@ -7,7 +7,7 @@
 
 bool UActionSelectorNode::CompleteInput_Implementation(const FActionCursorFinder& WantCursor)
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return true;
 	MoveExecutorToNext(WantCursor);
 	return true;
@@ -15,14 +15,14 @@ bool UActionSelectorNode::CompleteInput_Implementation(const FActionCursorFinder
 
 void UActionSelectorNode::FailInput_Implementation(const FActionCursorFinder& WantCursor)
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
 	Executor->EnterNode(WantCursor, BlockedNode);
 }
 
 bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
-{ 
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return true;
 	if (Settings.bIsCancelable)
 	{
@@ -33,8 +33,8 @@ bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
 }
 
 bool UActionSelectorNode::ReceiveInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input)
-{ 
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return false;
 	bool Result = false;
 	for (const FSelectorInput& CurrentInputType : InputTypes)

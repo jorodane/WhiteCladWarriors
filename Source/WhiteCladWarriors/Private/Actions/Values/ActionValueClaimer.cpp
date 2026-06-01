@@ -112,7 +112,7 @@ FVector UPositionClaimer_SelfPosition::GetPosition(const FActionCursorFinder& Wa
 FVector UPositionClaimer_SavedPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (IsValid(Executor)) Result = Executor->GetSavedPosition(WantCursor, PositionTag);
 	if (AdditivePosition) Result += GetAdditivePosition(Component);
 	return Result;
@@ -181,7 +181,7 @@ FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFind
 
 FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (IsValid(Executor) && !DirectionTag.IsNone())return Executor->GetSavedDirection(WantCursor, DirectionTag);
 	else return DefaultDirection;
 }
@@ -214,14 +214,14 @@ AActor* UActorClaimer_SelfActor::GetActor(const FActionCursorFinder& WantCursor,
 
 AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return nullptr;
 	return Executor->GetSavedActor(WantCursor, ActorTag);
 }
 
 TArray<AActor*> UActorArrayClaimer::GetActorArray(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return TArray<AActor*>();
 	return Executor->GetSavedActorArray(WantCursor, ActorArrayTag);
 }

@@ -17,7 +17,7 @@ void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNode
 
 void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFinder& WantCursor, FName ResultName)
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	if (!IsValid(Executor) || !IsValid(TargetComponent)) return;
 	FLinkedNodeInfo* Result = LinkedNodes.Find(ResultName);
@@ -27,7 +27,7 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 		if (NodeInfo.bIsSubNode)
 		{
 			int ResultID;
-			if (FActiveNodeMap* ResultInfo = WantCursor.CurrentExecutor->GetCursor(TargetComponent))
+			if (FActiveNodeMap* ResultInfo = Executor->GetCursor(TargetComponent))
 			{
 				Executor->CreateSubNode(WantCursor, *ResultInfo, this, NodeInfo.Node, ResultID);
 			}
@@ -42,26 +42,16 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 
 void UActionNode::MoveExecutorToNext_Implementation(const FActionCursorFinder& WantCursor)
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
 	Executor->EnterNode(WantCursor, NextNode);
 }
 
 void UActionNode::MoveExecutorToCancel_Implementation(const FActionCursorFinder& WantCursor)
 {
-	UActionExecutor* Executor = WantCursor.CurrentExecutor;
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
 	Executor->EnterNode(WantCursor, CanceledNode);
-}
-
-void UActionNode::ClaimCancel_Implementation(const FActionCursorFinder& WantCursor)
-{
-	MoveExecutorToCancel(WantCursor);
-}
-
-void UActionNode::ClaimComplete_Implementation(const FActionCursorFinder& WantCursor)
-{
-	MoveExecutorToNext(WantCursor);
 }
 
 void UActionNode::OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message)

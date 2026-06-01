@@ -8,16 +8,20 @@
 const FActionCursorFinder FActionCursorFinder::None;
 const FActionIntentContainer FActionIntentContainer::None;
 
+UActionExecutor* FActionCursorFinder::GetExecutor() const
+{
+	return UActionExecutor::GetExecutorFromID(CurrentExecutorID);
+}
 
 bool FActionCursorFinder::CheckValid() const
 {
-	return IsValid(CurrentExecutor);
+	return IsValid(GetExecutor());
 }
 
-bool FActionCursorFinder::CheckExecutor(const UActionExecutor* WantExecutor) const
+bool FActionCursorFinder::CheckExecutor(const int64 WantExecutorID) const
 {
 	if (!CheckValid()) return false;
-	return CurrentExecutor == WantExecutor;
+	return CurrentExecutorID == WantExecutorID;
 }
 bool FActionCursorFinder::CheckOperator(const AOperator* WantOperator) const
 {
@@ -30,11 +34,11 @@ bool FActionCursorFinder::CheckAction(const AActionBase* WantAction) const
 	return CurrentAction == WantAction;
 }
 
-void FActionCursorFinder::Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode)
+void FActionCursorFinder::Set(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode)
 {
 	CurrentAction = WantAction;
 	CurrentOperator = WantOperator;
-	CurrentExecutor = WantExecutor;
+	CurrentExecutorID = WantExecutorID;
 	CurrentComponent = WantComponent;
 	CurrentID = WantID;
 	bIsSubNode = bAsSubNode;
@@ -45,7 +49,7 @@ void FActionCursorFinder::Clear()
 {
 	CurrentAction = nullptr;
 	CurrentOperator = nullptr;
-	CurrentExecutor = nullptr;
+	CurrentExecutorID = -1;
 	CurrentComponent = nullptr;
 	CurrentID = 0;
 	bIsSubNode = false;
@@ -62,9 +66,9 @@ void FMainActionInfo::Clear()
 	Settings.Clear();
 }
 
-void FMainActionInfo::Clear(const UActionExecutor* OldExecutor)
+void FMainActionInfo::Clear(int64 OldExecutorID)
 {
-	if (Cursor.CheckExecutor(OldExecutor)) Clear();
+	if (Cursor.CheckExecutor(OldExecutorID)) Clear();
 }
 void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting)
 {
@@ -75,7 +79,8 @@ void FMainActionInfo::Set(const FActionCursorFinder& WantCursor, const FActionEx
 
 void FMainActionInfo::SetActionMessage_Simple(FName Message)
 {
-	if (CheckValid()) Cursor.CurrentExecutor->SetActionMessage_Simple(Cursor, Message);
+	UActionExecutor* Executor = Cursor.GetExecutor();
+	if (CheckValid()) Executor->SetActionMessage_Simple(Cursor, Message);
 }
 
 bool FMainActionInfo::Cancel()
@@ -83,16 +88,13 @@ bool FMainActionInfo::Cancel()
 	if (!CheckValid()) return true;
 	if (!Settings.bIsCancelable) return false;
 
-	if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
-	{
-		Cursor.CurrentExecutor->CancelNode(Cursor);
-		UUnitMainComponent* TargetUnit;
-		if (Settings.bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
-		{
-			TargetUnit->StopMainActionMontage(true);
-		}
-	}
+	FActionCursorFinder CancelCursor = Cursor;
 	Clear();
+	if (UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent)
+	{
+		UActionExecutor* Executor = CancelCursor.GetExecutor();
+		Executor->CancelNode(CancelCursor);
+	}
 	return true;
 }
 
@@ -100,17 +102,13 @@ bool FMainActionInfo::End()
 {
 	if (CheckValid())
 	{
-		if (UUnitActionComponent* TargetComponent = Cursor.CurrentComponent)
-		{
-			if(IsValid(Cursor.CurrentExecutor)) Cursor.CurrentExecutor->CompleteNode(Cursor);
-			TargetComponent->OnEndMainAction(Cursor.CurrentExecutor);
-			UUnitMainComponent* TargetUnit;
-			if (Settings.bIsStopActionMontageOnEnd && TargetComponent->TryGetOwnerUnit(TargetUnit))
-			{
-				TargetUnit->StopMainActionMontage(true);
-			}
-		}
+		FActionCursorFinder CancelCursor = Cursor;
 		Clear();
+		if (UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent)
+		{
+			UActionExecutor* Executor = CancelCursor.GetExecutor();
+			TargetComponent->OnEndMainAction(Executor->ExecutorID);
+		}
 		return true;
 	}
 	return false;

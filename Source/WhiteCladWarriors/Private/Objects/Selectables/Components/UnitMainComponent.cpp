@@ -41,15 +41,16 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 {
 	if (!IsValid(Cursor.CurrentAction)) return bIsValid = false;
 	RunningComponents = StartComponents;
-	Cursor.CurrentExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, FExecutorValueMap(), Input);
-	bIsValid = IsValid(Cursor.CurrentExecutor);
+	UActionExecutor* CreatedExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, FExecutorValueMap(), Input);
+	bIsValid = IsValid(CreatedExecutor);
 	return bIsValid;
 }
 
-bool FActionReservator::SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+bool FActionReservator::SetEnd(int64 EndExecutorID, UUnitActionComponent* EndComponent)
 {
 	if (!CheckValid()) return false;
-	if (!IsValid(EndExecutor) || Cursor.CurrentExecutor != EndExecutor) return false;
+	UActionExecutor* EndExecutor = UActionExecutor::GetExecutorFromID(EndExecutorID);
+	if (Cursor.CurrentExecutorID != EndExecutorID || !IsValid(EndExecutor)) return false;
 	
 	RunningComponents.Remove(EndComponent);
 	bIsValid = !RunningComponents.IsEmpty();
@@ -443,16 +444,16 @@ bool UUnitMainComponent::StopMainAction()
 	return Result;
 }
 
-void UUnitMainComponent::EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent)
+void UUnitMainComponent::EndMainAction(int64 OldExecutorID, UUnitActionComponent* OldComponent)
 {
-	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutor != OldExecutor|| MainAction.Cursor.CurrentComponent != OldComponent) return;
+	UActionExecutor* OldExecutor = UActionExecutor::GetExecutorFromID(OldExecutorID);
+	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutorID != OldExecutorID || MainAction.Cursor.CurrentComponent != OldComponent) return;
 
-	MainAction.Cancel();
 	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction, false);
 
 	if (CurrentReservatedAction.bIsValid)
 	{
-		if (CurrentReservatedAction.SetEnd(OldExecutor, OldComponent)) ReservationNext();
+		if (CurrentReservatedAction.SetEnd(OldExecutorID, OldComponent)) ReservationNext();
 	}
 	else
 	{
@@ -498,11 +499,11 @@ void UUnitMainComponent::ReservationNext()
 	}
 }
 
-void UUnitMainComponent::NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent)
+void UUnitMainComponent::NotifyExecutorEnded_Implementation(int64 EndExecutorID, UUnitActionComponent* EndComponent)
 {
 	if (CurrentReservatedAction.CheckValid())
 	{
-		if (CurrentReservatedAction.SetEnd(EndExecutor, EndComponent))
+		if (CurrentReservatedAction.SetEnd(EndExecutorID, EndComponent))
 		{
 			ReservationNext();
 		}

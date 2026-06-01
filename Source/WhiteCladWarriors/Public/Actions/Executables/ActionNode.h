@@ -72,13 +72,11 @@ public:
 	void MoveExecutorToCancel(const FActionCursorFinder& WantCursor);
 	virtual void MoveExecutorToCancel_Implementation(const FActionCursorFinder& WantCursor);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimCancel(const FActionCursorFinder& WantCursor);
-	virtual void ClaimCancel_Implementation(const FActionCursorFinder& WantCursor);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
+	void OnCancel(const FActionCursorFinder& WantCursor);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	void ClaimComplete(const FActionCursorFinder& WantCursor);
-	virtual void ClaimComplete_Implementation(const FActionCursorFinder& WantCursor);
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
+	void OnComplete(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void ClaimExecute(const FActionCursorFinder& WantCursor);

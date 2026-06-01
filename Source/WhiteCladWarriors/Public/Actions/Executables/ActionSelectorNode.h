@@ -80,7 +80,7 @@ public:
 	bool CheckInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input, EInputType& ResultType, FText& FailReason);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Action")
-	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction, UActionExecutor* Executor) const;
+	FInputClaim GetInputClaim(const TArray<UUnitActionComponent*>& TargetComponent, const AActionBase* TargetAction, int64 ExecutorID) const;
 
 	UFUNCTION(BlueprintPure, Category = "Indicator")
 	TArray<UActionBehaviorNode*> GetIndicatorNodes();

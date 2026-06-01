@@ -75,7 +75,8 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		}
 		else
 		{
-			if (!IsValid(CurrentInputClaim.TargetActionCursor.CurrentExecutor))
+			UActionExecutor* CurrentClaimExecutor = CurrentInputClaim.TargetActionCursor.GetExecutor();
+			if (!IsValid(CurrentClaimExecutor))
 			{
 				CommandAction(CurrentInputClaim.TargetActionCursor.CurrentAction, CurrentInputClaim.TargetComponentArray, true);
 				//CurrentInputClaim.TargetExecutor = CurrentInputClaim.TargetAction->ExecuteActionWithInput(this, CurrentInputClaim.TargetComponentArray, GetInputPackage());
@@ -91,7 +92,7 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 					FinderArray.Add(NewFinder);
 					if (UUnitMainComponent* AsUnit = CurrentComponent->GetOwnerUnit()) AsUnit->ReservationClear();
 				}
-				bool bIsInputComplete =  CurrentInputClaim.TargetActionCursor.CurrentExecutor->SetInputArray(FinderArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
+				bool bIsInputComplete = CurrentClaimExecutor->SetInputArray(FinderArray, CurrentInputClaim.TargetNode, CurrentInputPackage);
 				if (bIsInputComplete) ForceRemoveInputClaim();
 			}
 		}
@@ -212,7 +213,7 @@ EInputMouseCursorType AOperator::GetCursorType_Implementation()
 				{
 					if (UActionSelectorNode* WorldSelector = WorldAction->RootNodeAsSelector())
 					{
-						FInputClaim WorldSimpleInputClaim = WorldSelector->GetInputClaim(ResultComponents, WorldAction, nullptr);
+						FInputClaim WorldSimpleInputClaim = WorldSelector->GetInputClaim(ResultComponents, WorldAction, -1);
 
 						ResultCursor = WorldSimpleInputClaim.TargetMouseCursorType;
 					}

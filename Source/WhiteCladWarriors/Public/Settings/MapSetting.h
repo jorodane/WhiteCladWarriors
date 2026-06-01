@@ -26,8 +26,7 @@ protected:
 
 public:	
 	virtual void PreInitializeComponents() override;
-	virtual void BeginDestroy() override;
-
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 public:
 	UFUNCTION(BlueprintPure, Category = "MapSetting")
 	static AMapSetting* GetCurrentMapSetting() { return CurrentSetting; }

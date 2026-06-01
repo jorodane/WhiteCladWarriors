@@ -42,7 +42,7 @@ bool AActionBase::IsNeedInputForStart(FInputClaim& TriggerInput, const TArray<UU
 	UActionSelectorNode* RootSelector;
 	if (IsRootNodeSelector(RootSelector))
 	{
-		TriggerInput = RootSelector->GetInputClaim(TargetComponent, this, nullptr);
+		TriggerInput = RootSelector->GetInputClaim(TargetComponent, this, -1);
 		return true;
 	}
 	return false;
@@ -65,7 +65,7 @@ bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Op
 	{
 		if (IsValid(CurrentComponent))
 		{
-			FActionCursorFinder MainFinder(this, Operator, nullptr, CurrentComponent, 0, false);
+			FActionCursorFinder MainFinder(this, Operator, -1, CurrentComponent, 0, false);
 
 			if (UActionSelectorNode* RootSelector = RootNodeAsSelector())
 			{
@@ -85,38 +85,42 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues)
 {
 	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
-	UActionExecutor* NewExecutor = nullptr;
-	if (ClaimedComponents.IsEmpty()) return NewExecutor;
+	TWeakObjectPtr<UActionExecutor> NewExecutor;
+	if (ClaimedComponents.IsEmpty()) return nullptr;
 	ClaimedComponents.RemoveAll([this](UUnitActionComponent* Target) {return IsNotExecutable(Target); });
-	if (ClaimedComponents.IsEmpty()) return NewExecutor;
+	if (ClaimedComponents.IsEmpty()) return nullptr;
 	if (IsValid(RootNode))
 	{
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
+		if (!NewExecutor.IsValid()) return nullptr;
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
-			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0, false);
+			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor->ExecutorID, CurrentComponent, 0, false);
 			RootNode->ClaimExecute(MainFinder);
 		}
+		return NewExecutor.Get();
 	}
-	return NewExecutor;
+	return nullptr;
 }
 
 UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input)
 {
 	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	const FInputPackage& ClaimedInput = Input;
-	UActionExecutor* NewExecutor = nullptr;
-	if (ClaimedComponents.IsEmpty()) return NewExecutor;
+	TWeakObjectPtr<UActionExecutor> NewExecutor = nullptr;
+	if (ClaimedComponents.IsEmpty()) return nullptr;
 	ClaimedComponents.RemoveAll([this](UUnitActionComponent* Target) {return IsNotExecutable(Target); });
-	if (ClaimedComponents.IsEmpty()) return NewExecutor;
+	if (ClaimedComponents.IsEmpty()) return nullptr;
 	if (IsValid(RootNode))
 	{
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
+		if (!NewExecutor.IsValid()) return nullptr;
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
-			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor, CurrentComponent, 0, false);
+			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor->ExecutorID, CurrentComponent, 0, false);
 			RootNode->ClaimExecuteWithInput(MainFinder, ClaimedInput);
 		}
+		return NewExecutor.Get();
 	}
-	return NewExecutor;
+	return nullptr;
 }

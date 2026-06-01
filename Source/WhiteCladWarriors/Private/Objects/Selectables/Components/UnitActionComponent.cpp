@@ -23,9 +23,9 @@ bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFi
 	return false;
 }
 
-void UUnitActionComponent::EndMainAction(UActionExecutor* Executor)
+void UUnitActionComponent::EndMainAction(int64 ExecutorID)
 {
-	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(Executor, this);
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(ExecutorID, this);
 }
 
 void UUnitActionComponent::OnInputStart_Implementation(const FInputClaim& StartedInput)

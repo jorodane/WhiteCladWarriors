@@ -47,7 +47,7 @@ public:
 	virtual void InitiateActions_Implementation(AMapSetting* WantInfo);
 
 protected:
-	bool GetExecutor(int64 ID, TObjectPtr<UActionExecutor>& Result);
+	bool GetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>& Result);
 	int64 ActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result);
 	void DeactivateExecutorToPool(int64 ID);
 	void ExecutorReady(int amount);

@@ -33,14 +33,15 @@ void AMapSetting::PreInitializeComponents()
 	}
 }
 
-void AMapSetting::BeginDestroy()
+void AMapSetting::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	for (UActorComponent* CurrentComponent : GetComponentsByInterface(UMapSettingConnectable::StaticClass()))
 	{
+		if (!IsValid(CurrentComponent)) continue;
 		IMapSettingConnectable::Execute_OnDetached(CurrentComponent, this);
 	}
 	if (CurrentSetting == this) CurrentSetting = nullptr;
-	Super::BeginDestroy();
+	Super::EndPlay(EndPlayReason);
 }
 
 FVector AMapSetting::MapOffsetToPosition(FVector2D Offset, bool Clamped01, bool InvertX, bool InvertY)

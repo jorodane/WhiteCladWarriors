@@ -64,7 +64,7 @@ void UActionIndicatorBase::ClearShower_Implementation()
 	bIsActivated = false;
 	bIsTriggerByIcon = false;
 	CurrentClaim.Clear();
-	CurrentExecutor = nullptr;
+	CurrentExecutorID = -1;
 	CurrentNode = nullptr;
 	CurrentComponents.Empty();
 
@@ -83,7 +83,7 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 	{
 		ResetIndicator();
 	}
-	CurrentExecutor = NewClaim.TargetActionCursor.CurrentExecutor;
+	CurrentExecutorID = NewClaim.TargetActionCursor.CurrentExecutorID;
 	CurrentComponents = NewClaim.TargetComponentArray;
 	CurrentNode = NewNode;
 	CurrentClaim = NewClaim;

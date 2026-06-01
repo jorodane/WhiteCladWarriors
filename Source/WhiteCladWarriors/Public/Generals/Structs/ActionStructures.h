@@ -39,15 +39,17 @@ struct FActionCursorFinder
 	bool bIsSubNode = false;
 
 	FActionCursorFinder(){}
-	FActionCursorFinder(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode) 
-	{Set(WantAction, WantOperator, WantExecutor, WantComponent, WantID, bAsSubNode);}
+	FActionCursorFinder(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode)
+	{Set(WantAction, WantOperator, WantExecutorID, WantComponent, WantID, bAsSubNode);}
+
+	UActionExecutor* GetExecutor() const;
 
 	bool CheckValid() const;
-	bool CheckExecutor(const UActionExecutor* WantExecutor) const;
+	bool CheckExecutor(const int64 WantExecutorID) const;
 	bool CheckOperator(const AOperator* WantOperator) const;
 	bool CheckAction(const AActionBase* WantAction) const;
 
-	void Set(AActionBase* WantAction, AOperator* WantOperator, UActionExecutor* WantExecutor, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode);
+	void Set(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode);
 
 	void Clear();
 };
@@ -96,9 +98,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsStopActionMontageOnStart = true;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsStopActionMontageOnEnd = true;
-
 public:
 	void Clear() 
 	{
@@ -107,7 +106,6 @@ public:
 		bIsResetIntent = true;
 		bIsStopMovementOnStart = false;
 		bIsStopActionMontageOnStart = true;
-		bIsStopActionMontageOnEnd = true;
 	}
 };
 
@@ -155,7 +153,7 @@ struct FMainActionInfo
 
 	void Clear();
 
-	void Clear(const UActionExecutor* OldExecutor);
+	void Clear(int64 OldExecutorID);
 
 	void Set(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& WantSetting);
 

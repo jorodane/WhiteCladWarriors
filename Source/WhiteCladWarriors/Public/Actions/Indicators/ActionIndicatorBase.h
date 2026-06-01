@@ -28,7 +28,7 @@ protected:
 	AOperator* OwnerOperator;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
-	TObjectPtr<UActionExecutor> CurrentExecutor;
+	int64 CurrentExecutorID;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Indicator")
 	TArray<UUnitActionComponent*> CurrentComponents;

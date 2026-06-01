@@ -53,7 +53,7 @@ struct FActionReservator
 	void Clear();
 	bool CheckValid();
 	bool Run(TArray<UUnitActionComponent*> StartComponents);
-	bool SetEnd(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+	bool SetEnd(int64 EndExecutorID, UUnitActionComponent* EndComponent);
 };
 
 
@@ -297,7 +297,7 @@ public:
 	bool StopMainAction();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction(UActionExecutor* OldExecutor, UUnitActionComponent* OldComponent);
+	void EndMainAction(int64 OldExecutorID, UUnitActionComponent* OldComponent);
 
 	UFUNCTION(BlueprintCallable, Category = "Action") 
 	void ReservationEnqueue(const FActionReservator& Reservation);
@@ -310,8 +310,8 @@ public:
 
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void NotifyExecutorEnded(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
-	void NotifyExecutorEnded_Implementation(UActionExecutor* EndExecutor, UUnitActionComponent* EndComponent);
+	void NotifyExecutorEnded(int64 EndExecutorID, UUnitActionComponent* EndComponent);
+	void NotifyExecutorEnded_Implementation(int64 EndExecutorID, UUnitActionComponent* EndComponent);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Animation")
 	bool PlayInputReadyMontage(const FMontageEventInfo& MontageEvent);

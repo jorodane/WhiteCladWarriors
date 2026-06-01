@@ -33,11 +33,11 @@ void UActionSetting::InitiateActions_Implementation(AMapSetting* WantInfo)
 	ExecutorReady(EXECUTOR_COUNT_ON_START);
 }
 
-bool UActionSetting::GetExecutor(int64 ID, TObjectPtr<UActionExecutor>& Result)
+bool UActionSetting::GetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>& Result)
 {
 	TObjectPtr<UActionExecutor>* Founded = ExecutorSpawned.Find(ID);
 	if (Founded) Result = *Founded;
-	return IsValid(Result);
+	return Result.IsValid();
 }
 
 int64 UActionSetting::ActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result)
@@ -97,7 +97,7 @@ bool UActionSetting::ClaimGetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>&
 {
 	if (CurrentSetting)
 	{
-		return CurrentSetting->ClaimGetExecutor(ID, Result);
+		return CurrentSetting->GetExecutor(ID, Result);
 	}
 	return false;
 }

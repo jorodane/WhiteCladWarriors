@@ -259,7 +259,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		const bool bExitMainLine = !bIsMainAction && bWasMainAction;
 		const bool bEnterMainLine = bIsMainAction && !bWasMainAction;
 
-		if (bExitMainLine) TargetComponent->EndMainAction(this);
+		if (bExitMainLine) TargetComponent->EndMainAction(ExecutorID);
 		if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->Settings);
 	}
 	if (IsValid(TargetNode)) TargetNode->ClaimExecute(WantCursor);
@@ -293,7 +293,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (!WantCursor.bIsSubNode && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(this);
+	if (!WantCursor.bIsSubNode && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
 	if (FActiveNodeMap* CursorFinder = GetCursor(TargetComponent))
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
@@ -312,7 +312,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 			{
 				if (IsValid(CurrentTarget.CurrentNode))
 				{
-					CurrentTarget.CurrentNode->ClaimCancel(SubCursor);
+					CurrentTarget.CurrentNode->MoveExecutorToCancel(SubCursor);
 				}
 			}
 		}
@@ -321,7 +321,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 
 		if (Cursor.IsEmpty())
 		{
-			if (UUnitMainComponent* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(this, TargetComponent);
+			if (UUnitMainComponent* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(ExecutorID, TargetComponent);
 			CursorMap.Remove(TargetComponent);
 			CheckCursorMap();
 		}
@@ -332,14 +332,16 @@ void UActionExecutor::CompleteNode(const FActionCursorFinder& WantCursor)
 {
 	UActionNode* WantNode = GetNode(WantCursor);
 	if (!IsValid(WantNode)) return;
-	WantNode->ClaimComplete(WantCursor);
+	WantNode->OnComplete(WantCursor);
+	WantNode->MoveExecutorToNext(WantCursor);
 }
 
 void UActionExecutor::CancelNode(const FActionCursorFinder& WantCursor)
 {
 	UActionNode* WantNode = GetNode(WantCursor);
 	if (!IsValid(WantNode)) return;
-	WantNode->ClaimCancel(WantCursor);
+	WantNode->OnCancel(WantCursor);
+	WantNode->MoveExecutorToCancel(WantCursor);
 }
 
 void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)
@@ -379,7 +381,7 @@ void UActionExecutor::CheckCursorMap()
 
 FActionCursorFinder UActionExecutor::CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID, bool bAsSubNode)
 {
-	return FActionCursorFinder(Action, Operator, this, TargetComponent, TargetID, bAsSubNode);
+	return FActionCursorFinder(Action, Operator, ExecutorID, TargetComponent, TargetID, bAsSubNode);
 }
 
 FActiveNodeMap* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent)
@@ -391,7 +393,7 @@ FActiveNodeMap* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent
 
 UActionNode* UActionExecutor::GetNode(const FActionCursorFinder& WantCursor)
 {
-	if (WantCursor.CheckValid())return nullptr;
+	if (!WantCursor.CheckValid())return nullptr;
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (FActiveNodeMap* Finder = GetCursor(TargetComponent)) return Finder->GetNode(ID);

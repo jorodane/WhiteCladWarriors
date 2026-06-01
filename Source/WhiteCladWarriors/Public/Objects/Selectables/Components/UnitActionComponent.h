@@ -37,10 +37,10 @@ public:
 	bool TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction(UActionExecutor* Executor);
+	void EndMainAction(int64 ExecutorID);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	void OnEndMainAction(UActionExecutor* Executor);
+	void OnEndMainAction(int64 ExecutorID);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void OnInputStart(const FInputClaim& StartedInput);
