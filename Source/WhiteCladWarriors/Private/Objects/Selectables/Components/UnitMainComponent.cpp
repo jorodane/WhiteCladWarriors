@@ -87,7 +87,6 @@ void UUnitMainComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 	if (IsValid(CurrentMesh))
 	{
 		FRotator ResultRotation(0.0, -90.0, 0.0);
-
 		FVector FocusLocation;
 		if (!CurrentMesh->IsAnySimulatingPhysics())
 		{

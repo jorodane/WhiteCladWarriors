@@ -46,8 +46,9 @@ struct FActiveNodeInfo
 
 	inline ENodeListeningState SetListening(ENodeListeningState NewState) { return CurrentListeningState = NewState; }
 
+	inline ENodeListeningState TryListeningMute() { if(CurrentListeningState != ENodeListeningState::Mute) SetListening(ENodeListeningState::Mute); return CurrentListeningState; }
 	inline ENodeListeningState TryListeningPending() { if(CurrentListeningState == ENodeListeningState::Listening) SetListening(ENodeListeningState::Pending); return CurrentListeningState; }
-	inline ENodeListeningState TryListeningStart() { if (CurrentListeningState == ENodeListeningState::Pending) SetListening(ENodeListeningState::Listening); return CurrentListeningState; }
+	inline ENodeListeningState TryListeningStart() { if (CurrentListeningState != ENodeListeningState::Listening) SetListening(ENodeListeningState::Listening); return CurrentListeningState; }
 };
 
 USTRUCT(BlueprintType)
@@ -63,6 +64,7 @@ struct FActiveNodeMap
 	int AddNode(UActionNode* Node);
 	inline UActionNode* GetNode(int ID);
 	inline FActiveNodeInfo* GetInfo(int ID);
+	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
 	inline FActiveNodeInfo& SetNode(UActionNode* Node, int ID);
 
 	inline void RemoveID(int ID);

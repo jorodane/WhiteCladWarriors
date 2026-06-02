@@ -216,41 +216,37 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	int ID = WantCursor.CurrentID;
 	bool bIsValidNode = IsValid(TargetNode);
 	bool bCanEnter = bIsValidNode ? TargetNode->GetCanEnter(WantCursor) : false;
+
+	while (!bCanEnter && bIsValidNode && RecursiveDepth > 0)
+	{
+		TargetNode = TargetNode->BlockedNode;
+		bIsValidNode = IsValid(TargetNode);
+		bCanEnter = bIsValidNode ? TargetNode->GetCanEnter(WantCursor) : false;
+		RecursiveDepth--;
+	}
+	const bool bIsBlocked = !(bIsValidNode && bCanEnter);
+
 	UActionNode* OriginNode = nullptr;
 	FActiveNodeInfo* Result = nullptr;
-	if (FActiveNodeMap* CurrentInfo = GetCursor(TargetComponent))
+	FActiveNodeMap* CurrentNodeMap = GetCursor(TargetComponent);
+	 
+	if (CurrentNodeMap)
 	{
-		OriginNode = CurrentInfo->GetNode(ID);
-
-		if (!bIsValidNode)
+		OriginNode = CurrentNodeMap->GetNode(ID);
+		FActiveNodeInfo* OriginInfo = CurrentNodeMap->GetInfo(ID);
+		if (OriginInfo) OriginInfo->TryListeningPending();
+		if (bIsBlocked)
 		{
 			EndNode(WantCursor, OriginNode, false);
 			return;
 		}
-		else if (!bCanEnter)
-		{
-			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, RecursiveDepth - 1);
-			else EndNode(WantCursor, OriginNode, false);
-			return;
-		}
-
-		Result = &CurrentInfo->SetNode(TargetNode, ID);
-		if (Result) Result->TryListeningPending();
 	}
-	else
+	else if (bIsBlocked)
 	{
-		if (!bIsValidNode)
-		{
-			CheckCursorMap();
-			return;
-		}
-		else if (!bCanEnter)
-		{
-			if (RecursiveDepth > 0) EnterNode(WantCursor, TargetNode->BlockedNode, RecursiveDepth - 1);
-			return;
-		}
-		Result = CursorMap.Add(TargetComponent, TargetNode).GetInfo(0);
+		CheckCursorMap();
+		return;
 	}
+
 	if (!WantCursor.bIsSubNode)
 	{
 		const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->Settings.bIsMainAction : false;
@@ -260,8 +256,19 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		const bool bEnterMainLine = bIsMainAction && !bWasMainAction;
 
 		if (bExitMainLine) TargetComponent->EndMainAction(ExecutorID);
-		if (bEnterMainLine) TargetComponent->TrySetMainAction(WantCursor, TargetNode->Settings);
+		if (bEnterMainLine)
+		{
+			if (!TargetComponent->TrySetMainAction(WantCursor, TargetNode->Settings))
+			{
+				EndNode(WantCursor, OriginNode, false);
+				return;
+			}
+		}
 	}
+
+	if (CurrentNodeMap) Result = &CurrentNodeMap->SetNode(TargetNode, ID);
+	else Result = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
+
 	if (IsValid(TargetNode)) TargetNode->ClaimExecute(WantCursor);
 	if (Result) Result->TryListeningStart();
 }
