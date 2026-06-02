@@ -90,10 +90,11 @@ bool FMainActionInfo::Cancel()
 
 	FActionCursorFinder CancelCursor = Cursor;
 	Clear();
-	if (UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent)
+	UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent;
+	if (IsValid(TargetComponent))
 	{
 		UActionExecutor* Executor = CancelCursor.GetExecutor();
-		Executor->CancelNode(CancelCursor);
+		if(IsValid(Executor))Executor->CancelNode(CancelCursor);
 	}
 	return true;
 }
@@ -104,10 +105,11 @@ bool FMainActionInfo::End()
 	{
 		FActionCursorFinder CancelCursor = Cursor;
 		Clear();
-		if (UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent)
+		UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent;
+		if (IsValid(TargetComponent))
 		{
 			UActionExecutor* Executor = CancelCursor.GetExecutor();
-			TargetComponent->OnEndMainAction(Executor->ExecutorID);
+			if(IsValid(Executor))TargetComponent->OnEndMainAction(Executor->ExecutorID);
 		}
 		return true;
 	}
