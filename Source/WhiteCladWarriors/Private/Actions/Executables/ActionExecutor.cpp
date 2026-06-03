@@ -247,7 +247,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		return;
 	}
 
-	if (!WantCursor.bIsSubNode)
+	if (WantCursor.CheckIsMainNode())
 	{
 		const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->Settings.bIsMainAction : false;
 		const bool bIsMainAction = IsValid(TargetNode) ? TargetNode->Settings.bIsMainAction : false;
@@ -278,7 +278,7 @@ UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FAct
 	ResultID = TargetInfo.AddNode(OriginNode);
 	UActionNode* Result = TargetInfo.GetNode(ResultID);
 	BaseCursor.CurrentID = ResultID;
-	BaseCursor.bIsSubNode = true;
+	BaseCursor.bAsSubNode = true;
 	EnterNode(BaseCursor, TargetNode, true);
 	return Result;
 }
@@ -300,7 +300,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (!WantCursor.bIsSubNode && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
+	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
 	if (FActiveNodeMap* CursorFinder = GetCursor(TargetComponent))
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;

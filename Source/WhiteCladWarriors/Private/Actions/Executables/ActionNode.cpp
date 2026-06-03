@@ -34,6 +34,7 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 		}
 		else
 		{
+			OnComplete(WantCursor);
 			Executor->EnterNode(WantCursor, NodeInfo.Node);
 		}
 	}
@@ -44,6 +45,7 @@ void UActionNode::MoveExecutorToNext_Implementation(const FActionCursorFinder& W
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
+	OnComplete(WantCursor);
 	Executor->EnterNode(WantCursor, NextNode);
 }
 
@@ -51,6 +53,7 @@ void UActionNode::MoveExecutorToCancel_Implementation(const FActionCursorFinder&
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
+	OnCancel(WantCursor);
 	Executor->EnterNode(WantCursor, CanceledNode);
 }
 

@@ -36,7 +36,7 @@ struct FActionCursorFinder
 	int CurrentID = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsSubNode = false;
+	bool bAsSubNode = false;
 
 	FActionCursorFinder(){}
 	FActionCursorFinder(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode)
@@ -45,11 +45,12 @@ struct FActionCursorFinder
 	UActionExecutor* GetExecutor() const;
 
 	bool CheckValid() const;
+	bool CheckIsMainNode() const { return CurrentID == 0 && !bAsSubNode; }
 	bool CheckExecutor(const int64 WantExecutorID) const;
 	bool CheckOperator(const AOperator* WantOperator) const;
 	bool CheckAction(const AActionBase* WantAction) const;
 
-	void Set(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bAsSubNode);
+	void Set(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bWantSubNode);
 
 	void Clear();
 };
