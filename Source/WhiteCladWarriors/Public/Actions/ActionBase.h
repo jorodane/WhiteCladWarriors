@@ -160,4 +160,7 @@ public:
 	UActionExecutor* ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input);
 	UActionExecutor* ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action", meta = (DefaultToSelf = "WantComponent"))
+	UActionExecutor* ExecuteActionToTarget(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor, const FExecutorValueMap& DefaultValues);
+	UActionExecutor* ExecuteActionToTarget_Implementation(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor, const FExecutorValueMap& DefaultValues);
 };

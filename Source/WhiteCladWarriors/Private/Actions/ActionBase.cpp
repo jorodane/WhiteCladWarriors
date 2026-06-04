@@ -124,3 +124,13 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	}
 	return nullptr;
 }
+
+UActionExecutor* AActionBase::ExecuteActionToTarget_Implementation(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor, const FExecutorValueMap& DefaultValues)
+{
+	if (!IsValid(WantComponent) || !IsValid(TargetActor)) return nullptr;
+	FInputPackage CreatedInput;
+	CreatedInput.SelectedActors = { WantComponent->GetOwner() };
+	CreatedInput.MouseHitActor = TargetActor;
+	CreatedInput.MouseTerrainPosition = TargetActor->GetActorLocation();
+	return ExecuteActionWithInput(WantOperator, { WantComponent }, DefaultValues, CreatedInput);
+}
