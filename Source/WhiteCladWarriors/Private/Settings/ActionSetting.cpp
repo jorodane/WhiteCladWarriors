@@ -64,6 +64,7 @@ void UActionSetting::DeactivateExecutorToPool(int64 ID)
 	TObjectPtr<UActionExecutor> ResultExecutor;
 	if (ExecutorSpawned.RemoveAndCopyValue(ID, ResultExecutor))
 	{
+		ResultExecutor->Clear();
 		ExecutorWaitQueue.Add(ResultExecutor);
 	}
 }

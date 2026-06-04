@@ -9,12 +9,24 @@
 #include "Objects/Players/Operator.h"
 #include "Settings/ActionSetting.h"
 
+void FActiveNodeMap::Clear()
+{
+	NodeMap.Reset();
+	EndEventMap.Reset();
+}
 
 int FActiveNodeMap::AddNode(UActionNode* Node)
 {
 	while (NodeMap.Find(nextID++));
 	int Result = nextID - 1;
 	NodeMap.Add(Result, Node);
+	return Result;
+}
+
+int FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded)
+{
+	int Result = AddNode(Node);
+	if (Result >= 0) EndEventMap.Add(Result, OnNodeEnded);
 	return Result;
 }
 
@@ -38,15 +50,23 @@ FActiveNodeInfo& FActiveNodeMap::SetNode(UActionNode* Node, int ID)
 	else return NodeMap.Add(ID, Node);
 }
 
+void FActiveNodeMap::InvokeEndEvent(int ID)
+{
+	FOnNodeEnded Result;
+	if (EndEventMap.RemoveAndCopyValue(ID, Result)) Result.Execute();
+}
+
+
 void FActiveNodeMap::RemoveID(int ID)
 {
 	NodeMap.Remove(ID);
+	EndEventMap.Remove(ID);
 }
 
 void FActiveNodeMap::RemoveSubNodes()
 {
 	FActiveNodeInfo* MainNode = NodeMap.Find(0);
-	NodeMap.Empty();
+	NodeMap.Reset();
 	if (MainNode)
 	{
 		NodeMap.Add(0, *MainNode);
@@ -84,21 +104,28 @@ void FActiveNodeMap::BroadcastMessage_Simple(const FActionCursorFinder& Cursor, 
 void FActiveNodeMap::BroadcastMessage_Detail(const FActionCursorFinder& Cursor, FName Message, const FName& Context)
 {
 	BroadcastFunction(Cursor,
-	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
-	{
-		CurrentNode->OnActionMessage_Detail(NewCursor, Message, Context);
-	});
+		[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+		{
+			CurrentNode->OnActionMessage_Detail(NewCursor, Message, Context);
+		});
 }
 void FActiveNodeMap::BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
 {
 	BroadcastFunction(Cursor,
-	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
-	{
-		CurrentNode->OnActionMessage_Montage(NewCursor, Montage, bIsStart, bIsInterrupted);
-	});
+		[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+		{
+			CurrentNode->OnActionMessage_Montage(NewCursor, Montage, bIsStart, bIsInterrupted);
+		});
 }
 
 
+void FExecutorValueMap::Clear()
+{
+	FloatMap.Reset();
+	PositionMap.Reset();
+	DirectionMap.Reset();
+	ActorMultiMap.Reset();
+}
 
 bool FExecutorValueMap::HasFloat(FName WantTag) const { return FloatMap.Contains(WantTag); }
 
@@ -176,6 +203,15 @@ TArray<AActor*> FExecutorValueMap::GetSavedActorArray(const FActionCursorFinder&
 
 
 
+void UActionExecutor::Clear()
+{
+	Action = nullptr;
+	Operator = nullptr;
+	CursorMap.Reset();
+	CreatedActors.Reset();
+	ValueMap.Clear();
+	ExecutorID = -1;
+}
 
 
 void UActionExecutor::SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message)
@@ -273,14 +309,40 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	if (Result) Result->TryListeningStart();
 }
 
-UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
+UActionNode* UActionExecutor::InitiateSubNode(FActionCursorFinder& BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* TargetNode, int& ResultID)
 {
-	ResultID = TargetInfo.AddNode(OriginNode);
 	UActionNode* Result = TargetInfo.GetNode(ResultID);
+	if (!Result) return nullptr;
 	BaseCursor.CurrentID = ResultID;
 	BaseCursor.bAsSubNode = true;
 	EnterNode(BaseCursor, TargetNode, true);
 	return Result;
+}
+
+UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
+{
+	FActiveNodeMap* CurrentNodeMap = GetCursor(BaseCursor.CurrentComponent);
+	if (CurrentNodeMap) return CreateSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
+	return nullptr;
+}
+
+UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
+{
+	FActiveNodeMap* CurrentNodeMap = GetCursor(BaseCursor.CurrentComponent);
+	if (CurrentNodeMap) return CreateSubNodeWithEvent(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID, OnNodeEnded);
+	return nullptr;
+}
+
+UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
+{
+	ResultID = TargetInfo.AddNode(OriginNode);
+	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
+}
+
+UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
+{
+	ResultID = TargetInfo.AddNode(OriginNode, OnNodeEnded);
+	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
 UActionNode* UActionExecutor::GetCurrentNode(const FActionCursorFinder& WantCursor)
@@ -301,9 +363,11 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
 	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
-	if (FActiveNodeMap* CursorFinder = GetCursor(TargetComponent))
+	FActiveNodeMap* CursorFinder = GetCursor(TargetComponent);
+	if (CursorFinder)
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
+		Cursor.InvokeEndEvent(ID);
 		if (bEndSubNode && !Cursor.NodeMap.IsEmpty())
 		{
 			FActionCursorFinder SubCursor = WantCursor;

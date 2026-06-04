@@ -15,7 +15,7 @@ class UActionSelectorNode;
 class UActionNode;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionMessage_Simple, UUnitMainComponent*, From);
-
+DECLARE_DYNAMIC_DELEGATE(FOnNodeEnded);
 /**
  * 
  */
@@ -58,15 +58,21 @@ struct FActiveNodeMap
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<int, FActiveNodeInfo> NodeMap;
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	TMap<int, FOnNodeEnded> EndEventMap;
 
 	int nextID = 1;
 
+	void Clear();
+
 	int AddNode(UActionNode* Node);
+	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
 	inline UActionNode* GetNode(int ID);
 	inline FActiveNodeInfo* GetInfo(int ID);
 	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
 	inline FActiveNodeInfo& SetNode(UActionNode* Node, int ID);
 
+	void InvokeEndEvent(int ID);
 	inline void RemoveID(int ID);
 	inline void RemoveSubNodes();
 	inline bool IsEmpty() const { return NodeMap.IsEmpty(); }
@@ -92,6 +98,8 @@ struct FExecutorValueMap
 
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
+
+	void			Clear();
 
 	bool			HasFloat(FName WantTag) const;
 	void			SetFloat(FName WantTag, const float& WantFloat);
@@ -137,6 +145,8 @@ public:
 	uint64 ExecutorID;
 
 public:
+	void Clear();
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetActionMessage_Simple(const FActionCursorFinder& WantCursor, FName Message);
 
@@ -193,8 +203,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth = 12);
 
+
+	UActionNode* InitiateSubNode(FActionCursorFinder& BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* TargetNode, int& ResultID);
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
+	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	UActionNode* CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
+
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+	UActionNode* CreateSubNodeWithEvent(FActionCursorFinder BaseCursor,FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
+
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	UActionNode* GetCurrentNode(const FActionCursorFinder& WantCursor);
