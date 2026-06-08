@@ -249,6 +249,7 @@ public:
 	FActiveNodeMap* GetCursor(UUnitActionComponent* TargetComponent);
 	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
 	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int TargetID = 0);
+	bool GetValid() { return ExecutorID != -1; }
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Action")

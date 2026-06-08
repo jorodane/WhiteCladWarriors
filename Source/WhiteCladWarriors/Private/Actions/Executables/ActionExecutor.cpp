@@ -263,7 +263,6 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	const bool bIsBlocked = !(bIsValidNode && bCanEnter);
 
 	UActionNode* OriginNode = nullptr;
-	FActiveNodeInfo* Result = nullptr;
 	FActiveNodeMap* CurrentNodeMap = GetCursor(TargetComponent);
 	 
 	if (CurrentNodeMap)
@@ -302,11 +301,16 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		}
 	}
 
-	if (CurrentNodeMap) Result = &CurrentNodeMap->SetNode(TargetNode, ID);
-	else Result = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
+	FActiveNodeInfo* CurrentNodeInfo = nullptr;
+	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode(TargetNode, ID);
+	else CurrentNodeInfo = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
 
 	if (IsValid(TargetNode)) TargetNode->ClaimExecute(WantCursor);
-	if (Result) Result->TryListeningStart();
+	if (GetValid())
+	{
+		CurrentNodeInfo = CurrentNodeMap->GetInfo(ID);
+		if (CurrentNodeInfo) CurrentNodeInfo->TryListeningStart();
+	}
 }
 
 UActionNode* UActionExecutor::InitiateSubNode(FActionCursorFinder& BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* TargetNode, int& ResultID)
