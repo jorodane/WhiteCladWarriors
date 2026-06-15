@@ -10,9 +10,10 @@ const FVector2D AMapSetting::DefaultMapHalfSize = DEFAULT_MAP_HALFSIZE;
 const FVector2D AMapSetting::DefaultMapSize = DEFAULT_MAP_SIZE;
 const FString AMapSetting::DefaultMapName = DEFAULT_MISSING_NAME;
 
-FString AMapSetting::GetCurrentMapName() { return CurrentSetting ? CurrentSetting->Info.MapName : DefaultMapName; }
-FVector2D AMapSetting::GetCurrentMapHalfSize() { return CurrentSetting ? CurrentSetting->Info.MapHalfSize : DefaultMapHalfSize; }
-FVector2D AMapSetting::GetCurrentMapSize() { return CurrentSetting ? CurrentSetting->Info.MapHalfSize * 2 : DefaultMapSize; }
+float AMapSetting::GetCurrentWorldTime()		{ return IsValid(CurrentSetting) ? CurrentSetting->WorldTime			: 0.0f; }
+FString AMapSetting::GetCurrentMapName()		{ return IsValid(CurrentSetting) ? CurrentSetting->Info.MapName			: DefaultMapName; }
+FVector2D AMapSetting::GetCurrentMapHalfSize()	{ return IsValid(CurrentSetting) ? CurrentSetting->Info.MapHalfSize		: DefaultMapHalfSize; }
+FVector2D AMapSetting::GetCurrentMapSize()		{ return IsValid(CurrentSetting) ? CurrentSetting->Info.MapHalfSize * 2 : DefaultMapSize; }
 
 
 void AMapSetting::PreInitializeComponents()

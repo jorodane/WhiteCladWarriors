@@ -24,12 +24,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MapSetting")
 	FMapInfo Info;
 
+	UPROPERTY(BlueprintReadWrite, Category = "MapSetting")
+	float WorldTime = 0.0f;
+
 public:	
 	virtual void PreInitializeComponents() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 public:
 	UFUNCTION(BlueprintPure, Category = "MapSetting")
 	static AMapSetting* GetCurrentMapSetting() { return CurrentSetting; }
+
+	UFUNCTION(BlueprintPure, Category = "MapSetting")
+	static float GetCurrentWorldTime();
 
 	UFUNCTION(BlueprintPure, Category = "MapSetting")
 	static FString GetCurrentMapName();
