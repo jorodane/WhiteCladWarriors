@@ -17,9 +17,9 @@ bool UUnitActionComponent::GetMainActionCancelable()
 	return false;
 }
 
-bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings)
+bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode)
 {
-	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->SetMainAction(WantCursor, Settings);
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->SetMainAction(WantCursor, TargetNode);
 	return false;
 }
 

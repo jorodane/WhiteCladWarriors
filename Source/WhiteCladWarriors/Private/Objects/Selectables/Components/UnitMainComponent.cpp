@@ -9,6 +9,7 @@
 #include "Objects/Players/Operator.h"
 #include "Generals/ReservedActionMessage.h"
 #include "Actions/Executables/ActionExecutor.h"
+#include "Actions/Executables/ActionNode.h"
 #include "Actions/ActionBase.h"
 #include "Settings/ActionSetting.h"
 
@@ -415,21 +416,22 @@ bool UUnitMainComponent::GetActionExecutable_Implementation()
 	return !IDamageable::Execute_GetIsDie(this);
 }
 
-bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info)
+bool UUnitMainComponent::SetMainAction(const FMainActionInfo& Info, UActionNode* WantNode)
 {
 	bool Result = false;
-	if(Info.CheckValid())	Result = SetMainAction(Info.Cursor, Info.Settings);
+	if(Info.CheckValid())	Result = SetMainAction(Info.Cursor, WantNode);
 	else					Result = StopMainAction();
 	return Result;
 }
 
-bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings)
+bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, UActionNode* WantNode)
 {
-	bool Result = GetMainActionExecutable() && MainAction.Cancel();
+	if (!IsValid(WantNode)) return false;
+	bool Result = GetMainActionExecutable() && MainAction.Interrupt(WantCursor, WantNode);
 	if (Result)
 	{
+		const FActionExecuteSettingContainer& Settings = WantNode->Settings;
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
-		if (Settings.bIsResetIntent) ClaimIntentionReset();
 		MainAction.Set(WantCursor, Settings);
 		OnMainActionChanged.Broadcast(MainAction, true);
 	}
@@ -568,33 +570,6 @@ bool UUnitMainComponent::ClaimStopMovement_Implementation()
 	return true;
 }
 
-bool UUnitMainComponent::ClaimIntention_Implementation(FActionIntentContainer Claimer)
-{
-	bool Result = false;
-	AActor* TargetActor = Claimer.TargetActor;
-	if (IsValid(TargetActor) && TargetActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsAttackable(TargetActor, this))
-	{
-		Result = true;
-	}
-	else
-	{
-		Claimer.TargetActor = nullptr;
-		Result = true;
-	}
-	NotifyIntentionChanged(Claimer);
-	return Result;
-}
-
-bool UUnitMainComponent::ClaimIntentionReset_Implementation()
-{
-	NotifyIntentionChanged(FActionIntentContainer::None);
-	return true;
-}
-void UUnitMainComponent::NotifyIntentionChanged_Implementation(const FActionIntentContainer& NewIntention)
-{
-	if(CurrentIntention != NewIntention) OnActionIntentChanged.Broadcast(NewIntention);
-	CurrentIntention = NewIntention;
-}
 float* UUnitMainComponent::GetDamageReference(UUnitMainComponent* From)
 {
 	return DamageMap.Find(From);
@@ -693,7 +668,6 @@ void UUnitMainComponent::MontageNotifyEnd(FName NotifyName, const FBranchingPoin
 void UUnitMainComponent::Die_Implementation(const FDamageInfo& LastAttackDamageInfo)
 { 
 	bIsDie = true;
-	ClaimIntentionReset();
 	MainAction.Cancel();
 	MainActionMontageEvent.Stop(AnimInstance);
 	for (UActorComponent* CurrentComponent : GetComponents())

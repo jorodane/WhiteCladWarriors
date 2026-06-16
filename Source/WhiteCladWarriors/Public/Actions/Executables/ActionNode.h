@@ -72,8 +72,17 @@ public:
 	void MoveExecutorToCancel(const FActionCursorFinder& WantCursor);
 	virtual void MoveExecutorToCancel_Implementation(const FActionCursorFinder& WantCursor);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void MoveExecutorToInterrupt(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
+	void MoveExecutorToInterrupt_Implementation(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
+
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
 	void OnCancel(const FActionCursorFinder& WantCursor);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void OnInterrupt(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
+	void OnInterrupt_Implementation(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode) { OnCancel(WantCursor); }
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Action")
 	void OnComplete(const FActionCursorFinder& WantCursor);

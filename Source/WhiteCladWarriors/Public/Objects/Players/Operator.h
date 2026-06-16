@@ -8,6 +8,7 @@
 #include "Interfaces/PlayerConnectable.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Generals/Structs/ActionInputStructures.h"
+#include "Generals/Structs/DamageStructures.h"
 #include "Operator.generated.h"
 
 class AIngameController;
@@ -71,6 +72,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Input")
 	FOnInputClaimChanged OnInputClaimChanged;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnSuccessDamage OnSuccessDamage;
 
 protected:
 

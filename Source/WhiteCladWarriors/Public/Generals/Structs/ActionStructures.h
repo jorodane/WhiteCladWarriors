@@ -43,6 +43,7 @@ struct FActionCursorFinder
 	{Set(WantAction, WantOperator, WantExecutorID, WantComponent, WantID, bAsSubNode);}
 
 	UActionExecutor* GetExecutor() const;
+	UActionNode* GetNode() const;
 
 	bool CheckValid() const;
 	bool CheckIsMainNode() const { return CurrentID == 0 && !bAsSubNode; }
@@ -91,9 +92,6 @@ public:
 	bool bIsCancelable = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsResetIntent = true;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	bool bIsStopMovementOnStart = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
@@ -104,7 +102,6 @@ public:
 	{
 		bIsMainAction = false;
 		bIsCancelable = true;
-		bIsResetIntent = true;
 		bIsStopMovementOnStart = false;
 		bIsStopActionMontageOnStart = true;
 	}
@@ -161,6 +158,8 @@ struct FMainActionInfo
 	void SetActionMessage_Simple(FName Message);
 
 	bool Cancel();
+
+	bool Interrupt(const FActionCursorFinder& InterruptCursor, UActionNode* WantNode);
 
 	bool End();
 

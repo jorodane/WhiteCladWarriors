@@ -57,6 +57,14 @@ void UActionNode::MoveExecutorToCancel_Implementation(const FActionCursorFinder&
 	Executor->EnterNode(WantCursor, CanceledNode);
 }
 
+void UActionNode::MoveExecutorToInterrupt_Implementation(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode)
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
+	if (!IsValid(Executor)) return;
+	OnInterrupt(WantCursor, InterruptCursor, InterruptNode);
+	Executor->EnterNode(WantCursor, CanceledNode);
+}
+
 void UActionNode::OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message)
 {
 	MoveExecutorToLinkedNode(WantCursor, Message);

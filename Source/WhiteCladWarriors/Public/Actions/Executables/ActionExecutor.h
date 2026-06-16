@@ -217,7 +217,7 @@ public:
 
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	UActionNode* GetCurrentNode(const FActionCursorFinder& WantCursor);
+	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bEndSubNode);
@@ -227,6 +227,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CancelNode(const FActionCursorFinder& WantCursor);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void InterruptNode(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
@@ -247,8 +250,6 @@ public:
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
 	FActiveNodeMap* GetCursor(UUnitActionComponent* TargetComponent);
-	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
-	UActionNode* GetNode(UUnitActionComponent* TargetComponent, int TargetID = 0);
 	bool GetValid() { return ExecutorID != -1; }
 
 public:
@@ -276,9 +277,13 @@ public:
 	static UActionExecutor* GetExecutorFromID(int64 WantID);
 	static TWeakObjectPtr<UActionExecutor> GetExecutorWeakPtrFromID(int64 WantID);
 
+	UFUNCTION(BlueprintPure, Category = "Action")
+	static UActionNode* GetNodeFromCursor(const FActionCursorFinder& WantCursor);
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void CompleteCursor(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void CancelCursor(const FActionCursorFinder& WantCursor);
+
 };

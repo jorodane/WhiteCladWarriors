@@ -24,3 +24,5 @@ struct FDamageInfo
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Damage")
 	UUnitMainComponent* DamageInstigator = nullptr;
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnSuccessDamage, UObject*, Target, bool, bIsKill, float, Damage, const FDamageInfo&, Info);

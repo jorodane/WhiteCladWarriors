@@ -4,6 +4,7 @@
 #include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Actions/ActionBase.h"
 #include "Actions/Executables/ActionExecutor.h"
+#include "Actions/Executables/ActionNode.h"
 
 const FActionCursorFinder FActionCursorFinder::None;
 const FActionIntentContainer FActionIntentContainer::None;
@@ -11,6 +12,12 @@ const FActionIntentContainer FActionIntentContainer::None;
 UActionExecutor* FActionCursorFinder::GetExecutor() const
 {
 	return UActionExecutor::GetExecutorFromID(CurrentExecutorID);
+}
+UActionNode* FActionCursorFinder::GetNode() const
+{
+	UActionExecutor* Executor = GetExecutor();
+	if (!IsValid(Executor)) return nullptr;
+	return GetExecutor()->GetNode(*this);
 }
 
 bool FActionCursorFinder::CheckValid() const
@@ -99,21 +106,35 @@ bool FMainActionInfo::Cancel()
 	return true;
 }
 
+bool FMainActionInfo::Interrupt(const FActionCursorFinder& InterruptCursor, UActionNode* WantNode)
+{
+	if (!CheckValid()) return true;
+	if (!Settings.bIsCancelable) return false;
+	if (!IsValid(WantNode)) return false;
+
+	FActionCursorFinder CancelCursor = Cursor;
+	Clear();
+	UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent;
+	if (IsValid(TargetComponent))
+	{
+		UActionExecutor* Executor = CancelCursor.GetExecutor();
+		if (IsValid(Executor))Executor->InterruptNode(CancelCursor, InterruptCursor, WantNode);
+	}
+	return true;
+}
+
 bool FMainActionInfo::End()
 {
-	if (CheckValid())
+	if (!CheckValid()) return false;
+	FActionCursorFinder CancelCursor = Cursor;
+	Clear();
+	UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent;
+	if (IsValid(TargetComponent))
 	{
-		FActionCursorFinder CancelCursor = Cursor;
-		Clear();
-		UUnitActionComponent* TargetComponent = CancelCursor.CurrentComponent;
-		if (IsValid(TargetComponent))
-		{
-			UActionExecutor* Executor = CancelCursor.GetExecutor();
-			if(IsValid(Executor))TargetComponent->OnEndMainAction(Executor->ExecutorID);
-		}
-		return true;
+		UActionExecutor* Executor = CancelCursor.GetExecutor();
+		if(IsValid(Executor))TargetComponent->OnEndMainAction(Executor->ExecutorID);
 	}
-	return false;
+	return true;
 }
 
 

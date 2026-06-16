@@ -60,7 +60,6 @@ struct FActionReservator
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionIntentChanged, const FActionIntentContainer&, Claimer);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainActionChanged, const FMainActionInfo&, NewMainAction, bool, bIsValid);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnitRevive);
@@ -102,6 +101,9 @@ public:
 	FOnUnitDamage OnUnitDamage;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
+	FOnSuccessDamage OnSuccessDamage;
+
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitDie OnUnitDie;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
@@ -116,8 +118,6 @@ public:
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnMainActionChanged OnMainActionChanged;
 
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
-	FOnActionIntentChanged OnActionIntentChanged;
 
 
 protected:
@@ -294,8 +294,8 @@ public:
 	virtual bool GetActionExecutable_Implementation();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	bool SetMainAction(const FMainActionInfo& Info);
-	bool SetMainAction(const FActionCursorFinder& WantCursor, const FActionExecuteSettingContainer& Settings);
+	bool SetMainAction(const FMainActionInfo& Info, UActionNode* WantNode);
+	bool SetMainAction(const FActionCursorFinder& WantCursor, UActionNode* WantNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool StopMainAction();
@@ -340,18 +340,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Movement")
 	bool ClaimStopMovement();
 	bool ClaimStopMovement_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Intent")
-	bool ClaimIntention(FActionIntentContainer Claimer);
-	bool ClaimIntention_Implementation(FActionIntentContainer Claimer);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Intent")
-	bool ClaimIntentionReset();
-	bool ClaimIntentionReset_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Intent")
-	void NotifyIntentionChanged(const FActionIntentContainer& NewIntention);
-	void NotifyIntentionChanged_Implementation(const FActionIntentContainer& NewIntention);
 
 	float* GetDamageReference(UUnitMainComponent* From);
 

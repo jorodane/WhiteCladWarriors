@@ -293,7 +293,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		if (bExitMainLine) TargetComponent->EndMainAction(ExecutorID);
 		if (bEnterMainLine)
 		{
-			if (!TargetComponent->TrySetMainAction(WantCursor, TargetNode->Settings))
+			if (!TargetComponent->TrySetMainAction(WantCursor, TargetNode))
 			{
 				EndNode(WantCursor, OriginNode, false);
 				return;
@@ -349,7 +349,7 @@ UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCur
 	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
-UActionNode* UActionExecutor::GetCurrentNode(const FActionCursorFinder& WantCursor)
+UActionNode* UActionExecutor::GetNode(const FActionCursorFinder& WantCursor)
 {
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	if (!IsValid(TargetComponent)) return nullptr;
@@ -407,7 +407,6 @@ void UActionExecutor::CompleteNode(const FActionCursorFinder& WantCursor)
 {
 	UActionNode* WantNode = GetNode(WantCursor);
 	if (!IsValid(WantNode)) return;
-	WantNode->OnComplete(WantCursor);
 	WantNode->MoveExecutorToNext(WantCursor);
 }
 
@@ -415,8 +414,15 @@ void UActionExecutor::CancelNode(const FActionCursorFinder& WantCursor)
 {
 	UActionNode* WantNode = GetNode(WantCursor);
 	if (!IsValid(WantNode)) return;
-	WantNode->OnCancel(WantCursor);
 	WantNode->MoveExecutorToCancel(WantCursor);
+}
+
+void UActionExecutor::InterruptNode(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode)
+{
+	if (!IsValid(InterruptNode)) return;
+	UActionNode* WantNode = GetNode(WantCursor);
+	if (!IsValid(WantNode)) return;
+	WantNode->MoveExecutorToInterrupt(WantCursor, InterruptCursor, InterruptNode);
 }
 
 void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)
@@ -465,22 +471,6 @@ FActiveNodeMap* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent
 	else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
 	else return nullptr;
 }
-
-UActionNode* UActionExecutor::GetNode(const FActionCursorFinder& WantCursor)
-{
-	if (!WantCursor.CheckValid())return nullptr;
-	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
-	int ID = WantCursor.CurrentID;
-	if (FActiveNodeMap* Finder = GetCursor(TargetComponent)) return Finder->GetNode(ID);
-	return nullptr;
-}
-
-UActionNode* UActionExecutor::GetNode(UUnitActionComponent* TargetComponent, int TargetID)
-{
-	if (FActiveNodeMap* Finder = GetCursor(TargetComponent)) return Finder->GetNode(TargetID);
-	return nullptr;
-}
-
 
 
 void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, const FName& Message)
@@ -577,4 +567,9 @@ void UActionExecutor::CancelCursor(const FActionCursorFinder& WantCursor)
 {
 	TWeakObjectPtr<UActionExecutor> Target = GetExecutorWeakPtrFromID(WantCursor.CurrentExecutorID);
 	if (Target.IsValid()) Target->CancelNode(WantCursor);
+}
+
+UActionNode* UActionExecutor::GetNodeFromCursor(const FActionCursorFinder& WantCursor)
+{
+	return WantCursor.GetNode();
 }
