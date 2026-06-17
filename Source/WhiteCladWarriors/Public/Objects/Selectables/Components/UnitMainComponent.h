@@ -231,6 +231,9 @@ public:
 	bool HasOperatorAuthority_Implementation(AOperator* From) const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
+	AOperator* GetOperator() const;
+
+	UFUNCTION(BlueprintPure, Category = "Action")
 	FMainActionInfo GetMainActionInfo() const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")

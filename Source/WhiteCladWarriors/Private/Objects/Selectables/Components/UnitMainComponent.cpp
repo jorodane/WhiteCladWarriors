@@ -202,8 +202,14 @@ TArray<UFillableValueComponent*> UUnitMainComponent::FindAllFillValue()
 
 bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From) const
 {
-	if (PlayerController == nullptr || From == nullptr) return false;
-	return PlayerController->ConnectedOperator == From;
+	if (From == nullptr) return false;
+	return GetOperator() == From;
+}
+
+AOperator* UUnitMainComponent::GetOperator() const
+{
+	if (!IsValid(PlayerController)) return nullptr;
+	return PlayerController->ConnectedOperator;
 }
 
 FMainActionInfo UUnitMainComponent::GetMainActionInfo() const

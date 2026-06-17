@@ -648,6 +648,7 @@ void AOperator::SelectActor(AActor* Target, bool bIsSingleSelection)
 {
 	if(SelectInvalid(Target, bIsSingleSelection)) return;
 	if (bIsSingleSelection) DeselectActorsWithoutNotify();
+	else DeselectActorOnlySingleSelectable();
 	SelectActorWithoutNotify(Target, bIsSingleSelection);
 	BroadcastSelectChange();
 }
@@ -658,6 +659,7 @@ void AOperator::SelectActors_Implementation(TArray<AActor*>& Targets, bool bIsSi
 	if(Targets.IsEmpty()) return;
 
 	if(!bIsAdditionalSelection) DeselectActors();
+	else DeselectActorOnlySingleSelectable();
 
 	for (AActor* CurrentTarget : Targets)
 	{
@@ -680,6 +682,15 @@ void AOperator::DeselectActor(AActor* Target)
 	if (CurrentInputPackage.SelectedActors.IsEmpty())SelectActorWithoutNotify(HeroActor, true);
 	BroadcastSelectChange();
 	
+}
+
+void AOperator::DeselectActorOnlySingleSelectable()
+{
+	if (CurrentInputPackage.SelectedActors.Num() == 1)
+	{
+		AActor* OriginActor = CurrentInputPackage.SelectedActors[0];
+		if (!SelectTest(OriginActor, false)) DeselectActorWithoutNotify(OriginActor);
+	}
 }
 
 void AOperator::DeselectUnit_Implementation(UUnitMainComponent* Target)

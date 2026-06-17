@@ -353,6 +353,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Select")
 	void DeselectActor(AActor* Target);
 
+	UFUNCTION(BlueprintCallable, Category = "Select")
+	void DeselectActorOnlySingleSelectable();
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Select")
 	void DeselectUnit(UUnitMainComponent* Target);
 	void DeselectUnit_Implementation(UUnitMainComponent* Target);
