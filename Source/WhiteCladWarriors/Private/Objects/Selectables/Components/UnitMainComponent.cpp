@@ -595,12 +595,10 @@ float UUnitMainComponent::GetDamagePercent_Implementation(UUnitMainComponent* Fr
 
 float UUnitMainComponent::AddDamageValue_Implementation(UUnitMainComponent* From, float Value)
 {
-	if (float* DamageRef = GetDamageReference(From))
-	{
-		float Origin = *DamageRef;
-		*DamageRef = FMath::Max(Origin + Value, 0.0f);
-		Value = *DamageRef - Origin;
-	}
+	float Result = Value;
+	float* Origin = DamageMap.Find(From);
+	if (Origin) Result += *Origin;
+	DamageMap.Add(From, Result);
 	TotalTakeDamage += Value;
 	return Value;
 }
@@ -681,6 +679,7 @@ void UUnitMainComponent::Die_Implementation(const FDamageInfo& LastAttackDamageI
 		if (UUnitComponentBase* AsUnitComponent = Cast<UUnitComponentBase>(CurrentComponent)) AsUnitComponent->BroadcastMessage_Removed();
 	}
 	OnUnitDie.Broadcast(this, LastAttackDamageInfo);
+	OnDie(LastAttackDamageInfo, DamageMap, TotalTakeDamage);
 }
 
 TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const
@@ -708,12 +707,17 @@ float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, boo
 	if (UFillableValueComponent* HPValue = FindFillValue(L"HP"))
 	{
 		Result = HPValue->AddValue(-Result);
-		if (HPValue->GetIsEmpty()) OnUnitDie.Broadcast(this, Info);
-		else OnUnitDamage.Broadcast(this, ResultInfo);
+		if (HPValue->GetIsEmpty()) Die(Info);
+		else
+		{
+			OnUnitDamage.Broadcast(this, ResultInfo);
+			OnTakeDamage(ResultInfo);
+		}
 	}
 	else
 	{
 		OnUnitDamage.Broadcast(this, ResultInfo);
+		OnTakeDamage(ResultInfo);
 	}
 	bIsKill = IDamageable::Execute_GetIsDie(this);
 	return -Result;

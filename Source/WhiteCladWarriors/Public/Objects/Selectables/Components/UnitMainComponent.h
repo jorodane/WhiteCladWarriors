@@ -139,6 +139,8 @@ protected:
 	TMap<FName, UFillableValueComponent*> FillValueMap;
 
 	TMap<FName, float> FloatValueMap;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Select")
 	TMap<UUnitMainComponent*, float> DamageMap;
 
 	TQueue<FActionReservator> ActionQueue;
@@ -389,6 +391,12 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
 	void Die(const FDamageInfo& LastAttackDamageInfo);
 	virtual void Die_Implementation(const FDamageInfo& LastAttackDamageInfo);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Unit")
+	void OnDie(const FDamageInfo& LastAttackDamageInfo, const TMap<UUnitMainComponent*, float>& LastDamageMap, float LastTotalDamage);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Unit")
+	void OnTakeDamage(const FDamageInfo& AttackDamageInfo);
 
 public:
 	virtual bool IsSelectable_Implementation(AOperator* Operator) { return true; }
