@@ -125,15 +125,6 @@ void AOperator::OnLeftClick_Implementation(bool bIsMapClick, bool bIsAdditive, b
 		{
 			SelectActor(CurrentInputPackage.MouseClickActor, true);
 		};
-		//else if (!bIsAdditive)
-		//{
-		//	DeselectActors(); //Remove All On Ground Click
-		//};
-
-		//if (CurrentInputPackage.SelectedActors.IsEmpty() && IsValid(HeroActor))
-		//{
-		//	SelectActor(HeroActor, true);
-		//}
 	}
 	if (IsValid(PlayerController))
 	{
@@ -560,6 +551,12 @@ TArray<AActor*> AOperator::GetVisibleSameClasses_Implementation(TSubclassOf<AAct
 	return Result;
 }
 
+TArray<AActor*> AOperator::GetVisibleSameActors_Implementation(AActor* Template)
+{ 
+	if (IsValid(Template)) return  GetVisibleSameClasses(Template->GetClass()); else return TArray<AActor*>(); 
+}
+
+
 TArray<AActor*> AOperator::GetOwnActors_Implementation()
 {
 	TArray<AActor*> Result;
@@ -581,7 +578,18 @@ bool AOperator::GetFocusActors_Implementation(bool bIsClick, bool bIsDoubleClick
 		AActor* MainActor = CurrentInputPackage.MouseHitActor;
 		if (IsValid(MainActor))
 		{
-			if (bIsSelectAll || bIsDoubleClick) OutResultArray = GetVisibleSameActors(MainActor);
+			if (SelectTest(MainActor, false) && (bIsSelectAll || bIsDoubleClick))
+			{
+				OutResultArray.Add(MainActor);
+				TArray<AActor*> VisibleActors = GetVisibleSameActors(MainActor);
+				VisibleActors.Remove(MainActor);
+				for (AActor* CurrentActor : VisibleActors)
+				{
+					if (SelectTest(CurrentActor, false)) OutResultArray.Add(CurrentActor);
+				}
+				OutAllSame = true;
+				OutOnlySingle = OutResultArray.Num() == 1;
+			}
 			else
 			{
 				OutResultArray.SetNum(1);

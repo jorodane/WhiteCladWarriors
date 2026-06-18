@@ -302,7 +302,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetVisibleSameActors(AActor* Template);
-	virtual TArray<AActor*> GetVisibleSameActors_Implementation(AActor* Template) { if (IsValid(Template)) return  GetVisibleSameClasses(Template->GetClass()); else return TArray<AActor*>(); }
+	virtual TArray<AActor*> GetVisibleSameActors_Implementation(AActor* Template);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Select")
 	TArray<AActor*> GetOwnActors();
