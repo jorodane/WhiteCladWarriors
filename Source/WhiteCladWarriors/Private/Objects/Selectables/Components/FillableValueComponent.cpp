@@ -24,18 +24,22 @@ float UFillableValueComponent::SetPercent_Implementation(float NewValue)
 
 float UFillableValueComponent::SetCurrentValue_Implementation(float NewValue)
 {
-	float Result = CurrentValue;
-
-	if (Result != CurrentValue) BroadcastDirty();
-	return Result;
+	if (NewValue != CurrentValue)
+	{
+		CurrentValue = NewValue;
+		BroadcastDirty();
+	}
+	return CurrentValue;
 }
 
 float UFillableValueComponent::SetMaxValue_Implementation(float NewValue)
 {
-	float Result = MaxValue;
-
-	if (Result != MaxValue) BroadcastDirty();
-	return Result;
+	if (NewValue != MaxValue)
+	{
+		MaxValue = NewValue;
+		BroadcastDirty();
+	}
+	return MaxValue;
 }
 
 float UFillableValueComponent::SetValue_Implementation(float NewCurrentValue, float NewMaxValue)
@@ -57,12 +61,31 @@ float UFillableValueComponent::SetValue_Implementation(float NewCurrentValue, fl
 float UFillableValueComponent::AddValue_Implementation(float Value)
 {
 	if (Value == 0) return 0;
-	else if (Value > 0) Value = FMath::Min(Value, MaxValue - CurrentValue);
-	else if (Value < 0) Value = -FMath::Min(-Value, CurrentValue);
-
-	CurrentValue += Value;
+	else if (Value > 0)
+	{
+		float Overflow = FMath::Max(0, Value - GetFillableValue());
+		Value -= Overflow;
+		if (Value == 0) return 0;
+		CurrentValue += Value;
+		if (GetIsFull())
+		{
+			OnValueFull();
+			if (Overflow > 0) OnValueOverflow(Overflow);
+		}
+	}
+	else if (Value < 0)
+	{
+		float UnderFlow = FMath::Max(0, Value - CurrentValue);
+		Value += UnderFlow;
+		if (Value == 0) return 0;
+		CurrentValue += Value;
+		if (GetIsEmpty())
+		{
+			OnValueEmpty();
+			if (UnderFlow > 0) OnValueUnderflow(UnderFlow);
+		}
+	}
 	BroadcastDirty();
-
 	return Value;
 }
 

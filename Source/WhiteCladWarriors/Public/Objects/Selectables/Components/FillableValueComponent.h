@@ -37,6 +37,10 @@ public:
 	float GetPercent() const;
 	float GetPercent_Implementation() const;
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
+	float GetFillableValue() const;
+	inline float GetFillableValue_Implementation() const { return MaxValue - CurrentValue; }
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
 	float SetPercent(float NewValue);
 	float SetPercent_Implementation(float NewValue);
@@ -56,6 +60,18 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
 	float AddValue(float Value);
 	float AddValue_Implementation(float Value);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
+	float OnValueFull();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
+	float OnValueEmpty();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
+	float OnValueOverflow(float AbsoluteValue);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
+	float OnValueUnderflow(float AbsoluteValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
 	float BroadcastDirty();
