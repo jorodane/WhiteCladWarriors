@@ -4,7 +4,7 @@
 #include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
-#include "Objects/Selectables/Components/FillableValueComponent.h"
+#include "Objects/Values/FillableValue.h"
 #include "Objects/Players/IngameController.h"
 #include "Objects/Players/Operator.h"
 #include "Generals/ReservedActionMessage.h"
@@ -156,7 +156,7 @@ float UUnitMainComponent::GetFloatValue(FName WantTag, float DefaultValue)
 }
 
 
-bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValueComponent* Target)
+bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValue* Target)
 {
 	if (!FillValueMap.Contains(WantTag))
 	{
@@ -169,10 +169,10 @@ bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValueComponent* Ta
 
 void UUnitMainComponent::RemoveFillValue(FName WantTag)
 {
-	UFillableValueComponent** Finder = FillValueMap.Find(WantTag);
+	UFillableValue** Finder = FillValueMap.Find(WantTag);
 	if (Finder)
 	{
-		if (UFillableValueComponent* Result = *Finder)
+		if (UFillableValue* Result = *Finder)
 		{
 			OnFillValueRemoved.Broadcast(Result);
 		}
@@ -180,22 +180,22 @@ void UUnitMainComponent::RemoveFillValue(FName WantTag)
 	}
 }
 
-UFillableValueComponent* UUnitMainComponent::FindFillValue(FName WantTag)
+UFillableValue* UUnitMainComponent::FindFillValue(FName WantTag)
 {
-	UFillableValueComponent** Finder = FillValueMap.Find(WantTag);
+	UFillableValue** Finder = FillValueMap.Find(WantTag);
 	if (Finder) return *Finder;
 	else return nullptr;
 }
 
-bool UUnitMainComponent::TryFindFillValue(FName WantTag, UFillableValueComponent*& Result)
+bool UUnitMainComponent::TryFindFillValue(FName WantTag, UFillableValue*& Result)
 {
 	Result = FindFillValue(WantTag);
 	return Result != nullptr;
 }
 
-TArray<UFillableValueComponent*> UUnitMainComponent::FindAllFillValue()
+TArray<UFillableValue*> UUnitMainComponent::FindAllFillValue()
 {
-	TArray<UFillableValueComponent*> Result;
+	TArray<UFillableValue*> Result;
 	FillValueMap.GenerateValueArray(Result);
 	return Result;
 }
@@ -704,7 +704,7 @@ float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, boo
 	FDamageInfo ResultInfo = Info;
 	float& Result = ResultInfo.DamageValue;
 	AddDamageValue(From, Result);
-	if (UFillableValueComponent* HPValue = FindFillValue(L"HP"))
+	if (UFillableValue* HPValue = FindFillValue(L"HP"))
 	{
 		Result = HPValue->AddValue(-Result);
 		if (HPValue->GetIsEmpty()) Die(Info);
@@ -739,7 +739,7 @@ bool UUnitMainComponent::GetIsDamageable_Implementation(UUnitMainComponent* From
 bool UUnitMainComponent::GetIsDie_Implementation()
 {
 	if (bIsDie) return true;
-	if (UFillableValueComponent* HPValue = FindFillValue(L"HP")) return HPValue->GetIsEmpty();
+	if (UFillableValue* HPValue = FindFillValue(L"HP")) return HPValue->GetIsEmpty();
 	return false;
 }
 

@@ -23,7 +23,7 @@ class UUnitActionComponent;
 class UActionTargetContainer;
 class UActionExecutor;
 class UActionNode;
-class UFillableValueComponent;
+class UFillableValue;
 
 USTRUCT(BlueprintType)
 struct FActionReservator
@@ -57,8 +57,8 @@ struct FActionReservator
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValueComponent*, Value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValueComponent*, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValue*, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValue*, Value);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainActionChanged, const FMainActionInfo&, NewMainAction, bool, bIsValid);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
@@ -136,7 +136,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "ValueMap")
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
 
-	TMap<FName, UFillableValueComponent*> FillValueMap;
+	TMap<FName, UFillableValue*> FillValueMap;
 
 	TMap<FName, float> FloatValueMap;
 
@@ -210,19 +210,19 @@ public:
 	float GetFloatValue(FName WantTag, float DefaultValue);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	bool AddFillValue(FName WantTag, UFillableValueComponent* Target);
+	bool AddFillValue(FName WantTag, UFillableValue* Target);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
 	void RemoveFillValue(FName WantTag);
 
 	UFUNCTION(BlueprintPure, Category = "FillValue")
-	UFillableValueComponent* FindFillValue(FName WantTag);
+	UFillableValue* FindFillValue(FName WantTag);
 
 	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	bool TryFindFillValue(FName WantTag, UFillableValueComponent*& Result);
+	bool TryFindFillValue(FName WantTag, UFillableValue*& Result);
 
 	UFUNCTION(BlueprintPure, Category = "FillValue")
-	TArray<UFillableValueComponent*> FindAllFillValue();
+	TArray<UFillableValue*> FindAllFillValue();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Widget")
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget(EInfoWidgetType WantType) const;

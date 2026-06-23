@@ -1,12 +1,12 @@
 
-#include "Objects/Selectables/Components/FillableValueComponent.h"
+#include "Objects/Values/FloatValue.h"
 
-float UFillableValueComponent::GetPercent_Implementation() const
+float UFloatValue::GetPercent_Implementation() const
 {
 	if (MaxValue <= 0) return 1;
 	else return CurrentValue / MaxValue;
 }
-float UFillableValueComponent::SetPercent_Implementation(float NewValue)
+float UFloatValue::SetPercent_Implementation(float NewValue)
 {
 	float OriginValue = CurrentValue;
 	NewValue = FMath::Clamp(NewValue, 0, 1);
@@ -22,7 +22,7 @@ float UFillableValueComponent::SetPercent_Implementation(float NewValue)
 	};
 }
 
-float UFillableValueComponent::SetCurrentValue_Implementation(float NewValue)
+float UFloatValue::SetCurrentValue_Implementation(float NewValue)
 {
 	if (NewValue != CurrentValue)
 	{
@@ -32,7 +32,7 @@ float UFillableValueComponent::SetCurrentValue_Implementation(float NewValue)
 	return CurrentValue;
 }
 
-float UFillableValueComponent::SetMaxValue_Implementation(float NewValue)
+float UFloatValue::SetMaxValue_Implementation(float NewValue)
 {
 	if (NewValue != MaxValue)
 	{
@@ -42,7 +42,7 @@ float UFillableValueComponent::SetMaxValue_Implementation(float NewValue)
 	return MaxValue;
 }
 
-float UFillableValueComponent::SetValue_Implementation(float NewCurrentValue, float NewMaxValue)
+float UFloatValue::SetValue_Implementation(float NewCurrentValue, float NewMaxValue)
 {
 	float OriginCurrent = CurrentValue;
 	float OriginMax = MaxValue;
@@ -58,7 +58,7 @@ float UFillableValueComponent::SetValue_Implementation(float NewCurrentValue, fl
 	else return GetPercent();
 }
 
-float UFillableValueComponent::AddValue_Implementation(float Value)
+float UFloatValue::AddValue_Implementation(float Value)
 {
 	if (Value == 0) return 0;
 	else if (Value > 0)
@@ -89,9 +89,9 @@ float UFillableValueComponent::AddValue_Implementation(float Value)
 	return Value;
 }
 
-float UFillableValueComponent::BroadcastDirty_Implementation()
+float UFloatValue::BroadcastDirty_Implementation()
 {
 	float Ratio = GetPercent();
-	OnValueChanged.Broadcast(CurrentValue, MaxValue, Ratio);
+	//OnFloatValueChanged.Broadcast(CurrentValue);
 	return Ratio;
 }

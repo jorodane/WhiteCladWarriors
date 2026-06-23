@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Objects/Selectables/Components/UnitComponentBase.h"
-#include "FillableValueComponent.generated.h"
+#include "Objects/Values/ValueObject.h"
+#include "FillableValue.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnValueChanged, float, CurrentValue, float, MaxValue, float, Ratio);
 
-UCLASS()
-class UFillableValueComponent : public UUnitComponentBase
+UCLASS(Blueprintable, BlueprintType)
+class UFillableValue : public UValueObject
 {
 	GENERATED_BODY()
 
