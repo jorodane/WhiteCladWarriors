@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Objects/Values/ValueObject.h"
+#include "Objects/Values/FloatValue.h"
 #include "FillableValue.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnFillableValueChanged, float, CurrentValue, float, MaxValue, float, Ratio);
 
 UCLASS(Blueprintable, BlueprintType)
-class UFillableValue : public UValueObject
+class UFillableValue : public UFloatValue
 {
 	GENERATED_BODY()
 
@@ -18,16 +18,11 @@ public:
 	FOnFillableValueChanged OnFillableValueChanged;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FillValue", Meta = (ExposeOnSpawn = "true"))
-	float CurrentValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FillValue", Meta = (ExposeOnSpawn = "true"))
 	float MaxValue;
 
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
-	bool GetIsEmpty() const;
-	inline bool GetIsEmpty_Implementation() const { return CurrentValue <= 0.0f; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
 	bool GetIsFull() const;
@@ -46,34 +41,28 @@ public:
 	float SetPercent_Implementation(float NewValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
-	float SetCurrentValue(float NewValue);
-	float SetCurrentValue_Implementation(float NewValue);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
 	float SetMaxValue(float NewValue);
 	float SetMaxValue_Implementation(float NewValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
-	float SetValue(float NewCurrentValue, float NewMaxValue);
-	float SetValue_Implementation(float NewCurrentValue, float NewMaxValue);
+	float SetFillValue(float NewCurrentValue, float NewMaxValue);
+	float SetFillValue_Implementation(float NewCurrentValue, float NewMaxValue);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
-	float AddValue(float Value);
-	float AddValue_Implementation(float Value);
-
+public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
 	float OnValueFull();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Value")
 	float OnValueEmpty();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
 	float OnValueOverflow(float AbsoluteValue);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "FillValue")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Value")
 	float OnValueUnderflow(float AbsoluteValue);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FillValue")
-	float BroadcastDirty();
-	float BroadcastDirty_Implementation();
+public:
+	virtual float SetValue_Implementation(float NewValue) override;
+	virtual float AddValue_Implementation(float Value) override;
+	virtual float BroadcastDirty_Implementation() override;
 };

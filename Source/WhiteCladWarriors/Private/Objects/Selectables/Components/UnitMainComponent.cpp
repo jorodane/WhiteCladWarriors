@@ -5,6 +5,7 @@
 #include "Objects/Selectables/Components/UnitComponentBase.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Values/FillableValue.h"
+#include "Objects/Values/ValueContainer.h"
 #include "Objects/Players/IngameController.h"
 #include "Objects/Players/Operator.h"
 #include "Generals/ReservedActionMessage.h"
@@ -67,6 +68,7 @@ UUnitMainComponent::UUnitMainComponent()
 void UUnitMainComponent::BeginPlay()
 {
 	OwnerUnit = this;
+	ValueMap = UValueContainer::GetOrAddValueContainer(GetOwner());
 	for (UActorComponent* CurrentComponent : GetOwner()->GetComponents())
 	{
 		if (CurrentComponent == this) continue;
@@ -644,22 +646,23 @@ float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, boo
 	FDamageInfo ResultInfo = Info;
 	float& Result = ResultInfo.DamageValue;
 	AddDamageValue(From, Result);
-	if (UFillableValue* HPValue = FindFillValue(L"HP"))
+	if (IsValid(ValueMap))
 	{
-		Result = HPValue->AddValue(-Result);
-		if (HPValue->GetIsEmpty()) Die(Info);
-		else
+		UFillableValue* HPValue;
+		if (ValueMap->TryFindFillableValue(L"HP", HPValue))
 		{
-			OnUnitDamage.Broadcast(this, ResultInfo);
-			OnTakeDamage(ResultInfo);
+			Result = HPValue->AddValue(-Result);
+			bIsKill = HPValue->GetIsEmpty();
 		}
 	}
+
+	if (bIsKill) Die(ResultInfo);
 	else
 	{
 		OnUnitDamage.Broadcast(this, ResultInfo);
 		OnTakeDamage(ResultInfo);
 	}
-	bIsKill = IDamageable::Execute_GetIsDie(this);
+
 	return -Result;
 }
 
@@ -679,7 +682,9 @@ bool UUnitMainComponent::GetIsDamageable_Implementation(UUnitMainComponent* From
 bool UUnitMainComponent::GetIsDie_Implementation()
 {
 	if (bIsDie) return true;
-	if (UFillableValue* HPValue = FindFillValue(L"HP")) return HPValue->GetIsEmpty();
+	if (!IsValid(ValueMap)) return false;
+	UFillableValue* HPValue;
+	if (ValueMap->TryFindFillableValue(L"HP", HPValue)) return HPValue->GetIsEmpty();
 	return false;
 }
 

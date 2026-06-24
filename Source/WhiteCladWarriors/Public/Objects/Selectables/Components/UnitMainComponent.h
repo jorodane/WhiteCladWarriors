@@ -24,6 +24,7 @@ class UActionTargetContainer;
 class UActionExecutor;
 class UActionNode;
 class UFillableValue;
+class UValueContainer;
 
 USTRUCT(BlueprintType)
 struct FActionReservator
@@ -87,7 +88,6 @@ class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, publ
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitDamage OnUnitDamage;
 
@@ -123,6 +123,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	TMap<FName, FName> TaggedActionMap;
+
+	UPROPERTY(BlueprintReadOnly, Category = "ValueMap");
+	TObjectPtr<UValueContainer> ValueMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "ValueMap")
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;

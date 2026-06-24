@@ -17,7 +17,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Value")
 	FOnCurrentValueChanged OnCurrentValueChanged;
 
-public:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Value", Meta = (ExposeOnSpawn = "true"))
 	float CurrentValue;
 
@@ -26,37 +26,19 @@ public:
 	bool GetIsEmpty() const;
 	inline bool GetIsEmpty_Implementation() const { return CurrentValue <= 0.0f; }
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Value")
-	float GetPercent() const;
-	float GetPercent_Implementation() const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
+	float GetValue();
+	virtual float GetValue_Implementation() { return CurrentValue; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
-	float SetPercent(float NewValue);
-	float SetPercent_Implementation(float NewValue);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
-	float SetCurrentValue(float NewValue);
-	float SetCurrentValue_Implementation(float NewValue);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
-	float SetMaxValue(float NewValue);
-	float SetMaxValue_Implementation(float NewValue);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
-	float SetValue(float NewCurrentValue, float NewMaxValue);
-	float SetValue_Implementation(float NewCurrentValue, float NewMaxValue);
+	float SetValue(float NewValue);
+	virtual float SetValue_Implementation(float NewValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
 	float AddValue(float Value);
-	float AddValue_Implementation(float Value);
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Value")
-	float OnValueEmpty();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Value")
-	float OnValueUnderflow(float AbsoluteValue);
+	virtual float AddValue_Implementation(float Value);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
 	float BroadcastDirty();
-	float BroadcastDirty_Implementation();
+	virtual float BroadcastDirty_Implementation();
 };

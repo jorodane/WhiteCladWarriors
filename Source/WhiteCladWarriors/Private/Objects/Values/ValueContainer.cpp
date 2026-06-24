@@ -2,48 +2,77 @@
 
 
 #include "Objects/Values/ValueContainer.h"
+#include "Objects/Values/ValueObject.h"
+#include "Objects/Values/FloatValue.h"
+#include "Objects/Values/FillableValue.h"
 
-float UValueContainer::SetFloatValue(FName WantTag, float Value)
+float UValueContainer::SetNumber(FName WantTag, float Value)
 {
-	return FloatValueMap.Add(WantTag, Value);
+	UFloatValue* CurrentValue = FindOrAddNumberObject(WantTag, UFloatValue::StaticClass());
+	return CurrentValue->SetValue(Value);
 }
 
-float UValueContainer::AddFloatValue(FName WantTag, float Value)
+float UValueContainer::AddNumber(FName WantTag, float Value)
 {
-	float& Map = FloatValueMap.FindOrAdd(WantTag, 0);
-	return Map += Value;
+	UFloatValue* CurrentValue = FindOrAddNumberObject(WantTag, UFloatValue::StaticClass());
+	return CurrentValue->AddValue(Value);
 }
 
-float UValueContainer::GetFloatValue(FName WantTag, float DefaultValue)
+float UValueContainer::GetNumber(FName WantTag, float DefaultValue)
 {
-	return FloatValueMap.FindOrAdd(WantTag, DefaultValue);
+	UFloatValue* CurrentValue;
+	if (TryFindNumberObject(WantTag, CurrentValue)) return CurrentValue->GetValue();
+	return DefaultValue;
 }
 
 
-bool UValueContainer::AddFillableValue(FName WantTag, UFillableValue* Target)
+UFloatValue* UValueContainer::AddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template)
 {
-	if (!FillValueMap.Contains(WantTag))
+	if (!Template) return nullptr;
+
+	if (!NumberValueMap.Contains(WantTag))
 	{
-		FillValueMap.Add(WantTag, Target);
-		return true;
+		UFloatValue* Instance = NewObject<UFloatValue>(this, Template);
+		NumberValueMap.Add(WantTag, Instance);
+		return Instance;
 	}
-	return false;
+	return nullptr;
 }
 
-void UValueContainer::RemoveFillableValue(FName WantTag)
+void UValueContainer::RemoveNumberObject(FName WantTag)
 {
-	UFillableValue** Finder = FillValueMap.Find(WantTag);
-	if (Finder)
-	{
-		FillValueMap.Remove(WantTag);
-	}
+	NumberValueMap.Remove(WantTag);
+}
+
+TArray<UFloatValue*> UValueContainer::FindAllValueOjbect()
+{
+	TArray<TObjectPtr<UFloatValue>> Result;
+	NumberValueMap.GenerateValueArray(Result);
+	return Result;
+}
+
+UFloatValue* UValueContainer::FindOrAddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template)
+{
+	UFloatValue* Result;
+	if (TryFindNumberObject(WantTag, Result)) return Result;
+	return AddNumberObject(WantTag, Template);
+}
+
+UFloatValue* UValueContainer::FindNumberObject(FName WantTag)
+{
+	TObjectPtr<UFloatValue>* Result = NumberValueMap.Find(WantTag);
+	return Result ? *Result : nullptr;
+}
+
+bool UValueContainer::TryFindNumberObject(FName WantTag, UFloatValue*& Result)
+{
+	Result = FindNumberObject(WantTag);
+	return IsValid(Result);
 }
 
 UFillableValue* UValueContainer::FindFillableValue(FName WantTag)
 {
-	UFillableValue** Finder = FillValueMap.Find(WantTag);
-	if (Finder) return *Finder;
-	else return nullptr;
+	return Cast<UFillableValue>(FindNumberObject(WantTag));
 }
 
 bool UValueContainer::TryFindFillableValue(FName WantTag, UFillableValue*& Result)
@@ -52,12 +81,9 @@ bool UValueContainer::TryFindFillableValue(FName WantTag, UFillableValue*& Resul
 	return Result != nullptr;
 }
 
-TArray<UFillableValue*> UValueContainer::FindAllFillableValue()
-{
-	TArray<UFillableValue*> Result;
-	FillValueMap.GenerateValueArray(Result);
-	return Result;
-}
+
+
+
 
 UValueContainer* UValueContainer::GetValueContainer(AActor* From)
 {

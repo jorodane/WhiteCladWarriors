@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "ValueContainer.generated.h"
 
-class UFillableValue;
+class UValueObject;
 class UFloatValue;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -15,27 +15,39 @@ class UValueContainer : public UActorComponent
 	GENERATED_BODY()
 
 protected:
-	TMap<FName, UFillableValue*> FillValueMap;
-
-	TMap<FName, UFloatValue*> FloatValueMap;
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FName, TObjectPtr<UFloatValue>> NumberValueMap;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	float SetFloatValue(FName WantTag, float Value);
+	float SetNumber(FName WantTag, float Value);
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	float AddFloatValue(FName WantTag, float Value);
+	float AddNumber(FName WantTag, float Value);
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	float GetFloatValue(FName WantTag, float DefaultValue);
+	float GetNumber(FName WantTag, float DefaultValue);
+
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	bool AddFillableValue(FName WantTag, UFillableValue* Target);
+	UFloatValue* AddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template);
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	void RemoveFillableValue(FName WantTag);
+	void RemoveNumberObject(FName WantTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Container")
+	TArray<UFloatValue*> FindAllValueOjbect();
+
+	UFUNCTION(BlueprintCallable, Category = "Container")
+	UFloatValue* FindNumberObject(FName WantTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Container")
+	UFloatValue* FindOrAddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template);
+
+	UFUNCTION(BlueprintCallable, Category = "Container")
+	bool TryFindNumberObject(FName WantTag, UFloatValue*& Result);
+
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	UFillableValue* FindFillableValue(FName WantTag);
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	bool TryFindFillableValue(FName WantTag, UFillableValue*& Result);
-	UFUNCTION(BlueprintCallable, Category = "Container")
-	TArray<UFillableValue*> FindAllFillableValue();
+
 
 
 public:	
