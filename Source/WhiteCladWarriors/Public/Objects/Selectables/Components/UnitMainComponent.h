@@ -57,9 +57,6 @@ struct FActionReservator
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueAdded, UFillableValue*, Value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFillValueRemoved, UFillableValue*, Value);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMainActionChanged, const FMainActionInfo&, NewMainAction, bool, bIsValid);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnitDie, UUnitMainComponent*, TargetUnit, const FDamageInfo&, LastAttackDamageInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUnitRevive);
@@ -90,12 +87,6 @@ class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, publ
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "FillValue")
-	FOnFillValueAdded OnFillValueAdded;
-
-	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "FillValue")
-	FOnFillValueRemoved OnFillValueRemoved;
 
 	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Select")
 	FOnUnitDamage OnUnitDamage;
@@ -135,10 +126,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "ValueMap")
 	TMap<AActionBase*, FActionTargetContainer>  ActionMap;
-
-	TMap<FName, UFillableValue*> FillValueMap;
-
-	TMap<FName, float> FloatValueMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Select")
 	TMap<UUnitMainComponent*, float> DamageMap;
@@ -199,30 +186,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Mesh")
 	float GetHalfHeight();
 	float GetHalfHeight_Implementation() { return 0.0f; }
-
-	UFUNCTION(BlueprintCallable, Category = "ValueMap")
-	float SetFloatValue(FName WantTag, float Value);
-
-	UFUNCTION(BlueprintCallable, Category = "ValueMap")
-	float AddFloatValue(FName WantTag, float Value);
-
-	UFUNCTION(BlueprintPure, Category = "ValueMap")
-	float GetFloatValue(FName WantTag, float DefaultValue);
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	bool AddFillValue(FName WantTag, UFillableValue* Target);
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	void RemoveFillValue(FName WantTag);
-
-	UFUNCTION(BlueprintPure, Category = "FillValue")
-	UFillableValue* FindFillValue(FName WantTag);
-
-	UFUNCTION(BlueprintCallable, Category = "FillValue")
-	bool TryFindFillValue(FName WantTag, UFillableValue*& Result);
-
-	UFUNCTION(BlueprintPure, Category = "FillValue")
-	TArray<UFillableValue*> FindAllFillValue();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Widget")
 	TArray<UOrderedGenericWidgetClaim*> GetUnitInfoWidget(EInfoWidgetType WantType) const;

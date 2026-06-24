@@ -139,66 +139,6 @@ USkeletalMeshComponent* UUnitMainComponent::SetMesh_Implementation(USkeletalMesh
 	return Mesh;
 }
 
-float UUnitMainComponent::SetFloatValue(FName WantTag, float Value)
-{
-	return FloatValueMap.Add(WantTag, Value);
-}
-
-float UUnitMainComponent::AddFloatValue(FName WantTag, float Value)
-{
-	float& Map = FloatValueMap.FindOrAdd(WantTag, 0);
-	return Map += Value;
-}
-
-float UUnitMainComponent::GetFloatValue(FName WantTag, float DefaultValue)
-{
-	return FloatValueMap.FindOrAdd(WantTag, DefaultValue);
-}
-
-
-bool UUnitMainComponent::AddFillValue(FName WantTag, UFillableValue* Target)
-{
-	if (!FillValueMap.Contains(WantTag))
-	{
-		FillValueMap.Add(WantTag, Target);
-		OnFillValueAdded.Broadcast(Target);
-		return true;
-	}
-	return false;
-}
-
-void UUnitMainComponent::RemoveFillValue(FName WantTag)
-{
-	UFillableValue** Finder = FillValueMap.Find(WantTag);
-	if (Finder)
-	{
-		if (UFillableValue* Result = *Finder)
-		{
-			OnFillValueRemoved.Broadcast(Result);
-		}
-		FillValueMap.Remove(WantTag);
-	}
-}
-
-UFillableValue* UUnitMainComponent::FindFillValue(FName WantTag)
-{
-	UFillableValue** Finder = FillValueMap.Find(WantTag);
-	if (Finder) return *Finder;
-	else return nullptr;
-}
-
-bool UUnitMainComponent::TryFindFillValue(FName WantTag, UFillableValue*& Result)
-{
-	Result = FindFillValue(WantTag);
-	return Result != nullptr;
-}
-
-TArray<UFillableValue*> UUnitMainComponent::FindAllFillValue()
-{
-	TArray<UFillableValue*> Result;
-	FillValueMap.GenerateValueArray(Result);
-	return Result;
-}
 
 bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From) const
 {

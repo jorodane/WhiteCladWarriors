@@ -6,7 +6,7 @@
 #include "Objects/Values/ValueObject.h"
 #include "FillableValue.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnValueChanged, float, CurrentValue, float, MaxValue, float, Ratio);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnFillableValueChanged, float, CurrentValue, float, MaxValue, float, Ratio);
 
 UCLASS(Blueprintable, BlueprintType)
 class UFillableValue : public UValueObject
@@ -15,7 +15,7 @@ class UFillableValue : public UValueObject
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "FillValue")
-	FOnValueChanged OnValueChanged;
+	FOnFillableValueChanged OnFillableValueChanged;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FillValue", Meta = (ExposeOnSpawn = "true"))
