@@ -61,9 +61,9 @@ public:
 
 
 public:	
-	UFUNCTION(BlueprintCallable, Category = "Container")
+	UFUNCTION(BlueprintCallable, Category = "Container", Meta = (DefaultToSelf = "From"))
 	static UValueContainer* GetValueContainer(AActor* From);
 
-	UFUNCTION(BlueprintCallable, Category = "Container")
+	UFUNCTION(BlueprintCallable, Category = "Container", Meta = (DefaultToSelf = "From"))
 	static UValueContainer* GetOrAddValueContainer(AActor* From);
 };

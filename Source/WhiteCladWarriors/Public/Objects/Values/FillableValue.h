@@ -32,6 +32,9 @@ public:
 	float GetPercent() const;
 	float GetPercent_Implementation() const;
 
+	UFUNCTION(BlueprintPure, Category = "FillValue")
+	float GetPercent100() const { return GetPercent() * 100.0f; }
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "FillValue")
 	float GetEmptySpace() const;
 	inline float GetEmptySpace_Implementation() const { return MaxValue - CurrentValue; }
