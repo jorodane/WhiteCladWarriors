@@ -26,7 +26,7 @@ public:
 	bool GetIsEmpty() const;
 	inline bool GetIsEmpty_Implementation() const { return CurrentValue <= 0.0f; }
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Value")
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Value")
 	float GetValue();
 	virtual float GetValue_Implementation() { return CurrentValue; }
 

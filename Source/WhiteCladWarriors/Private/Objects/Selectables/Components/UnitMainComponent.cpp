@@ -635,6 +635,13 @@ TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementa
 			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType, Operator));
 		}
 	};
+	if (IsValid(ValueMap))
+	{
+		if (ValueMap && ValueMap->GetClass()->ImplementsInterface(UInfoConnectable::StaticClass()))
+		{
+			Result.Append(IInfoConnectable::Execute_GetInfoWidget(ValueMap, WantType, Operator));
+		}
+	}
 	return Result;
 }
 

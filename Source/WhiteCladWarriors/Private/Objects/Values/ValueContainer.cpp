@@ -8,17 +8,17 @@
 
 float UValueContainer::SetNumber(FName WantTag, float Value)
 {
-	UFloatValue* CurrentValue = FindOrAddNumberObject(WantTag, UFloatValue::StaticClass());
+	UFloatValue* CurrentValue = FindOrAddNumberObject(WantTag, 0.0f, UFloatValue::StaticClass());
 	return CurrentValue->SetValue(Value);
 }
 
 float UValueContainer::AddNumber(FName WantTag, float Value)
 {
-	UFloatValue* CurrentValue = FindOrAddNumberObject(WantTag, UFloatValue::StaticClass());
+	UFloatValue* CurrentValue = FindOrAddNumberObject(WantTag, 0.0f, UFloatValue::StaticClass());
 	return CurrentValue->AddValue(Value);
 }
 
-float UValueContainer::GetNumber(FName WantTag, float DefaultValue)
+float UValueContainer::GetNumber(FName WantTag, float DefaultValue) const
 {
 	UFloatValue* CurrentValue;
 	if (TryFindNumberObject(WantTag, CurrentValue)) return CurrentValue->GetValue();
@@ -26,13 +26,32 @@ float UValueContainer::GetNumber(FName WantTag, float DefaultValue)
 }
 
 
-UFloatValue* UValueContainer::AddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template)
+UFloatValue* UValueContainer::AddNumberObject(FName WantTag, float InitialValue, TSubclassOf<UFloatValue> Template)
 {
 	if (!Template) return nullptr;
 
 	if (!NumberValueMap.Contains(WantTag))
 	{
 		UFloatValue* Instance = NewObject<UFloatValue>(this, Template);
+		if (!IsValid(Instance)) return nullptr;
+		Instance->SetValue(InitialValue);
+		Instance->OnContainerConnected(this);
+		NumberValueMap.Add(WantTag, Instance);
+		return Instance;
+	}
+	return nullptr;
+}
+
+UFillableValue* UValueContainer::AddFillableObject(FName WantTag, float InitialValue, float MaxValue, TSubclassOf<UFillableValue> Template)
+{
+	if (!Template) return nullptr;
+
+	if (!NumberValueMap.Contains(WantTag))
+	{
+		UFillableValue* Instance = NewObject<UFillableValue>(this, Template);
+		if (!IsValid(Instance)) return nullptr;
+		Instance->SetFillValue(InitialValue, MaxValue);
+		Instance->OnContainerConnected(this);
 		NumberValueMap.Add(WantTag, Instance);
 		return Instance;
 	}
@@ -44,41 +63,58 @@ void UValueContainer::RemoveNumberObject(FName WantTag)
 	NumberValueMap.Remove(WantTag);
 }
 
-TArray<UFloatValue*> UValueContainer::FindAllValueOjbect()
+TArray<UValueObject*> UValueContainer::FindAllValueOjbect() const
 {
-	TArray<TObjectPtr<UFloatValue>> Result;
-	NumberValueMap.GenerateValueArray(Result);
+	TArray<UValueObject*> Result;
+	for (const auto& CurrentPair : NumberValueMap)
+	{
+		UValueObject* CurrentObject = CurrentPair.Value;
+		if (IsValid(CurrentObject)) Result.Add(CurrentObject);
+	}
 	return Result;
 }
 
-UFloatValue* UValueContainer::FindOrAddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template)
+UFloatValue* UValueContainer::FindOrAddNumberObject(FName WantTag, float DefaultValue, TSubclassOf<UFloatValue> Template)
 {
 	UFloatValue* Result;
 	if (TryFindNumberObject(WantTag, Result)) return Result;
-	return AddNumberObject(WantTag, Template);
+	return AddNumberObject(WantTag, DefaultValue, Template);
 }
 
-UFloatValue* UValueContainer::FindNumberObject(FName WantTag)
+UFloatValue* UValueContainer::FindNumberObject(FName WantTag) const
 {
-	TObjectPtr<UFloatValue>* Result = NumberValueMap.Find(WantTag);
+	const TObjectPtr<UFloatValue>* Result = NumberValueMap.Find(WantTag);
 	return Result ? *Result : nullptr;
 }
 
-bool UValueContainer::TryFindNumberObject(FName WantTag, UFloatValue*& Result)
+bool UValueContainer::TryFindNumberObject(FName WantTag, UFloatValue*& Result) const
 {
 	Result = FindNumberObject(WantTag);
 	return IsValid(Result);
 }
 
-UFillableValue* UValueContainer::FindFillableValue(FName WantTag)
+UFillableValue* UValueContainer::FindFillableValue(FName WantTag) const
 {
 	return Cast<UFillableValue>(FindNumberObject(WantTag));
 }
 
-bool UValueContainer::TryFindFillableValue(FName WantTag, UFillableValue*& Result)
+bool UValueContainer::TryFindFillableValue(FName WantTag, UFillableValue*& Result) const
 {
 	Result = FindFillableValue(WantTag);
 	return Result != nullptr;
+}
+
+TArray<UOrderedGenericWidgetClaim*> UValueContainer::GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const
+{
+	TArray<UOrderedGenericWidgetClaim*> Result;
+	for (UValueObject* CurrentComponent : FindAllValueOjbect())
+	{
+		if (CurrentComponent && CurrentComponent->GetClass()->ImplementsInterface(UInfoConnectable::StaticClass()))
+		{
+			Result.Append(IInfoConnectable::Execute_GetInfoWidget(CurrentComponent, WantType, Operator));
+		}
+	};
+	return Result;
 }
 
 

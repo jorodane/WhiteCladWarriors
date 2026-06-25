@@ -74,7 +74,7 @@ float UFillableValue::AddValue_Implementation(float Value)
 	if (Value == 0) return 0;
 	else if (Value > 0)
 	{
-		float Overflow = FMath::Max(0, Value - GetFillableValue());
+		float Overflow = FMath::Max(0, Value - GetEmptySpace());
 		Value -= Overflow;
 		if (Value == 0) return 0;
 		CurrentValue += Value;
@@ -102,8 +102,8 @@ float UFillableValue::AddValue_Implementation(float Value)
 
 float UFillableValue::BroadcastDirty_Implementation()
 {
-	Super::BroadcastDirty();
 	float Ratio = GetPercent();
+	OnCurrentValueChanged.Broadcast(CurrentValue);
 	OnFillableValueChanged.Broadcast(CurrentValue, MaxValue, Ratio);
 	return Ratio;
 }

@@ -4,13 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interfaces/InfoConnectable.h"
 #include "ValueContainer.generated.h"
 
 class UValueObject;
 class UFloatValue;
+class UFillableValue;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UValueContainer : public UActorComponent
+class UValueContainer : public UActorComponent, public IInfoConnectable
 {
 	GENERATED_BODY()
 
@@ -24,30 +26,38 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	float AddNumber(FName WantTag, float Value);
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	float GetNumber(FName WantTag, float DefaultValue);
+	float GetNumber(FName WantTag, float DefaultValue) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	UFloatValue* AddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template);
+	UFloatValue* AddNumberObject(FName WantTag, float InitialValue, TSubclassOf<UFloatValue> Template);
+
+	UFUNCTION(BlueprintCallable, Category = "Container")
+	UFillableValue* AddFillableObject(FName WantTag, float InitialValue, float MaxValue, TSubclassOf<UFillableValue> Template);
+
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	void RemoveNumberObject(FName WantTag);
+	UFUNCTION(BlueprintCallable, Category = "Container")
+	void RemoveFillableObject(FName WantTag) { RemoveNumberObject(WantTag); }
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	TArray<UFloatValue*> FindAllValueOjbect();
+	TArray<UValueObject*> FindAllValueOjbect() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	UFloatValue* FindNumberObject(FName WantTag);
+	UFloatValue* FindNumberObject(FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	UFloatValue* FindOrAddNumberObject(FName WantTag, TSubclassOf<UFloatValue> Template);
+	UFloatValue* FindOrAddNumberObject(FName WantTag, float DefaultValue, TSubclassOf<UFloatValue> Template);
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	bool TryFindNumberObject(FName WantTag, UFloatValue*& Result);
+	bool TryFindNumberObject(FName WantTag, UFloatValue*& Result) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	UFillableValue* FindFillableValue(FName WantTag);
+	UFillableValue* FindFillableValue(FName WantTag) const;
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	bool TryFindFillableValue(FName WantTag, UFillableValue*& Result);
+	bool TryFindFillableValue(FName WantTag, UFillableValue*& Result) const;
 
+public:
+	virtual TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const;
 
 
 public:	
