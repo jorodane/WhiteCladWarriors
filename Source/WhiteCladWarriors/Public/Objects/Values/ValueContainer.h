@@ -26,7 +26,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	float AddNumber(FName WantTag, float Value);
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	float GetNumber(FName WantTag, float DefaultValue) const;
+	float GetNumber(FName WantTag, float DefaultValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	UFloatValue* AddNumberObject(FName WantTag, float InitialValue, TSubclassOf<UFloatValue> Template);
@@ -42,19 +42,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	TArray<UValueObject*> FindAllValueOjbect() const;
 
+	//, meta = (DeterminesOutputType = "TemplateClass")
+
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	UFloatValue* FindNumberObject(FName WantTag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	UFloatValue* FindOrAddNumberObject(FName WantTag, float DefaultValue, TSubclassOf<UFloatValue> Template);
 
-	UFUNCTION(BlueprintCallable, Category = "Container")
-	bool TryFindNumberObject(FName WantTag, UFloatValue*& Result) const;
+	UFUNCTION(BlueprintCallable, Category = "Container", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	bool TryFindNumberObject(FName WantTag, UFloatValue*& Result);
 
 	UFUNCTION(BlueprintCallable, Category = "Container")
-	UFillableValue* FindFillableValue(FName WantTag) const;
-	UFUNCTION(BlueprintCallable, Category = "Container")
-	bool TryFindFillableValue(FName WantTag, UFillableValue*& Result) const;
+	UFillableValue* FindFillableObject(FName WantTag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Container", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	bool TryFindFillableObject(FName WantTag, UFillableValue*& Result);
 
 public:
 	virtual TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const;

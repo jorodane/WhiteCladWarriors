@@ -18,7 +18,7 @@ float UValueContainer::AddNumber(FName WantTag, float Value)
 	return CurrentValue->AddValue(Value);
 }
 
-float UValueContainer::GetNumber(FName WantTag, float DefaultValue) const
+float UValueContainer::GetNumber(FName WantTag, float DefaultValue)
 {
 	UFloatValue* CurrentValue;
 	if (TryFindNumberObject(WantTag, CurrentValue)) return CurrentValue->GetValue();
@@ -87,20 +87,20 @@ UFloatValue* UValueContainer::FindNumberObject(FName WantTag) const
 	return Result ? *Result : nullptr;
 }
 
-bool UValueContainer::TryFindNumberObject(FName WantTag, UFloatValue*& Result) const
+bool UValueContainer::TryFindNumberObject(FName WantTag, UFloatValue*& Result)
 {
 	Result = FindNumberObject(WantTag);
 	return IsValid(Result);
 }
 
-UFillableValue* UValueContainer::FindFillableValue(FName WantTag) const
+UFillableValue* UValueContainer::FindFillableObject(FName WantTag) const
 {
 	return Cast<UFillableValue>(FindNumberObject(WantTag));
 }
 
-bool UValueContainer::TryFindFillableValue(FName WantTag, UFillableValue*& Result) const
+bool UValueContainer::TryFindFillableObject(FName WantTag, UFillableValue*& Result)
 {
-	Result = FindFillableValue(WantTag);
+	Result = FindFillableObject(WantTag);
 	return Result != nullptr;
 }
 

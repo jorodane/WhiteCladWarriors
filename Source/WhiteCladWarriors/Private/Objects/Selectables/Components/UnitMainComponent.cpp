@@ -656,7 +656,7 @@ float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, boo
 	if (IsValid(ValueMap))
 	{
 		UFillableValue* HPValue;
-		if (ValueMap->TryFindFillableValue(L"HP", HPValue))
+		if (ValueMap->TryFindFillableObject(L"HP", HPValue))
 		{
 			Result = HPValue->AddValue(-Result);
 			bIsKill = HPValue->GetIsEmpty();
@@ -691,7 +691,7 @@ bool UUnitMainComponent::GetIsDie_Implementation()
 	if (bIsDie) return true;
 	if (!IsValid(ValueMap)) return false;
 	UFillableValue* HPValue;
-	if (ValueMap->TryFindFillableValue(L"HP", HPValue)) return HPValue->GetIsEmpty();
+	if (ValueMap->TryFindFillableObject(L"HP", HPValue)) return HPValue->GetIsEmpty();
 	return false;
 }
 
