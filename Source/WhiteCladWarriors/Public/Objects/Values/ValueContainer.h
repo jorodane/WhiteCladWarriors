@@ -67,6 +67,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Container", Meta = (DefaultToSelf = "From"))
 	static UValueContainer* GetValueContainer(AActor* From);
 
+	UFUNCTION(BlueprintCallable, Category = "Container", Meta = (DefaultToSelf = "From", ExpandEnumAsExecs = "ReturnValue"))
+	static bool TryGetValueContainer(AActor* From, UValueContainer*& Result);
+
 	UFUNCTION(BlueprintCallable, Category = "Container", Meta = (DefaultToSelf = "From"))
 	static UValueContainer* GetOrAddValueContainer(AActor* From);
 };

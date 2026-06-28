@@ -127,6 +127,12 @@ UValueContainer* UValueContainer::GetValueContainer(AActor* From)
 	return From->GetComponentByClass<UValueContainer>();
 }
 
+bool UValueContainer::TryGetValueContainer(AActor* From, UValueContainer*& Result)
+{
+	Result = GetValueContainer(From);
+	return IsValid(Result);
+}
+
 UValueContainer* UValueContainer::GetOrAddValueContainer(AActor* From)
 {
 	if (!IsValid(From)) return nullptr;
