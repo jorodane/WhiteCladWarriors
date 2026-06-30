@@ -9,12 +9,12 @@
 
 class AOperator;
 class AActionBase;
-class UPoolComponent;
 class UActionSelectorNode;
 class UActionBehaviorNode;
 class AActionIndicatorShowerBase;
 class UActionExecutor;
 class UActionNode;
+class UPoolExpandableComponent;
 class UUnitActionContainer;
 class UUnitActionComponent;
 
@@ -43,7 +43,7 @@ protected:
 	TMap<EInputIndicatorType, TSubclassOf<AActionIndicatorShowerBase>> PoolDefaultClassMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Pool")
-	TMap<EInputIndicatorType, UPoolComponent*> PoolComponentMap;
+	TMap<EInputIndicatorType, UPoolExpandableComponent*> PoolComponentMap;
 
 	TMap<UActionBehaviorNode*, TArray<AActionIndicatorShowerBase*>> ShowerActiveMap;
 

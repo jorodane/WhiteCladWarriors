@@ -9,7 +9,7 @@
 #include "Actions/UnitActionContainer.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Generals/Structs/InputPackage.h"
-#include "Objects/Generals/Components/PoolComponent.h"
+#include "Objects/Generals/Components/PoolExpandableComponent.h"
 #include "Objects/Players/Operator.h"
 
 UActionIndicatorBase::UActionIndicatorBase()
@@ -30,7 +30,7 @@ void UActionIndicatorBase::BeginPlay()
 
 		if (IsValid(WantClass))
 		{
-			UPoolComponent* NewComponent = NewObject<UPoolComponent>(this);
+			UPoolExpandableComponent* NewComponent = NewObject<UPoolExpandableComponent>(this);
 			if (!IsValid(NewComponent)) continue;
 			PoolComponentMap.Add(WantType, NewComponent);
 			NewComponent->Initialize(WantClass);
@@ -102,9 +102,9 @@ void UActionIndicatorBase::ReceiveInputClaim_Implementation(const FInputClaim& N
 		for (const TPair<UActionBehaviorNode*, FIndicatorClaim>& CurrentRequestPair : CurrentRequestMap)
 		{
 			const FIndicatorClaim& CurrentRequest = CurrentRequestPair.Value;
-			UPoolComponent** CurrentFinder = PoolComponentMap.Find(CurrentRequest.IndicatorType);
+			UPoolExpandableComponent** CurrentFinder = PoolComponentMap.Find(CurrentRequest.IndicatorType);
 			if (CurrentFinder == nullptr) continue;
-			UPoolComponent* CurrentPool = *CurrentFinder;
+			UPoolExpandableComponent* CurrentPool = *CurrentFinder;
 			for (int i = 0; i < CurrentRequest.Amount; i++)
 			{
 				TSoftObjectPtr<AActor> CurrentShower = CurrentPool->DequeueInstance();
@@ -180,7 +180,7 @@ void UActionIndicatorBase::UpdateShower_Implementation(bool bIsIconPreview)
 		for (const TPair<UActionBehaviorNode*, FIndicatorClaim>& CurrentRequestPair : CurrentRequestMap)
 		{
 			const FIndicatorClaim& CurrentRequest = CurrentRequestPair.Value;
-			UPoolComponent** CurrentFinder = PoolComponentMap.Find(CurrentRequest.IndicatorType);
+			UPoolExpandableComponent** CurrentFinder = PoolComponentMap.Find(CurrentRequest.IndicatorType);
 
 			int RequestShowerNum = CurrentRequest.Amount;
 			int CurrentShowerNum = CurrentShowerArray.Num();
@@ -212,7 +212,7 @@ void UActionIndicatorBase::InitializePool()
 {
 	for (auto& CurrentPoolPair : PoolComponentMap)
 	{
-		UPoolComponent* CurrentPool = CurrentPoolPair.Value;
+		UPoolExpandableComponent* CurrentPool = CurrentPoolPair.Value;
 		if (!IsValid(CurrentPool)) continue;
 		CurrentPool->EnqueueAll();
 	}

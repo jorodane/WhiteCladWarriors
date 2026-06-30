@@ -23,9 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ExposeOnSpawn = "true"))
 	int CountOnStart = 10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pool", meta = (ExposeOnSpawn = "true"))
-	int CountOnExpand = 5;
-
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
 	void SpawnWait(int Count);
@@ -58,12 +55,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
 	AActor* OnWaitQueueEmpty();
-	virtual AActor* OnWaitQueueEmpty_Implementation();
+	virtual AActor* OnWaitQueueEmpty_Implementation() { return nullptr; }
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
-	void Initialize(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10, int WantCountOnExpand = 5);
-	virtual void Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10, int WantCountOnExpand = 5);
+	void Initialize(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10);
+	virtual void Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart = 10);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
 	AActor* DequeueInstance();

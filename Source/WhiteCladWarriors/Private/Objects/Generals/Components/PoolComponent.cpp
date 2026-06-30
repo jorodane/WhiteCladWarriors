@@ -59,17 +59,10 @@ void UPoolComponent::OnInstanceEnqueue_Implementation(AActor* Target)
 	WaitQueue.Enqueue(Target);
 }
 
-AActor* UPoolComponent::OnWaitQueueEmpty_Implementation()
-{
-	SpawnWait(CountOnExpand);
-	return SpawnLive();
-}
-
-void UPoolComponent::Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart, int WantCountOnExpand)
+void UPoolComponent::Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart)
 {
 	TemplateClass = WantTemplate;
 	CountOnStart = WantCountOnStart;
-	CountOnExpand = WantCountOnExpand;
 
 	LiveArray.Reserve(CountOnStart);
 	SpawnWait(CountOnStart);
