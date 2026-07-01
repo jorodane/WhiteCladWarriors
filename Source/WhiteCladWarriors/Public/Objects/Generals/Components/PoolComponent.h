@@ -7,7 +7,7 @@
 #include "PoolComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WHITECLADWARRIORS_API UPoolComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -22,6 +22,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool", meta = (ExposeOnSpawn = "true"))
 	int CountOnStart = 10;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Pool")
+	int NumWait = 0;
 
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
@@ -65,6 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
 	AActor* DequeueInstance();
 	virtual AActor* DequeueInstance_Implementation();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")
+	TArray<AActor*> DequeueAll();
+	virtual TArray<AActor*> DequeueAll_Implementation();
 
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Pool")

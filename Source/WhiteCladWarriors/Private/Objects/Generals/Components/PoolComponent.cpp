@@ -38,25 +38,24 @@ TArray<AActor*> UPoolComponent::SpawnInstanceArray_Implementation(int Count)
 {
 	TArray<AActor*> Result;
 	if (TemplateClass == nullptr || Count <= 0) return Result;
-	UWorld* CurrentWorld = GetWorld();
-	if (!IsValid(CurrentWorld)) return Result;
 	Result.SetNum(Count);
-	for (int i = 0; i < Count; i++) Result[i] = CurrentWorld->SpawnActor(TemplateClass);
+	for (int i = 0; i < Count; i++) Result[i] = SpawnInstance();
 	return Result;
 }
 
 void UPoolComponent::OnInstanceDequeue_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	IPoolable::Execute_OnPoolDequeue(Target);
+	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolDequeue(Target);
 	LiveArray.AddUnique(Target);
 }
 
 void UPoolComponent::OnInstanceEnqueue_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	IPoolable::Execute_OnPoolEnqueue(Target);
+	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolEnqueue(Target);
 	WaitQueue.Enqueue(Target);
+	NumWait++;
 }
 
 void UPoolComponent::Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart)
@@ -80,8 +79,25 @@ AActor* UPoolComponent::DequeueInstance_Implementation()
 			return Result;
 		}
 	}
-
+	NumWait--;
 	Result = OnWaitQueueEmpty();
+	return Result;
+}
+
+TArray<AActor*> UPoolComponent::DequeueAll_Implementation()
+{
+	TArray<AActor*> Result;
+	if (WaitQueue.IsEmpty()) return Result;
+
+	AActor* Current;
+	while (WaitQueue.Dequeue(Current))
+	{
+		if (IsValid(Current))
+		{
+			OnInstanceDequeue(Current);
+			Result.Add(Current);
+		}
+	}
 	return Result;
 }
 
