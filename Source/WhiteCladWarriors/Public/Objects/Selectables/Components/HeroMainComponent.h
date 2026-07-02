@@ -21,4 +21,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action")
 	TArray<UUnitActionContainer*> HeroActions;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Unit")
+	static UHeroMainComponent* GetHero(AActor* Target);
+
+	UFUNCTION(BlueprintCallable, Category = "Unit", meta = (ExpandEnumAsExecs = "ReturnValue"))
+	static bool TryGetHero(AActor* Target, UHeroMainComponent*& OutResult);
 };
