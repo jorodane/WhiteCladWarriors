@@ -46,14 +46,14 @@ TArray<AActor*> UPoolComponent::SpawnInstanceArray_Implementation(int Count)
 void UPoolComponent::OnInstanceDequeue_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolDequeue(Target);
+	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolDequeue(Target, this);
 	LiveArray.AddUnique(Target);
 }
 
 void UPoolComponent::OnInstanceEnqueue_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolEnqueue(Target);
+	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolEnqueue(Target, this);
 	WaitQueue.Enqueue(Target);
 	NumWait++;
 }

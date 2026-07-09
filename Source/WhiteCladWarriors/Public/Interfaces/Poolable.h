@@ -6,6 +6,8 @@
 #include "UObject/Interface.h"
 #include "Poolable.generated.h"
 
+class UPoolComponent;
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UPoolable : public UInterface
@@ -23,10 +25,14 @@ class WHITECLADWARRIORS_API IPoolable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
-	void OnPoolEnqueue();
-	virtual void OnPoolEnqueue_Implementation() {}
+	void OnPoolEnqueue(UPoolComponent* EnqueueTo);
+	virtual void OnPoolEnqueue_Implementation(UPoolComponent* EnqueueTo) { }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
-	void OnPoolDequeue();
-	virtual void OnPoolDequeue_Implementation() {}
+	void OnPoolDequeue(UPoolComponent* DequeueFrom);
+	virtual void OnPoolDequeue_Implementation(UPoolComponent* DequeueFrom) {}
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
+	void ClaimPoolEnqueue();
+	virtual void ClaimPoolEnqueue_Implementation() {}
 };

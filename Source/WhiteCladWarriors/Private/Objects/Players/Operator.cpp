@@ -724,6 +724,7 @@ void AOperator::DeselectActorsWithoutNotify_Implementation()
 {
 	for (AActor* CurrentTarget : CurrentInputPackage.SelectedActors)
 	{
+		if (!IsValid(CurrentTarget)) continue;
 		ISelectable::Execute_Deselect(CurrentTarget);
 		ActorRemoveFromActionList(CurrentTarget);
 		if (UUnitMainComponent* CurrentUnit = CurrentTarget->GetComponentByClass<UUnitMainComponent>()) CurrentUnit->OnUnitDie.RemoveAll(this);
