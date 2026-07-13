@@ -361,6 +361,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Unit")
 	void OnDie(const FDamageInfo& LastAttackDamageInfo, const TMap<UUnitMainComponent*, float>& LastDamageMap, float LastTotalDamage);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Unit")
+	void Revive();
+	virtual void Revive_Implementation();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Unit")
+	void OnRevive();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Unit")
 	void OnTakeDamage(const FDamageInfo& AttackDamageInfo);
 

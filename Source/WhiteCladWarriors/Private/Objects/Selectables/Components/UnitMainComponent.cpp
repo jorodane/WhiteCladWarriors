@@ -622,6 +622,14 @@ void UUnitMainComponent::Die_Implementation(const FDamageInfo& LastAttackDamageI
 	}
 	OnUnitDie.Broadcast(this, LastAttackDamageInfo);
 	OnDie(LastAttackDamageInfo, DamageMap, TotalTakeDamage);
+	ResetDamageValue();
+}
+
+void UUnitMainComponent::Revive_Implementation()
+{
+	bIsDie = false;
+	OnUnitRevive.Broadcast();
+	OnRevive();
 }
 
 TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const
