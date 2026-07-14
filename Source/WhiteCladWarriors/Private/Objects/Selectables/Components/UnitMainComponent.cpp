@@ -628,6 +628,7 @@ void UUnitMainComponent::Die_Implementation(const FDamageInfo& LastAttackDamageI
 void UUnitMainComponent::Revive_Implementation()
 {
 	bIsDie = false;
+	OnMainActionChanged.Broadcast(MainAction, false);
 	OnUnitRevive.Broadcast();
 	OnRevive();
 }
