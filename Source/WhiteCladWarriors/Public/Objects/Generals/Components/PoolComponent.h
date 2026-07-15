@@ -6,11 +6,24 @@
 #include "Components/ActorComponent.h"
 #include "PoolComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPoolEmpty);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPoolStack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPoolStackFirst);
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class WHITECLADWARRIORS_API UPoolComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(Blueprintassignable, BlueprintCallable, Category = "Pool")
+	FOnPoolEmpty OnPoolEmpty;
+
+	UPROPERTY(Blueprintassignable, BlueprintCallable, Category = "Pool")
+	FOnPoolStack OnPoolStack;
+
+	UPROPERTY(Blueprintassignable, BlueprintCallable, Category = "Pool")
+	FOnPoolStackFirst OnPoolStackFirst;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Pool")

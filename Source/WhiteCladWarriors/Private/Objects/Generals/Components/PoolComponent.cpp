@@ -56,6 +56,9 @@ void UPoolComponent::OnInstanceEnqueue_Implementation(AActor* Target)
 	if (Target->GetClass()->ImplementsInterface(UPoolable::StaticClass())) IPoolable::Execute_OnPoolEnqueue(Target, this);
 	WaitQueue.Enqueue(Target);
 	NumWait++;
+
+	OnPoolStack.Broadcast();
+	if(NumWait == 1) OnPoolStackFirst.Broadcast();
 }
 
 void UPoolComponent::Initialize_Implementation(TSubclassOf<AActor> WantTemplate, int WantCountOnStart)
@@ -76,10 +79,11 @@ AActor* UPoolComponent::DequeueInstance_Implementation()
 		if (IsValid(Result))
 		{
 			OnInstanceDequeue(Result);
+			NumWait--;
+			if (NumWait <= 0) OnPoolEmpty.Broadcast();
 			return Result;
 		}
 	}
-	NumWait--;
 	Result = OnWaitQueueEmpty();
 	return Result;
 }
@@ -98,6 +102,9 @@ TArray<AActor*> UPoolComponent::DequeueAll_Implementation()
 			Result.Add(Current);
 		}
 	}
+
+	NumWait = 0;
+	OnPoolEmpty.Broadcast();
 	return Result;
 }
 
