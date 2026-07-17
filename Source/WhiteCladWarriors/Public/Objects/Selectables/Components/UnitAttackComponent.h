@@ -95,17 +95,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void RefreshChaseStartLocation() { SetChaseStartLocation(GetCurrentLocation()); }
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
+	void MoveToLocation(FVector WantLocation);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
+	void MoveToTarget(AActor* WantTarget);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void MoveToFocusTarget();
-	void MoveToFocusTarget_Implementation();
+	void MoveToFocusTarget_Implementation() { if(IsValid(AttackFocusTarget)) MoveToTarget(AttackFocusTarget); }
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void MoveToChaseStartLocation();
+	void MoveToChaseStartLocation_Implementation() { MoveToLocation(ChaseStartLocation); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void MoveToClaimedLocation();
 	void MoveToClaimedLocation_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void MoveToChaseStartLocation();
-	void MoveToChaseStartLocation_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void EndLastCursor();

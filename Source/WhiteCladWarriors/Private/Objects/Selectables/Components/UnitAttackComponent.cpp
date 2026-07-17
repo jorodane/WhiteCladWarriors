@@ -9,91 +9,162 @@
 
 void UUnitAttackComponent::TickAttackCheck_Implementation(float DeltaSeconds)
 {
-	AActor* CurrentAttackTarget = AttackFocusTarget;
-	AOperator* CurrentAttackOperator = LastClaimOperator;
+    AActor* CurrentAttackTarget = AttackFocusTarget;
+    AOperator* CurrentAttackOperator = LastClaimOperator;
 
-	if (IsValid(CurrentAttackTarget))
-	{
-		if(ChaseLimitRange <= 0 || !FollowUntilChaseLimit_Implementation(CurrentAttackTarget))
-		{
-			bool bIsAttackable, bIsInRange;
-			if (!TryAttack(CurrentAttackOperator, CurrentAttackTarget, bIsAttackable, bIsInRange) && !bIsAttackable) OnCannotAttackable();
-		}
-	}
-	else if(ChaseLockTime < AMapSetting::GetCurrentWorldTime())
-	{
-		CurrentAttackTarget = GetDetectTarget(CurrentAttackOperator);
-		OnAttackTargetDetected(CurrentAttackOperator, CurrentAttackTarget);
-	}
+    if (IsValid(CurrentAttackTarget))
+    {
+        const bool bCanContinueChasing = ChaseLimitRange <= 0.0f || FollowUntilChaseLimit_Implementation(CurrentAttackTarget);
+        if (!bCanContinueChasing) return;
+
+        bool bIsAttackable, bIsInRange;
+        const bool bAttackSucceeded = TryAttack(CurrentAttackOperator, CurrentAttackTarget, bIsAttackable, bIsInRange);
+
+        if (!bAttackSucceeded && !bIsAttackable) OnCannotAttackable();
+        return;
+    }
+
+    if (ChaseLockTime < AMapSetting::GetCurrentWorldTime())
+    {
+        CurrentAttackTarget = GetDetectTarget(CurrentAttackOperator);
+        OnAttackTargetDetected(CurrentAttackOperator,CurrentAttackTarget);
+    }
 }
 
+bool UUnitAttackComponent::FollowUntilChaseLimit_Implementation(AActor* Target)
+{
+    if (!IsValid(Target)) return false;
+
+    FVector LimitAnchor;
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Location:
+        LimitAnchor = AttackFocusLocation;
+        break;
+    default:
+        LimitAnchor = ChaseStartLocation;
+        break;
+    }
+
+    const float CurrentDistance = FVector::Dist2D(Target->GetActorLocation(), LimitAnchor);
+    if (CurrentDistance <= ChaseLimitRange) return true;
+
+    ChaseLockTime = AMapSetting::GetCurrentWorldTime() + ChaseDelay;
+    ResetFocusTarget();
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Location:
+    case EAttackMode::ReturnAfterTargetKill:
+        MoveToClaimedLocation();
+        SetDetect(bIsDetectOnIdle);
+        break;
+
+    default:
+        MoveToChaseStartLocation();
+        break;
+    }
+
+    return false;
+}
 
 bool UUnitAttackComponent::OnCannotAttackable_Implementation()
 {
-	switch (CurrentAttackMode)
-	{
-		case EAttackMode::Location:
-		case EAttackMode::ReturnAfterTargetKill:
-			ResetFocusTarget();
-			MoveToClaimedLocation();
-			break;
-		default:
-			ResetFocusTarget();
-			MoveToChaseStartLocation();
-			EndLastCursor();
-			break;
-	}
+    ResetFocusTarget();
+
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Location:
+    case EAttackMode::ReturnAfterTargetKill:
+        MoveToClaimedLocation();
+        break;
+
+    default:
+        MoveToChaseStartLocation();
+        EndLastCursor();
+        break;
+    }
+
+    return true;
 }
 
 bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AOperator* Instigator, AActor* TargetActor)
 {
-	if (!IsValid(TargetActor)) return;
-	if (!IsValid(Instigator) && IsValid(OwnerUnit)) Instigator = OwnerUnit->GetOperator();
+    if (!IsValid(TargetActor)) return false;
+    if (!IsValid(Instigator) && IsValid(OwnerUnit)) Instigator = OwnerUnit->GetOperator();
 
-	switch (CurrentAttackMode)
-	{
-	case EAttackMode::Location:
-		RefreshChaseStartLocation();
-		SetFocusTarget(Instigator, TargetActor);
-		MoveToFocusTarget();
-		break;
-	case EAttackMode::FindTarget:
-		RefreshChaseStartLocation();
-	default:
-		CommandAttackTarget(Instigator, TargetActor);
-		break;
-	}
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Location:
+        RefreshChaseStartLocation();
+        SetFocusTarget(Instigator, TargetActor);
+        MoveToFocusTarget();
+        break;
+
+    case EAttackMode::FindTarget:
+        RefreshChaseStartLocation();
+        [[fallthrough]];
+
+    default:
+        CommandAttackTarget(Instigator, TargetActor);
+        break;
+    }
+
+    return true;
 }
 
-
-bool UUnitAttackComponent::FollowUntilChaseLimit_Implementation(AActor* Target)
+void UUnitAttackComponent::SetFocusTarget_Implementation(AOperator* Instigator, AActor* TargetActor)
 {
-	if (!IsValid(Target)) return;
-	FVector LimitAnchor;
-	switch (CurrentAttackMode)
-	{
-		case EAttackMode::Location:
-			LimitAnchor = AttackFocusLocation;
-			break;
-		default:
-			LimitAnchor = ChaseStartLocation;
-			break;
-	}
-	float CurrentDistance = FVector::Dist2D(Target->GetActorLocation(), LimitAnchor);
 
-	if (ChaseLimitRange < CurrentDistance)
-	{
-		ChaseLockTime = AMapSetting::GetCurrentWorldTime() + ChaseDelay;
-		ResetFocusTarget();
-		return false;
-	}
-	else switch(CurrentAttackMode)
-	{
-		case EAttackMode::Location:
-		case EAttackMode::ReturnAfterTargetKill:
-			MoveToClaimedLocation();
-			SetDetect(bIsDetectOnIdle);
-			break;
-	}
-	return true;
 }
+
+void UUnitAttackComponent::ResetFocusTarget_Implementation()
+{
+
+}
+
+void UUnitAttackComponent::SetDetect_Implementation(bool bWantDetectAround)
+{
+
+}
+
+AActor* UUnitAttackComponent::GetDetectTarget_Implementation(AOperator* Operator)
+{
+    return nullptr;
+}
+
+void UUnitAttackComponent::SetChaseStartLocation_Implementation(FVector NewLocation)
+{
+
+}
+
+FVector UUnitAttackComponent::GetCurrentLocation_Implementation()
+{
+    AActor* OwnerActor = GetOwner();
+    if (IsValid(OwnerActor)) return OwnerActor->GetActorLocation();
+    return FVector::ZeroVector;
+}
+
+void UUnitAttackComponent::MoveToClaimedLocation_Implementation()
+{
+    if (IsValid(AttackFocusTarget)) MoveToFocusTarget();
+    else switch (CurrentAttackMode)
+    {
+         
+    };
+}
+
+void UUnitAttackComponent::EndLastCursor_Implementation()
+{
+
+}
+
+bool UUnitAttackComponent::TryAttack_Implementation(AOperator* ClaimOperator, AActor* WantTarget, bool& outIsAttackable, bool& outIsInRange)
+{
+    return false;
+}
+
+void UUnitAttackComponent::CommandAttackTarget_Implementation(AOperator* Operator, AActor* Target)
+{
+
+}
+
