@@ -99,6 +99,8 @@ struct FExecutorValueMap
 	TMap<TPair<UUnitActionComponent*, FName>, FVector> DirectionMap;
 	TMultiMap<FName, AActor*> ActorMultiMap;
 
+	const static FExecutorValueMap Default;
+
 	void			Clear();
 
 	bool			HasFloat(FName WantTag) const;
@@ -276,6 +278,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	static UActionExecutor* GetExecutorFromID(int64 WantID);
 	static TWeakObjectPtr<UActionExecutor> GetExecutorWeakPtrFromID(int64 WantID);
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	static UActionExecutor* GetExecutorFromCursor(const FActionCursorFinder& WantCursor);
+
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	static UActionNode* GetNodeFromCursor(const FActionCursorFinder& WantCursor);

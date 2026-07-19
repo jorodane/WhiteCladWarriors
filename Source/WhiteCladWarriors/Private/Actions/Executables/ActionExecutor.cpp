@@ -9,6 +9,8 @@
 #include "Objects/Players/Operator.h"
 #include "Settings/ActionSetting.h"
 
+const FExecutorValueMap FExecutorValueMap::Default;
+
 void FActiveNodeMap::Clear()
 {
 	NodeMap.Reset();
@@ -555,6 +557,10 @@ TWeakObjectPtr<UActionExecutor> UActionExecutor::GetExecutorWeakPtrFromID(int64 
 	TWeakObjectPtr<UActionExecutor> Result;
 	UActionSetting::ClaimGetExecutor(WantID, Result);
 	return Result;
+}
+UActionExecutor* UActionExecutor::GetExecutorFromCursor(const FActionCursorFinder& WantCursor)
+{
+	return GetExecutorFromID(WantCursor.CurrentExecutorID);
 }
 
 void UActionExecutor::CompleteCursor(const FActionCursorFinder& WantCursor)
