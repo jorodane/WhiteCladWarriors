@@ -18,7 +18,7 @@ void UUnitAttackComponent::TickAttackCheck_Implementation(float DeltaSeconds)
     if (CurrentAttackMode == EAttackMode::Idle) return;
     if (!IsValid(OwnerUnit)) return;
     if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
-    if (OwnerUnit->HasMainAction()) return;
+    if (OwnerUnit->HasActionMontage()) return;
 
     AActor* CurrentAttackTarget = AttackFocusTarget;
     AOperator* CurrentAttackOperator = LastClaimOperator;
