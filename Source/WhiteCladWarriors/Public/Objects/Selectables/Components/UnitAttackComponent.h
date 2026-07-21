@@ -144,12 +144,20 @@ public:
 	void ResetAttackMode_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void ResetDetectionEnable();
+	void ResetDetectionEnable_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void SetAttackMode(const EAttackMode NewMode);
 	void SetAttackMode_Implementation(const EAttackMode NewMode);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	AActor* GetDetectTarget(AOperator* Operator);
 	AActor* GetDetectTarget_Implementation(AOperator* Operator);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
+	TArray<AActor*> GetDetectTargets();
+	TArray<AActor*> GetDetectTargets_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
 	bool GetAttackable(AActor* Target);
@@ -211,8 +219,8 @@ public:
 	bool CommandAttackTarget(AOperator* Operator, AActor* Target, AActionBase* AttackAction);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void CommandChaseTarget(AOperator* Operator, AActor* Target);
-	void CommandChaseTarget_Implementation(AOperator* Operator, AActor* Target);
+	bool CommandChaseTarget(AOperator* Operator, AActor* Target);
+	bool CommandChaseTarget_Implementation(AOperator* Operator, AActor* Target);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
 	void SetDetectionEnable(bool bWantDetectAround);

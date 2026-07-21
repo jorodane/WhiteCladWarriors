@@ -20,10 +20,8 @@ void UUnitAttackComponent::TickAttackCheck_Implementation(float DeltaSeconds)
     if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
     if (OwnerUnit->HasActionMontage()) return;
 
-    AActor* CurrentAttackTarget = AttackFocusTarget;
-    AOperator* CurrentAttackOperator = LastClaimOperator;
-    if (IsValid(CurrentAttackTarget)) TickAttackTarget(CurrentAttackOperator, CurrentAttackTarget);
-    else TickSearchTarget(CurrentAttackOperator, CurrentAttackTarget);
+    if (IsValid(AttackFocusTarget)) TickAttackTarget(LastClaimOperator, AttackFocusTarget);
+    else TickSearchTarget(LastClaimOperator, AttackFocusTarget);
 }
 
 void UUnitAttackComponent::TickAttackTarget_Implementation(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget)
@@ -64,8 +62,8 @@ void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, co
 void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange)
 {
     EndLastAction();
-    bIsReturnToOrigin = ChaseRange > 0;
     ChaseLimitRange = ChaseRange;
+    bIsReturnToOrigin = ChaseRange > 0;
     ActionClaimer = Cursor;
     RefreshChaseBeginLocation();
     SetFocusTarget(Cursor.CurrentOperator, Target);
@@ -100,15 +98,10 @@ bool UUnitAttackComponent::FollowUntilChaseLimit_Implementation(AActor* Target)
         MoveToClaimedLocation();
         SetDetectionEnable(true);
     }
-    else if (bIsReturnToOrigin)
-    {
-        MoveToClaimedLocation();
-        SetDetectionEnable(bIsDetectOnIdle);
-    }
     else
     {
-        MoveToChaseBeginLocation();
-        EndLastAction();
+        if (bIsReturnToOrigin) MoveToChaseBeginLocation();
+        ResetAttackDatas();
     }
 
     return false;
@@ -116,11 +109,11 @@ bool UUnitAttackComponent::FollowUntilChaseLimit_Implementation(AActor* Target)
 
 bool UUnitAttackComponent::OnCannotAttackable_Implementation()
 {
-    if (CurrentAttackMode == EAttackMode::Location || bIsReturnToOrigin)
+    if (CurrentAttackMode == EAttackMode::Location)
     {
         MoveToClaimedLocation();
     }
-    else
+    else if (bIsReturnToOrigin)
     {
         MoveToChaseBeginLocation();
     }
@@ -132,7 +125,7 @@ bool UUnitAttackComponent::OnCannotAttackable_Implementation()
 void UUnitAttackComponent::OnActorDetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
 {
     if (!IsValid(OtherActor)) return;
-    if (!OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) || !IDamageable::Execute_GetIsAttackable(OwnerUnit, OwnerUnit)) return;
+    if (!OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) || !IDamageable::Execute_GetIsAttackable(OtherActor, OwnerUnit)) return;
     DetectedActors.Add(OtherActor);
 }
 
@@ -149,20 +142,14 @@ bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AOperator* Inst
 
     switch (CurrentAttackMode)
     {
-    case EAttackMode::Location:
-        RefreshChaseBeginLocation();
-        SetFocusTarget(Instigator, TargetActor);
-        MoveToFocusTarget();
-        return true;
-
     case EAttackMode::FindTarget:
         RefreshChaseBeginLocation();
-        SetFocusTarget(Instigator, TargetActor);
-        [[fallthrough]];
-
-    default:
-        return CommandAttackTarget(Instigator, TargetActor);
+        break;
     }
+    SetFocusTarget(Instigator, TargetActor);
+    MoveToFocusTarget();
+
+    return true;
 }
 
 void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
@@ -212,7 +199,12 @@ void UUnitAttackComponent::ResetAttackMode_Implementation()
 {
     bIsReturnToOrigin = false;
     SetAttackMode(bIsDetectOnIdle ? EAttackMode::FindTarget : EAttackMode::Idle);
-    if (bIsDetectOnIdle) SetDetectionEnable(true);
+    ResetDetectionEnable();
+}
+
+void UUnitAttackComponent::ResetDetectionEnable_Implementation()
+{
+    SetDetectionEnable(bIsDetectOnIdle);
 }
 
 void UUnitAttackComponent::SetAttackMode_Implementation(const EAttackMode NewMode)
@@ -237,6 +229,11 @@ AActor* UUnitAttackComponent::GetDetectTarget_Implementation(AOperator* Operator
         Result = CurrentActor;
     }
     return Result;
+}
+
+TArray<AActor*> UUnitAttackComponent::GetDetectTargets_Implementation()
+{
+    return DetectedActors.Array();
 }
 
 bool UUnitAttackComponent::GetAttackable_Implementation(AActor* Target)
@@ -317,12 +314,11 @@ bool UUnitAttackComponent::CommandAttackTarget_Implementation(AOperator* Operato
     return CommandAttackTarget(Operator, Target, AttackAction);
 }
 
-void UUnitAttackComponent::CommandChaseTarget_Implementation(AOperator* Operator, AActor* Target)
+bool UUnitAttackComponent::CommandChaseTarget_Implementation(AOperator* Operator, AActor* Target)
 {
     AActionBase* ChaseAction = GetChaseAction();
-    if (!IsValid(ChaseAction)) { ResetAttackDatas(); return; }
-    ChaseAction->ExecuteActionToTarget(Operator, this, Target, FExecutorValueMap::Default);
-    return;
+    if (!IsValid(ChaseAction)) { ResetAttackDatas(); return false; }
+    return IsValid(ChaseAction->ExecuteActionToTarget(Operator, this, Target, FExecutorValueMap::Default));
 }
 
 void UUnitAttackComponent::OnPoolEnqueue_Implementation(UPoolComponent* EnqueueTo)
