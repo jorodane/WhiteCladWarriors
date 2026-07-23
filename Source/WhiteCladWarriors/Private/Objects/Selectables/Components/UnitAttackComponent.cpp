@@ -18,7 +18,7 @@ void UUnitAttackComponent::TickAttackCheck_Implementation(float DeltaSeconds)
     if (CurrentAttackMode == EAttackMode::Idle) return;
     if (!IsValid(OwnerUnit)) return;
     if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
-    if (OwnerUnit->HasActionMontage()) return;
+    if (OwnerUnit->HasMainAction() && OwnerUnit->GetMainActionInfo().Cursor.CurrentComponent != ActionClaimer.CurrentComponent) return;
 
     if (IsValid(AttackFocusTarget)) TickAttackTarget(LastClaimOperator, AttackFocusTarget);
     else TickSearchTarget(LastClaimOperator, AttackFocusTarget);
@@ -125,7 +125,7 @@ bool UUnitAttackComponent::OnCannotAttackable_Implementation()
 void UUnitAttackComponent::OnActorDetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
 {
     if (!IsValid(OtherActor)) return;
-    if (!OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) || !IDamageable::Execute_GetIsAttackable(OtherActor, OwnerUnit)) return;
+    if (!OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass())) return;
     DetectedActors.Add(OtherActor);
 }
 
@@ -296,15 +296,22 @@ bool UUnitAttackComponent::TryAttack_Implementation(AOperator* ClaimOperator, AA
 
 bool UUnitAttackComponent::CommandAttackTarget(AOperator* Operator, AActor* Target, AActionBase* AttackAction)
 {
+    if (!IsValid(AttackAction) || !IsValid(Target)) { ResetAttackDatas(); return false; }
     UActionExecutor* ClaimExecutor = UActionExecutor::GetExecutorFromCursor(ActionClaimer);
-    if (!IsValid(AttackAction) || !IsValid(ClaimExecutor) || !IsValid(Target)) { ResetAttackDatas(); return false; }
-    ClaimExecutor->AddActor(L"AttackTarget", Target);
-    UActionNode* ClaimNode = ClaimExecutor->GetNode(ActionClaimer);
-    if(!IsValid(ClaimNode)) { ResetAttackDatas(); return false; }
-    int ResultID = -1;
-    FOnNodeEnded NodeEndedDelegate;
-    NodeEndedDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UUnitAttackComponent, OnAttackTargetCompleted));
-    return IsValid(ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate));
+    if (IsValid(ClaimExecutor))
+    {
+        ClaimExecutor->AddActor(L"AttackTarget", Target);
+        UActionNode* ClaimNode = ClaimExecutor->GetNode(ActionClaimer);
+        if(!IsValid(ClaimNode)) { ResetAttackDatas(); return false; }
+        int ResultID = -1;
+        FOnNodeEnded NodeEndedDelegate;
+        NodeEndedDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UUnitAttackComponent, OnAttackTargetCompleted));
+        return IsValid(ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate));
+    }
+    else
+    {
+        return IsValid(AttackAction->ExecuteActionToTarget(Operator, this, Target, FExecutorValueMap::Default));
+    }
 }
 
 bool UUnitAttackComponent::CommandAttackTarget_Implementation(AOperator* Operator, AActor* Target)
