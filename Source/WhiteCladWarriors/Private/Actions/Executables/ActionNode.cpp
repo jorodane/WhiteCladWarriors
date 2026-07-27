@@ -27,7 +27,7 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 		if (NodeInfo.bIsSubNode)
 		{
 			int ResultID;
-			if (FActiveNodeMap* ResultInfo = Executor->GetCursor(TargetComponent))
+			if (FActiveNodeMap* ResultInfo = Executor->GetNodeMap(TargetComponent))
 			{
 				Executor->CreateSubNode(WantCursor, *ResultInfo, this, NodeInfo.Node, ResultID);
 			}

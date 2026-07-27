@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Actions/Values/ActionValueClaimer.h"
+#include "Generals/Structs/ActionStructures.h"
 #include "ActionExecutor.generated.h"
 
 class AOperator;
@@ -15,7 +16,6 @@ class UActionSelectorNode;
 class UActionNode;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionMessage_Simple, UUnitMainComponent*, From);
-DECLARE_DYNAMIC_DELEGATE(FOnNodeEnded);
 /**
  * 
  */
@@ -251,7 +251,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
-	FActiveNodeMap* GetCursor(UUnitActionComponent* TargetComponent);
+	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);
+
+	bool SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded);
+
 	bool GetValid() { return ExecutorID != -1; }
 
 public:

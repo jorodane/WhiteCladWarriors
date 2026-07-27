@@ -265,8 +265,8 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	const bool bIsBlocked = !(bIsValidNode && bCanEnter);
 
 	UActionNode* OriginNode = nullptr;
-	FActiveNodeMap* CurrentNodeMap = GetCursor(TargetComponent);
-	 
+	FActiveNodeMap* CurrentNodeMap = GetNodeMap(TargetComponent);
+
 	if (CurrentNodeMap)
 	{
 		OriginNode = CurrentNodeMap->GetNode(ID);
@@ -327,14 +327,14 @@ UActionNode* UActionExecutor::InitiateSubNode(FActionCursorFinder& BaseCursor, F
 
 UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
-	FActiveNodeMap* CurrentNodeMap = GetCursor(BaseCursor.CurrentComponent);
+	FActiveNodeMap* CurrentNodeMap = GetNodeMap(BaseCursor.CurrentComponent);
 	if (CurrentNodeMap) return CreateSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
 	return nullptr;
 }
 
 UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
 {
-	FActiveNodeMap* CurrentNodeMap = GetCursor(BaseCursor.CurrentComponent);
+	FActiveNodeMap* CurrentNodeMap = GetNodeMap(BaseCursor.CurrentComponent);
 	if (CurrentNodeMap) return CreateSubNodeWithEvent(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID, OnNodeEnded);
 	return nullptr;
 }
@@ -355,7 +355,7 @@ UActionNode* UActionExecutor::GetNode(const FActionCursorFinder& WantCursor)
 {
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	if (!IsValid(TargetComponent)) return nullptr;
-	if (FActiveNodeMap* CursorFinder = GetCursor(TargetComponent))
+	if (FActiveNodeMap* CursorFinder = GetNodeMap(TargetComponent))
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
 		return Cursor.GetNode(WantCursor.CurrentID);
@@ -369,7 +369,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
 	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
-	FActiveNodeMap* CursorFinder = GetCursor(TargetComponent);
+	FActiveNodeMap* CursorFinder = GetNodeMap(TargetComponent);
 	if (CursorFinder)
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
@@ -467,13 +467,26 @@ FActionCursorFinder UActionExecutor::CreateCursorFinder(UUnitActionComponent* Ta
 	return FActionCursorFinder(Action, Operator, ExecutorID, TargetComponent, TargetID, bAsSubNode);
 }
 
-FActiveNodeMap* UActionExecutor::GetCursor(UUnitActionComponent* TargetComponent)
+FActiveNodeMap* UActionExecutor::GetNodeMap(UUnitActionComponent* TargetComponent)
 {
 	if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
 	else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
 	else return nullptr;
 }
 
+bool UActionExecutor::SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded)
+{
+	FActiveNodeMap* NodeMap = GetNodeMap(TargetComponent);
+
+	if (NodeMap)
+	{
+		if (NodeMap->EndEventMap.Contains(0)) return false;
+		NodeMap->EndEventMap.Add(0, OnNodeEnded);
+		return true;
+	}
+
+	return false;
+}
 
 void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, const FName& Message)
 {
@@ -481,7 +494,7 @@ void UActionExecutor::OnMessageFromComponent_Simple(UUnitComponentBase* From, co
 	{
 		FActionCursorFinder BaseFinder = CreateCursorFinder(AsActionComponent);
 
-		if (FActiveNodeMap* CurrentCursor = GetCursor(AsActionComponent))
+		if (FActiveNodeMap* CurrentCursor = GetNodeMap(AsActionComponent))
 		{
 			CurrentCursor->BroadcastMessage_Simple(BaseFinder, Message);
 		}
@@ -494,7 +507,7 @@ void UActionExecutor::OnMessageFromComponent_Detail(UUnitComponentBase* From, co
 	{
 		FActionCursorFinder BaseFinder = CreateCursorFinder(AsActionComponent);
 
-		if (FActiveNodeMap* CurrentCursor = GetCursor(AsActionComponent))
+		if (FActiveNodeMap* CurrentCursor = GetNodeMap(AsActionComponent))
 		{
 			CurrentCursor->BroadcastMessage_Detail(BaseFinder, Message, Context);
 		}
@@ -507,7 +520,7 @@ void UActionExecutor::OnMessageFromComponent_Montage(UUnitComponentBase* From, U
 	{
 		FActionCursorFinder BaseFinder = CreateCursorFinder(AsActionComponent);
 
-		if (FActiveNodeMap* CurrentCursor = GetCursor(AsActionComponent))
+		if (FActiveNodeMap* CurrentCursor = GetNodeMap(AsActionComponent))
 		{
 			CurrentCursor->BroadcastMessage_Montage(BaseFinder, Montage, bIsStart, bIsInterrupted);
 		}

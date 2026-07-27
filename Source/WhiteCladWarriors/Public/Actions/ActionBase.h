@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Generals/Structs/InputPackage.h"
+#include "Generals/Structs/ActionStructures.h"
 #include "ActionBase.generated.h"
 
 class UActionNode;
