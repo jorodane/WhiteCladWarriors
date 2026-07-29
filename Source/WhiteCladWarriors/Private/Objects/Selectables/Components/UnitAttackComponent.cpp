@@ -55,22 +55,25 @@ void UUnitAttackComponent::TickSearchTarget_Implementation(AOperator* CurrentAtt
 
 void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor, float ChaseRange)
 {
-    EndLastAction();
     ChaseLimitRange = ChaseRange;
-    bIsReturnToOrigin = false;
+    EndLastAction();
     ActionClaimer = Cursor;
     AttackFocusLocation = Target;
+    bIsReturnToOrigin = false;
     SetAttackMode(EAttackMode::Location);
     SetDetectionEnable(true);
-    MoveToClaimedLocation();
+    if(!IsValid(AttackFocusTarget)) MoveToClaimedLocation();
 }
 
 void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange)
 {
-    EndLastAction();
+    if (!IsValid(AttackFocusTarget))
+    {
+        EndLastAction();
+        ActionClaimer = Cursor;
+    }
     ChaseLimitRange = ChaseRange;
     bIsReturnToOrigin = ChaseRange > 0;
-    ActionClaimer = Cursor;
     RefreshChaseBeginLocation();
     SetFocusTarget(Cursor.CurrentOperator, Target);
     SetAttackMode(EAttackMode::Target);
@@ -161,7 +164,6 @@ bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AOperator* Inst
 
 void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
 {
-    ResetFocusTarget();
     MoveToClaimedLocation();
 }
 
@@ -212,6 +214,7 @@ void UUnitAttackComponent::ResetAttackMode_Implementation()
 void UUnitAttackComponent::ResetDetectionEnable_Implementation()
 {
     SetDetectionEnable(bIsDetectOnIdle);
+    if(!bIsDetectOnIdle) DetectedActors.Empty();
 }
 
 void UUnitAttackComponent::SetAttackMode_Implementation(const EAttackMode NewMode)
