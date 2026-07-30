@@ -71,6 +71,12 @@ FVector UUnitComponentBase::GetDirection_Implementation(FVector Destination, boo
 	return Result;
 };
 
+AOperator* UUnitComponentBase::GetOperator_Implementation() const
+{
+	if (!IsValid(OwnerUnit)) return nullptr; 
+	return OwnerUnit->GetOperator();
+}
+
 
 UUnitMainComponent* UUnitComponentBase::SetOwnerUnit_Implementation(UUnitMainComponent* NewUnit)
 {

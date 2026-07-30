@@ -198,8 +198,6 @@ public:
 	bool HasOperatorAuthority(AOperator* From) const;
 	bool HasOperatorAuthority_Implementation(AOperator* From) const;
 
-	UFUNCTION(BlueprintPure, Category = "Action")
-	AOperator* GetOperator() const;
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	FMainActionInfo GetMainActionInfo() const;
@@ -381,6 +379,7 @@ public:
 	virtual bool GetIsAttackable_Implementation(UUnitMainComponent* From);
 	virtual bool GetIsDamageable_Implementation(UUnitMainComponent* From);
 	virtual bool GetIsDie_Implementation();
+	virtual AOperator* GetOperator_Implementation() const override;
 
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
 	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);

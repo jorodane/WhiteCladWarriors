@@ -13,6 +13,8 @@
 #include "Settings/MapSetting.h"
 #include "Kismet/GameplayStatics.h"
 
+
+/*
 void UUnitAttackComponent::TickAttackCheck_Implementation(float DeltaSeconds)
 {
     if (CurrentAttackMode == EAttackMode::Idle) return;
@@ -67,11 +69,8 @@ void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, co
 
 void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange)
 {
-    if (!IsValid(AttackFocusTarget))
-    {
-        EndLastAction();
-        ActionClaimer = Cursor;
-    }
+    EndLastAction();
+    ActionClaimer = Cursor;
     ChaseLimitRange = ChaseRange;
     bIsReturnToOrigin = ChaseRange > 0;
     RefreshChaseBeginLocation();
@@ -132,56 +131,9 @@ bool UUnitAttackComponent::OnCannotAttackable_Implementation()
     return true;
 }
 
-void UUnitAttackComponent::OnActorDetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
-{
-    if (!IsValid(OtherActor)) return;
-    if (!OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass())) return;
-    DetectedActors.Add(OtherActor);
-}
-
-void UUnitAttackComponent::OnActorUndetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex)
-{
-    DetectedActors.Remove(OtherActor);
-}
 
 
-bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AOperator* Instigator, AActor* TargetActor)
-{
-    if (!IsValid(TargetActor)) return false;
-    if (!IsValid(Instigator) && IsValid(OwnerUnit)) Instigator = OwnerUnit->GetOperator();
 
-    switch (CurrentAttackMode)
-    {
-    case EAttackMode::FindTarget:
-        RefreshChaseBeginLocation();
-        break;
-    }
-    SetFocusTarget(Instigator, TargetActor);
-    MoveToFocusTarget();
-
-    return true;
-}
-
-void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
-{
-    MoveToClaimedLocation();
-}
-
-void UUnitAttackComponent::OnMoveCompleted_Implementation()
-{
-    if (!IsValid(AttackFocusTarget) && CurrentAttackMode == EAttackMode::Location) ResetAttackDatas();
-}
-
-void UUnitAttackComponent::OnUnitDied_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
-{
-    ResetAttackDatas();
-}
-
-void UUnitAttackComponent::OnMainActionChanged_Implementation(const FMainActionInfo& NewMainAction, bool bIsValid)
-{
-    if (!IsValid(OwnerUnit)) return;
-    if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
-}
 
 void UUnitAttackComponent::SetFocusTarget_Implementation(AOperator* Instigator, AActor* TargetActor)
 {
@@ -211,61 +163,15 @@ void UUnitAttackComponent::ResetAttackMode_Implementation()
     ResetDetectionEnable();
 }
 
-void UUnitAttackComponent::ResetDetectionEnable_Implementation()
-{
-    SetDetectionEnable(bIsDetectOnIdle);
-    if(!bIsDetectOnIdle) DetectedActors.Empty();
-}
+
 
 void UUnitAttackComponent::SetAttackMode_Implementation(const EAttackMode NewMode)
 {
     CurrentAttackMode = NewMode;
 }
 
-AActor* UUnitAttackComponent::GetDetectTarget_Implementation(AOperator* Operator)
-{
-    if (DetectedActors.Num() == 0) return nullptr;
-    if (!IsValid(OwnerUnit)) return nullptr;
-    AActor* OwnActor = GetOwner();
-    if (!IsValid(OwnActor)) return nullptr;
-    AActor* Result = nullptr;
-    float NearDistance = DetectRange;
-    for (AActor* CurrentActor : DetectedActors)
-    {
-        if (!GetAttackable(CurrentActor)) continue;
-        float CurrentDistance = OwnActor->GetHorizontalDistanceTo(CurrentActor);
-        if (!GetInRange(OwnActor, CurrentActor, NearDistance)) continue;
-        NearDistance = CurrentDistance;
-        Result = CurrentActor;
-    }
-    return Result;
-}
 
-TArray<AActor*> UUnitAttackComponent::GetDetectTargets_Implementation()
-{
-    return DetectedActors.Array();
-}
 
-bool UUnitAttackComponent::GetAttackable_Implementation(AActor* Target)
-{
-    if (!IsValid(Target)) return false;
-    if (!Target->GetClass()->ImplementsInterface(UDamageable::StaticClass()) || !IDamageable::Execute_GetIsAttackable(Target, OwnerUnit)) return false;
-    return true;
-}
-
-bool UUnitAttackComponent::GetInRange_Implementation(AActor* From, AActor* Target, float WantRange)
-{
-    if (!IsValid(From) || !IsValid(Target)) return false;
-    float CurrentDistance = From->GetHorizontalDistanceTo(Target);
-    return CurrentDistance < WantRange;
-}
-
-float UUnitAttackComponent::GetAttackRange_Implementation()
-{
-    UValueContainer* Container = UValueContainer::GetValueContainer(GetOwner());
-    if (!IsValid(Container)) return AttackRange;
-    return Container->GetNumber("AttackRange", AttackRange);
-}
 
 void UUnitAttackComponent::SetChaseBeginLocation_Implementation(FVector NewLocation)
 {
@@ -350,11 +256,230 @@ bool UUnitAttackComponent::CommandChaseTarget_Implementation(AOperator* Operator
     if (!IsValid(ChaseAction)) { ResetAttackDatas(); return false; }
     return IsValid(ChaseAction->ExecuteActionToTarget(Operator, this, Target, FExecutorValueMap::Default));
 }
+*/
+
+void UUnitAttackComponent::TickAttack_Implementation(float DeltaTime)
+{
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Idle:
+        if (bIsDetectOnIdle) TickFindTarget(DeltaTime);
+        break;
+    case EAttackMode::Target:
+        TickAttackTarget(DeltaTime);
+        break;
+    case EAttackMode::Location:
+        TickAttackLocation(DeltaTime);
+        break;
+    }
+}
+
+void UUnitAttackComponent::TickFindTarget_Implementation(float DeltaSeconds)
+{
+
+}
+
+void UUnitAttackComponent::TickAttackTarget_Implementation(float DeltaSeconds)
+{
+    if (!GetValidAttackTarget())
+    {
+        OnCannotAttackable();
+        return;
+    }
+
+    if(GetInRange(GetOwner(), AttackFocusTarget, GetAttackRange())) ExecuteAttack(AttackFocusTarget);
+}
+
+void UUnitAttackComponent::TickAttackLocation_Implementation(float DeltaSeconds)
+{
+
+}
+
+
+void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor, float ChaseRange)
+{
+    MoveToLocation(Target);
+    CurrentAttackMode = EAttackMode::Location;
+}
+
+void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange)
+{
+    MoveToTarget(Target);
+    CurrentAttackMode = EAttackMode::Target;
+}
+
+void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
+{
+    AActionBase* AttackAction = GetAttackAction();
+    if (!IsValid(AttackAction) || !IsValid(Target)) { OnAttackTargetCompleted(); return; }
+    UActionExecutor* ClaimExecutor = UActionExecutor::GetExecutorFromCursor(ActionClaimer);
+    FOnNodeEnded NodeEndedDelegate;
+    NodeEndedDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UUnitAttackComponent, OnAttackTargetCompleted));
+    if (IsValid(ClaimExecutor))
+    {
+        ClaimExecutor->AddActor(L"AttackTarget", Target);
+        UActionNode* ClaimNode = ClaimExecutor->GetNode(ActionClaimer);
+        //if (!IsValid(ClaimNode)) { ResetAttackDatas(); return false; }
+        int ResultID = -1;
+        AttackFocusTarget = Target;
+        ChaseLockTime = AMapSetting::GetCurrentWorldTime() + ChaseDelay;
+        ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate);
+    }
+    else
+    {
+        ClaimExecutor = AttackAction->ExecuteActionToTarget(GetOperator(), this, Target, FExecutorValueMap::Default);
+        if (IsValid(ClaimExecutor))
+        {
+            ClaimExecutor->SetEndEventOnMainCursor(this, NodeEndedDelegate);
+        }
+        else
+        {
+            OnAttackTargetCompleted();
+        }
+    }
+}
+
+
+void UUnitAttackComponent::OnActorDetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult)
+{
+    if (!IsValid(OtherActor)) return;
+    if (!OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass())) return;
+    DetectedActors.Add(OtherActor);
+}
+
+void UUnitAttackComponent::OnActorUndetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex)
+{
+    DetectedActors.Remove(OtherActor);
+}
+
+bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AOperator* Instigator, AActor* TargetActor)
+{
+    if (!IsValid(TargetActor)) return false;
+    if (!IsValid(Instigator)) Instigator = GetOperator();
+
+    return true;
+}
+
+void UUnitAttackComponent::OnAttackStop_Implementation()
+{
+
+}
+
+void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
+{
+
+}
+
+void UUnitAttackComponent::OnAttackLocationCompleted_Implementation()
+{
+
+}
+
+void UUnitAttackComponent::OnCannotAttackable_Implementation()
+{
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Target:
+        OnAttackTargetCompleted();
+        break;
+    case EAttackMode::Location:
+        break;
+    }
+}
+
+void UUnitAttackComponent::OnMoveCompleted_Implementation()
+{
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Target:
+        break;
+    case EAttackMode::Location:
+        if (FVector::Dist2D(GetLocation(), AttackFocusLocation) < 10.0f) OnAttackLocationCompleted();
+        break;
+    }
+}
+
+void UUnitAttackComponent::OnUnitDamaged_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
+{
+    if (!IsValid(TargetUnit)) return;
+    if (!IsValid(DamageInfo.DamageCauser)) return;
+    if (TargetUnit->HasMainAction()) return;
+
+    OnDamageReaction(TargetUnit, DamageInfo);
+}
+
+void UUnitAttackComponent::OnDamageReaction_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
+{
+    
+}
+
+void UUnitAttackComponent::OnUnitDied_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
+{
+    BroadcastMessage_Simple(L"AttackFailed");
+}
+
+void UUnitAttackComponent::OnMainActionChanged_Implementation(const FMainActionInfo& NewMainAction, bool bIsValid)
+{
+    if (!IsValid(OwnerUnit)) return;
+    if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
+}
+
+
+AActor* UUnitAttackComponent::GetDetectTarget_Implementation(AOperator* Operator)
+{
+    if (DetectedActors.Num() == 0) return nullptr;
+    if (!IsValid(OwnerUnit)) return nullptr;
+    AActor* OwnActor = GetOwner();
+    if (!IsValid(OwnActor)) return nullptr;
+    AActor* Result = nullptr;
+    float NearDistance = DetectRange;
+    for (AActor* CurrentActor : DetectedActors)
+    {
+        if (!GetAttackable(CurrentActor)) continue;
+        float CurrentDistance = OwnActor->GetHorizontalDistanceTo(CurrentActor);
+        if (!GetInRange(OwnActor, CurrentActor, NearDistance)) continue;
+        NearDistance = CurrentDistance;
+        Result = CurrentActor;
+    }
+    return Result;
+}
+
+TArray<AActor*> UUnitAttackComponent::GetDetectTargets_Implementation()
+{
+    return DetectedActors.Array();
+}
+
+bool UUnitAttackComponent::GetAttackable_Implementation(AActor* Target)
+{
+    if (!IsValid(Target)) return false;
+    if (!Target->GetClass()->ImplementsInterface(UDamageable::StaticClass()) || !IDamageable::Execute_GetIsAttackable(Target, OwnerUnit)) return false;
+    return true;
+}
+
+bool UUnitAttackComponent::GetInRange_Implementation(AActor* From, AActor* Target, float WantRange)
+{
+    if (!IsValid(From) || !IsValid(Target)) return false;
+    float CurrentDistance = From->GetHorizontalDistanceTo(Target);
+    return CurrentDistance < WantRange;
+}
+
+float UUnitAttackComponent::GetAttackRange_Implementation()
+{
+    UValueContainer* Container = UValueContainer::GetValueContainer(GetOwner());
+    if (!IsValid(Container)) return AttackRange;
+    return Container->GetNumber("AttackRange", AttackRange);
+}
+
+void UUnitAttackComponent::ResetDetectionEnable_Implementation()
+{
+    SetDetectionEnable(bIsDetectOnIdle);
+    if (!bIsDetectOnIdle) DetectedActors.Empty();
+}
 
 void UUnitAttackComponent::OnPoolEnqueue_Implementation(UPoolComponent* EnqueueTo)
 {
     SetComponentTickEnabled(false);
-    ResetAttackDatas();
+    //ResetAttackDatas();
 }
 
 void UUnitAttackComponent::OnPoolDequeue_Implementation(UPoolComponent* DequeueFrom)

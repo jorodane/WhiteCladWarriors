@@ -74,6 +74,10 @@ public:
 	FVector GetDirection_Implementation(FVector Destination, bool bIsIgnoreZ = false);
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
+	AOperator* GetOperator() const;
+	virtual AOperator* GetOperator_Implementation() const;
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Unit")
 	UUnitMainComponent* GetOwnerUnit() const;
 	virtual inline UUnitMainComponent* GetOwnerUnit_Implementation() const { return OwnerUnit; }
 

@@ -148,11 +148,7 @@ bool UUnitMainComponent::HasOperatorAuthority_Implementation(AOperator* From) co
 	return GetOperator() == From;
 }
 
-AOperator* UUnitMainComponent::GetOperator() const
-{
-	if (!IsValid(PlayerController)) return nullptr;
-	return PlayerController->ConnectedOperator;
-}
+
 
 FMainActionInfo UUnitMainComponent::GetMainActionInfo() const
 {
@@ -704,6 +700,11 @@ bool UUnitMainComponent::GetIsDie_Implementation()
 	return false;
 }
 
+AOperator* UUnitMainComponent::GetOperator_Implementation() const
+{
+	if (!IsValid(PlayerController)) return nullptr;
+	return PlayerController->ConnectedOperator;
+}
 
 
 void UUnitMainComponent::OnPlayerConnected_Implementation(AIngameController* NewPlayer)
