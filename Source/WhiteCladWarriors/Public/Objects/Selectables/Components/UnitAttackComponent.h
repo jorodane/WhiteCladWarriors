@@ -65,8 +65,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	bool bIsDetectOnIdle = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	bool bIsReturnToOrigin = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	bool bIsAttackExecuted = false;
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
@@ -75,8 +78,8 @@ public:
 (float DeltaTime);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void TickFindTarget(float DeltaSeconds);
-	void TickFindTarget_Implementation(float DeltaSeconds);
+	bool TickFindTarget(float DeltaSeconds);
+	bool TickFindTarget_Implementation(float DeltaSeconds);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void TickAttackTarget(float DeltaSeconds);
@@ -188,6 +191,10 @@ public:
 	void OnAttackStop_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void OnAttackActionCompleted();
+	void OnAttackActionCompleted_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void OnAttackTargetCompleted();
 	void OnAttackTargetCompleted_Implementation();
 
@@ -277,7 +284,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Attack")
 	AActionBase* GetAttackAction();
-
 
 	virtual void OnPoolEnqueue_Implementation(UPoolComponent* EnqueueTo) override;
 	virtual void OnPoolDequeue_Implementation(UPoolComponent* DequeueFrom) override;
