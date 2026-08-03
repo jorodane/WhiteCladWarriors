@@ -299,7 +299,7 @@ void UUnitAttackComponent::TickAttackLocation_Implementation(float DeltaSeconds)
 {
     if (bIsAttackExecuted) return;
     if (GetValidAttackTarget()) TickAttackTarget(DeltaSeconds);
-    TickFindTarget(DeltaSeconds);
+    if (TickFindTarget(DeltaSeconds)) MoveToFocusTarget();
 }
 
 
@@ -387,17 +387,25 @@ void UUnitAttackComponent::OnAttackActionCompleted_Implementation()
 {
     bIsAttackExecuted = false;
     if (GetValidAttackTarget()) MoveToFocusTarget();
+    else OnCannotAttackable();
 }
 
 void UUnitAttackComponent::OnAttackLocationCompleted_Implementation()
 {
-
+    bIsAttackExecuted = false;
+    AttackFocusTarget = nullptr;
+    AttackFocusLocation = FVector::ZeroVector;
 }
 
 void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
 {
     bIsAttackExecuted = false;
     AttackFocusTarget = nullptr;
+    if (CurrentAttackMode == EAttackMode::Location)
+    {
+        MoveToFocusLocation();
+    }
+    CurrentAttackMode = EAttackMode::Idle;
 }
 
 void UUnitAttackComponent::OnCannotAttackable_Implementation()
@@ -405,11 +413,11 @@ void UUnitAttackComponent::OnCannotAttackable_Implementation()
     switch (CurrentAttackMode)
     {
     case EAttackMode::Target:
-        OnAttackTargetCompleted();
         break;
     case EAttackMode::Location:
         break;
     }
+    OnAttackTargetCompleted();
 }
 
 void UUnitAttackComponent::OnMoveCompleted_Implementation()
@@ -441,12 +449,6 @@ void UUnitAttackComponent::OnDamageReaction_Implementation(UUnitMainComponent* T
 void UUnitAttackComponent::OnUnitDied_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
 {
     BroadcastMessage_Simple(L"AttackFailed");
-}
-
-void UUnitAttackComponent::OnMainActionChanged_Implementation(const FMainActionInfo& NewMainAction, bool bIsValid)
-{
-    if (!IsValid(OwnerUnit)) return;
-    if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
 }
 
 

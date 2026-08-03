@@ -225,6 +225,9 @@ public:
 	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bEndSubNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
+	void EndSubNode(const FActionCursorFinder& WantCursor, int exceptID = -1);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void CompleteNode(const FActionCursorFinder& WantCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")

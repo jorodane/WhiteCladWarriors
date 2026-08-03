@@ -373,27 +373,8 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	if (CursorFinder)
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
+		if (bEndSubNode) EndSubNode(WantCursor, ID);
 		Cursor.InvokeEndEvent(ID);
-		if (bEndSubNode && !Cursor.NodeMap.IsEmpty())
-		{
-			FActionCursorFinder SubCursor = WantCursor;
-			TArray<FActiveNodeInfo> DestroyTarget;
-			for (const auto& CurrentNode : Cursor.NodeMap)
-			{
-				int CurrentID = CurrentNode.Key;
-				if (CurrentID == 0 || CurrentID == ID) continue;
-				SubCursor.CurrentID = CurrentID;
-				DestroyTarget.Add(CurrentNode.Value);
-			}
-			for (const FActiveNodeInfo& CurrentTarget : DestroyTarget)
-			{
-				if (IsValid(CurrentTarget.CurrentNode))
-				{
-					CurrentTarget.CurrentNode->MoveExecutorToCancel(SubCursor);
-				}
-			}
-		}
-
 		Cursor.RemoveID(ID);
 
 		if (Cursor.IsEmpty())
@@ -401,6 +382,32 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 			if (UUnitMainComponent* Unit = TargetComponent->GetOwnerUnit()) Unit->NotifyExecutorEnded(ExecutorID, TargetComponent);
 			CursorMap.Remove(TargetComponent);
 			CheckCursorMap();
+		}
+	}
+}
+
+void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, int exceptID)
+{
+	FActiveNodeMap* CursorFinder = GetNodeMap(WantCursor.CurrentComponent);
+	if (!CursorFinder) return;
+	FActiveNodeMap& Cursor = *CursorFinder;
+	if (!Cursor.NodeMap.IsEmpty())
+	{
+		FActionCursorFinder SubCursor = WantCursor;
+		TArray<FActiveNodeInfo> DestroyTarget;
+		for (const auto& CurrentNode : Cursor.NodeMap)
+		{
+			int CurrentID = CurrentNode.Key;
+			if (CurrentID == 0 || CurrentID == exceptID) continue;
+			SubCursor.CurrentID = CurrentID;
+			DestroyTarget.Add(CurrentNode.Value);
+		}
+		for (const FActiveNodeInfo& CurrentTarget : DestroyTarget)
+		{
+			if (IsValid(CurrentTarget.CurrentNode))
+			{
+				CurrentTarget.CurrentNode->MoveExecutorToCancel(SubCursor);
+			}
 		}
 	}
 }

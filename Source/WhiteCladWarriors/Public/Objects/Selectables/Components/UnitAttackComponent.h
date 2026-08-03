@@ -223,10 +223,6 @@ public:
 	void OnUnitDied_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void OnMainActionChanged(const FMainActionInfo& NewMainAction, bool bIsValid);
-	void OnMainActionChanged_Implementation(const FMainActionInfo& NewMainAction, bool bIsValid);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	AActor* GetDetectTarget(AOperator* Operator);
 	AActor* GetDetectTarget_Implementation(AOperator* Operator);
 

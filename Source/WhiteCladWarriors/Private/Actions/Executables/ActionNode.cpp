@@ -65,6 +65,13 @@ void UActionNode::MoveExecutorToInterrupt_Implementation(const FActionCursorFind
 	Executor->EnterNode(WantCursor, CanceledNode);
 }
 
+void UActionNode::EndAllSubNodes_Implementation(const FActionCursorFinder& WantCursor)
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
+	if (!IsValid(Executor)) return;
+	Executor->EndSubNode(WantCursor);
+}
+
 void UActionNode::OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message)
 {
 	MoveExecutorToLinkedNode(WantCursor, Message);
