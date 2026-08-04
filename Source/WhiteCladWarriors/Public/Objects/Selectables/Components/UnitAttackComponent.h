@@ -15,7 +15,7 @@ class AOperator;
 UENUM(BlueprintType)
 enum class EAttackMode : uint8
 {
-	Idle, Return, Location, Target
+	Busy, Idle, Return, Location, Target
 };
 
 /**
@@ -28,7 +28,7 @@ class WHITECLADWARRIORS_API UUnitAttackComponent : public UUnitActionComponent, 
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	EAttackMode CurrentAttackMode;
+	EAttackMode CurrentAttackMode = EAttackMode::Idle;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	TObjectPtr<AOperator> LastClaimOperator;
@@ -64,6 +64,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
 	bool bIsDetectOnIdle = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
+	bool bShouldCounterOnIdle = true;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	bool bIsReturnToOrigin = false;
@@ -163,16 +166,20 @@ public:
 	*/
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void BeginAttackLocation(FVector Target, const FActionCursorFinder& Cursor, float ChaseRange);
-	void BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor, float ChaseRange);
+	void BeginAttackLocation(FVector Target, const FActionCursorFinder& Cursor);
+	void BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void BeginAttackTarget(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange);
-	void BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange);
+	void BeginAttackTarget(AActor* Target, const FActionCursorFinder& Cursor);
+	void BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void ExecuteAttack(AActor* Target);
 	void ExecuteAttack_Implementation(AActor* Target);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void OnMainActionChanged(const FMainActionInfo& ActionInfo, bool bIsValid);
+	void OnMainActionChanged_Implementation(const FMainActionInfo& ActionInfo, bool bIsValid);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void OnActorDetected(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex, bool FromSweep, const FHitResult& SweepResult);
@@ -183,8 +190,8 @@ public:
 	void OnActorUndetected_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int OtherBodyIndex);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	bool OnAttackTargetDetected(AOperator* Instigator, AActor* TargetActor);
-	bool OnAttackTargetDetected_Implementation(AOperator* Instigator, AActor* TargetActor);
+	bool OnAttackTargetDetected(AActor* TargetActor);
+	bool OnAttackTargetDetected_Implementation(AActor* TargetActor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void OnAttackStop();
@@ -269,10 +276,26 @@ public:
 	void ResetDetectionEnable();
 	void ResetDetectionEnable_Implementation();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void SetChaseBeginning(FVector WantLocation);
+	void SetChaseBeginning_Implementation(FVector WantLocation);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void SetChaseLockTime(float WantTime);
+	void SetChaseLockTime_Implementation(float WantTime);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void SetChaseLockTimeNow();
+	void SetChaseLockTimeNow_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	bool GetChaseLocked();
+	bool GetChaseLocked_Implementation();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
 	void SetDetectionEnable(bool bWantDetectAround);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Attack")
 	bool GetDetectionEnable();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Attack")

@@ -400,6 +400,7 @@ void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, int exce
 			int CurrentID = CurrentNode.Key;
 			if (CurrentID == 0 || CurrentID == exceptID) continue;
 			SubCursor.CurrentID = CurrentID;
+			Cursor.InvokeEndEvent(CurrentID);
 			DestroyTarget.Add(CurrentNode.Value);
 		}
 		for (const FActiveNodeInfo& CurrentTarget : DestroyTarget)
