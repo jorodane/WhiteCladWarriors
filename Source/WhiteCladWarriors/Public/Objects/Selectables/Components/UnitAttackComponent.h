@@ -92,79 +92,6 @@ public:
 	void TickAttackLocation(float DeltaSeconds);
 	void TickAttackLocation_Implementation(float DeltaSeconds);
 
-	/*
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void TickAttackCheck(float DeltaSeconds);
-	void TickAttackCheck_Implementation(float DeltaSeconds);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void TickAttackTarget(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget);
-	void TickAttackTarget_Implementation(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void TickSearchTarget(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget);
-	void TickSearchTarget_Implementation(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget);
-
-
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	bool FollowUntilChaseLimit(AActor* Target);
-	bool FollowUntilChaseLimit_Implementation(AActor* Target);
-	
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void SetFocusTarget(AOperator* Instigator, AActor* TargetActor);
-	void SetFocusTarget_Implementation(AOperator* Instigator, AActor* TargetActor);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void ResetFocusTarget();
-	void ResetFocusTarget_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void ResetAttackDatas();
-	void ResetAttackDatas_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void ResetAttackMode();
-	void ResetAttackMode_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void SetAttackMode(const EAttackMode NewMode);
-	void SetAttackMode_Implementation(const EAttackMode NewMode);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void SetChaseBeginLocation(FVector NewLocation);
-	void SetChaseBeginLocation_Implementation(FVector NewLocation);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
-	FVector GetCurrentLocation();
-	FVector GetCurrentLocation_Implementation();
-
-	UFUNCTION(BlueprintCallable, Category = "Attack")
-	void RefreshChaseBeginLocation() { SetChaseBeginLocation(GetCurrentLocation()); }
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void MoveToClaimedLocation();
-	void MoveToClaimedLocation_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void EndLastAction();
-	void EndLastAction_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	bool TryAttack(AOperator* ClaimOperator, AActor* WantTarget, bool& outIsAttackable, bool& outIsInRange);
-	bool TryAttack_Implementation(AOperator* ClaimOperator, AActor* WantTarget, bool& outIsAttackable, bool& outIsInRange);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	bool CommandAttackTarget(AOperator* Operator, AActor* Target);
-	bool CommandAttackTarget_Implementation(AOperator* Operator, AActor* Target);
-	bool CommandAttackTarget(AOperator* Operator, AActor* Target, AActionBase* AttackAction);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	bool CommandChaseTarget(AOperator* Operator, AActor* Target);
-	bool CommandChaseTarget_Implementation(AOperator* Operator, AActor* Target);
-	*/
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void BeginAttackLocation(FVector Target, const FActionCursorFinder& Cursor);
 	void BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor);
@@ -198,8 +125,8 @@ public:
 	void OnAttackStop_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
-	void OnAttackActionCompleted();
-	void OnAttackActionCompleted_Implementation();
+	void OnAttackActionCompleted(bool bIsCanceled);
+	void OnAttackActionCompleted_Implementation(bool bIsCanceled);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void OnAttackTargetCompleted();
@@ -275,6 +202,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void ResetDetectionEnable();
 	void ResetDetectionEnable_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void ResetDatas();
+	void ResetDatas_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void SetChaseBeginning(FVector WantLocation);

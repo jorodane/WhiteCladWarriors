@@ -13,251 +13,6 @@
 #include "Settings/MapSetting.h"
 #include "Kismet/GameplayStatics.h"
 
-
-/*
-void UUnitAttackComponent::TickAttackCheck_Implementation(float DeltaSeconds)
-{
-    if (CurrentAttackMode == EAttackMode::Idle) return;
-    if (!IsValid(OwnerUnit)) return;
-    if (OwnerUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(OwnerUnit)) return;
-    if (OwnerUnit->HasMainAction() && OwnerUnit->GetMainActionInfo().Cursor.CurrentComponent != ActionClaimer.CurrentComponent) return;
-
-    if (IsValid(AttackFocusTarget)) TickAttackTarget(LastClaimOperator, AttackFocusTarget);
-    else switch (CurrentAttackMode)
-    {
-        case EAttackMode::FindTarget:
-        case EAttackMode::Location:
-        TickSearchTarget(LastClaimOperator, AttackFocusTarget);
-        break;
-    }
-}
-
-void UUnitAttackComponent::TickAttackTarget_Implementation(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget)
-{
-    if (IsValid(CurrentAttackTarget))
-    {
-        const bool bCanContinueChasing = ChaseLimitRange <= 0.0f || FollowUntilChaseLimit(CurrentAttackTarget);
-        if (!bCanContinueChasing) return;
-
-        bool bIsAttackable, bIsInRange;
-        const bool bAttackSucceeded = TryAttack(CurrentAttackOperator, CurrentAttackTarget, bIsAttackable, bIsInRange);
-
-        if (!bAttackSucceeded && (!bIsAttackable || (bIsAttackable && bIsInRange))) OnCannotAttackable();
-    }
-}
-
-void UUnitAttackComponent::TickSearchTarget_Implementation(AOperator* CurrentAttackOperator, AActor* CurrentAttackTarget)
-{
-    if (ChaseLockTime < AMapSetting::GetCurrentWorldTime())
-    {
-        CurrentAttackTarget = GetDetectTarget(CurrentAttackOperator);
-        OnAttackTargetDetected(CurrentAttackOperator, CurrentAttackTarget);
-    }
-}
-
-void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor, float ChaseRange)
-{
-    ChaseLimitRange = ChaseRange;
-    EndLastAction();
-    ActionClaimer = Cursor;
-    AttackFocusLocation = Target;
-    bIsReturnToOrigin = false;
-    SetAttackMode(EAttackMode::Location);
-    SetDetectionEnable(true);
-    if(!IsValid(AttackFocusTarget)) MoveToClaimedLocation();
-}
-
-void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor, float ChaseRange)
-{
-    EndLastAction();
-    ActionClaimer = Cursor;
-    ChaseLimitRange = ChaseRange;
-    bIsReturnToOrigin = ChaseRange > 0;
-    RefreshChaseBeginLocation();
-    SetFocusTarget(Cursor.CurrentOperator, Target);
-    SetAttackMode(EAttackMode::Target);
-    SetDetectionEnable(false);
-    DetectedActors.Empty();
-    MoveToFocusTarget();
-}
-
-
-bool UUnitAttackComponent::FollowUntilChaseLimit_Implementation(AActor* Target)
-{
-    if (!IsValid(Target)) return false;
-
-    FVector LimitAnchor;
-    switch (CurrentAttackMode)
-    {
-    case EAttackMode::Location:
-        LimitAnchor = GetLocation();
-        break;
-    default:
-        LimitAnchor = ChaseBeginLocation;
-        break;
-    }
-
-    const float CurrentDistance = FVector::Dist2D(Target->GetActorLocation(), LimitAnchor);
-    if (CurrentDistance <= ChaseLimitRange) return true;
-
-    ChaseLockTime = AMapSetting::GetCurrentWorldTime() + ChaseDelay;
-    ResetFocusTarget();
-    if (CurrentAttackMode == EAttackMode::Location)
-    {
-        MoveToClaimedLocation();
-        SetDetectionEnable(true);
-    }
-    else
-    {
-        if (bIsReturnToOrigin) MoveToChaseBeginLocation();
-        ResetAttackDatas();
-    }
-
-    return false;
-}
-
-bool UUnitAttackComponent::OnCannotAttackable_Implementation()
-{
-    if (CurrentAttackMode == EAttackMode::Location)
-    {
-        MoveToClaimedLocation();
-    }
-    else if (bIsReturnToOrigin)
-    {
-        MoveToChaseBeginLocation();
-    }
-    EndLastAction();
-    ResetFocusTarget();
-    return true;
-}
-
-
-
-
-
-void UUnitAttackComponent::SetFocusTarget_Implementation(AOperator* Instigator, AActor* TargetActor)
-{
-    LastClaimOperator = Instigator;
-    AttackFocusTarget = TargetActor;
-}
-
-void UUnitAttackComponent::ResetFocusTarget_Implementation()
-{
-    SetFocusTarget(nullptr, nullptr);
-}
-
-void UUnitAttackComponent::ResetAttackDatas_Implementation()
-{
-    ResetAttackMode();
-    ResetFocusTarget();
-    EndLastAction();
-    AttackFocusLocation = FVector::ZeroVector;
-    ChaseLimitRange = 0.0f;
-    ChaseLockTime = 0.0f;
-}
-
-void UUnitAttackComponent::ResetAttackMode_Implementation()
-{
-    bIsReturnToOrigin = false;
-    SetAttackMode(bIsDetectOnIdle ? EAttackMode::FindTarget : EAttackMode::Idle);
-    ResetDetectionEnable();
-}
-
-
-
-void UUnitAttackComponent::SetAttackMode_Implementation(const EAttackMode NewMode)
-{
-    CurrentAttackMode = NewMode;
-}
-
-
-
-
-void UUnitAttackComponent::SetChaseBeginLocation_Implementation(FVector NewLocation)
-{
-    ChaseBeginLocation = NewLocation;
-}
-
-FVector UUnitAttackComponent::GetCurrentLocation_Implementation()
-{
-    AActor* OwnerActor = GetOwner();
-    if (IsValid(OwnerActor)) return OwnerActor->GetActorLocation();
-    return FVector::ZeroVector;
-}
-
-void UUnitAttackComponent::MoveToClaimedLocation_Implementation()
-{
-    if (IsValid(AttackFocusTarget)) MoveToFocusTarget();
-    else if (CurrentAttackMode == EAttackMode::Location) MoveToFocusLocation();
-    else if (bIsReturnToOrigin) MoveToChaseBeginLocation();
-}
-
-void UUnitAttackComponent::EndLastAction_Implementation()
-{
-    UActionExecutor* ClaimExecutor = UActionExecutor::GetExecutorFromCursor(ActionClaimer);
-    if (IsValid(ClaimExecutor)) ClaimExecutor->EndNode(ActionClaimer, UActionExecutor::GetNodeFromCursor(ActionClaimer), true);
-    ActionClaimer.Clear();
-}
-
-bool UUnitAttackComponent::TryAttack_Implementation(AOperator* ClaimOperator, AActor* WantTarget, bool& outIsAttackable, bool& outIsInRange)
-{
-    outIsAttackable = outIsInRange = false;
-    if (!IsValid(WantTarget)) return false;
-    if (!IsValid(OwnerUnit)) return false;
-    outIsAttackable = GetAttackable(WantTarget);
-    outIsInRange = GetInRange(GetOwner(), WantTarget, GetAttackRange());
-    if (!outIsAttackable || !outIsInRange) return false;
-    return CommandAttackTarget(ClaimOperator, WantTarget);
-}
-
-bool UUnitAttackComponent::CommandAttackTarget(AOperator* Operator, AActor* Target, AActionBase* AttackAction)
-{
-    if (!IsValid(AttackAction) || !IsValid(Target)) { ResetAttackDatas(); return false; }
-    UActionExecutor* ClaimExecutor = UActionExecutor::GetExecutorFromCursor(ActionClaimer);
-
-    FOnNodeEnded NodeEndedDelegate;
-    NodeEndedDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UUnitAttackComponent, OnAttackTargetCompleted));
-    if (IsValid(ClaimExecutor))
-    {
-        ClaimExecutor->AddActor(L"AttackTarget", Target);
-        UActionNode* ClaimNode = ClaimExecutor->GetNode(ActionClaimer);
-        if(!IsValid(ClaimNode)) { ResetAttackDatas(); return false; }
-        int ResultID = -1;
-        AttackFocusTarget = Target;
-        ChaseLockTime = AMapSetting::GetCurrentWorldTime() + ChaseDelay;
-        return IsValid(ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate));
-    }
-    else
-    {
-        ClaimExecutor = AttackAction->ExecuteActionToTarget(Operator, this, Target, FExecutorValueMap::Default);
-        if (IsValid(ClaimExecutor))
-        {
-            ClaimExecutor->SetEndEventOnMainCursor(this, NodeEndedDelegate);
-            return true;
-        }
-        else
-        {
-            OnAttackTargetCompleted();
-        }
-        return false;
-    }
-}
-
-bool UUnitAttackComponent::CommandAttackTarget_Implementation(AOperator* Operator, AActor* Target)
-{
-    AActionBase* AttackAction = GetAttackAction();
-    if (!IsValid(AttackAction)) { ResetAttackDatas(); return false; }
-    return CommandAttackTarget(Operator, Target, AttackAction);
-}
-
-bool UUnitAttackComponent::CommandChaseTarget_Implementation(AOperator* Operator, AActor* Target)
-{
-    AActionBase* ChaseAction = GetChaseAction();
-    if (!IsValid(ChaseAction)) { ResetAttackDatas(); return false; }
-    return IsValid(ChaseAction->ExecuteActionToTarget(Operator, this, Target, FExecutorValueMap::Default));
-}
-*/
-
 void UUnitAttackComponent::TickAttack_Implementation(float DeltaTime)
 {
     if (!IsValid(OwnerUnit)) return;
@@ -363,7 +118,7 @@ void UUnitAttackComponent::OnMainActionChanged_Implementation(const FMainActionI
         {
         //case EAttackMode::Target:
         //case EAttackMode::Location:
-        //    OnAttackStop();
+        //    ResetDatas();
         //    break;
         case EAttackMode::Idle:
         case EAttackMode::Return:
@@ -373,11 +128,11 @@ void UUnitAttackComponent::OnMainActionChanged_Implementation(const FMainActionI
     }
     else switch(CurrentAttackMode)
     {
-    //case EAttackMode::Target:
-    //case EAttackMode::Location:
-    //    if (!ActionClaimer.CheckValid() && bIsAttackExecuted);
-    //    else OnAttackStop();
-    //    break;
+    case EAttackMode::Target:
+    case EAttackMode::Location:
+        ResetDatas();
+        ResetDetectionEnable();
+        break;
     case EAttackMode::Busy:
     case EAttackMode::Return:
         CurrentAttackMode = EAttackMode::Idle;
@@ -407,19 +162,22 @@ bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AActor* TargetA
 
 void UUnitAttackComponent::OnAttackStop_Implementation()
 {
-    CurrentAttackMode = EAttackMode::Idle;
-    AttackFocusLocation = FVector::ZeroVector;
-    AttackFocusTarget = nullptr;
-    bIsAttackExecuted = false;
-    bIsReturnToOrigin = false;
+    ResetDatas();
     SetChaseLockTimeNow();
 }
 
-void UUnitAttackComponent::OnAttackActionCompleted_Implementation()
+void UUnitAttackComponent::OnAttackActionCompleted_Implementation(bool bIsCanceled)
 {
-    bIsAttackExecuted = false;
-    if (GetValidAttackTarget()) MoveToFocusTarget();
-    else OnCannotAttackable();
+    if (bIsCanceled)
+    {
+        OnAttackStop();
+    }
+    else
+    {
+        bIsAttackExecuted = false;
+        if (GetValidAttackTarget()) MoveToFocusTarget();
+        else OnCannotAttackable();
+    }
 }
 
 void UUnitAttackComponent::OnAttackLocationCompleted_Implementation()
@@ -467,7 +225,7 @@ void UUnitAttackComponent::OnMoveCompleted_Implementation()
         if (FVector::Dist2D(GetLocation(), ChaseBeginLocation) < 10.0f) CurrentAttackMode = EAttackMode::Idle;
         break;
     case EAttackMode::Location:
-        if (FVector::Dist2D(GetLocation(), AttackFocusLocation) < 10.0f) OnAttackLocationCompleted();
+        //if (FVector::Dist2D(GetLocation(), AttackFocusLocation) < 10.0f) OnAttackLocationCompleted();
         break;
     }
 }
@@ -551,6 +309,15 @@ void UUnitAttackComponent::ResetDetectionEnable_Implementation()
 {
     SetDetectionEnable(bIsDetectOnIdle);
     if (!bIsDetectOnIdle) DetectedActors.Empty();
+}
+
+void UUnitAttackComponent::ResetDatas_Implementation()
+{
+    CurrentAttackMode = EAttackMode::Idle;
+    AttackFocusLocation = FVector::ZeroVector;
+    AttackFocusTarget = nullptr;
+    bIsAttackExecuted = false;
+    bIsReturnToOrigin = false;
 }
 
 void UUnitAttackComponent::SetChaseBeginning_Implementation(FVector WantLocation)

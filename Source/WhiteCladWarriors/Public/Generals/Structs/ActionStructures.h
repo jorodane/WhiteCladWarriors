@@ -13,7 +13,7 @@ class UActionSelectorNode;
 class UActionExecutor;
 class UUnitActionComponent;
 
-DECLARE_DYNAMIC_DELEGATE(FOnNodeEnded);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnNodeEnded, bool, bIsCanceled);
 
 USTRUCT(BlueprintType)
 struct FActionCursorFinder

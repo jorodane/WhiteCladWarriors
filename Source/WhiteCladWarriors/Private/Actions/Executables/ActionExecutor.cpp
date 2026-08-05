@@ -52,10 +52,13 @@ FActiveNodeInfo& FActiveNodeMap::SetNode(UActionNode* Node, int ID)
 	else return NodeMap.Add(ID, Node);
 }
 
-void FActiveNodeMap::InvokeEndEvent(int ID)
+void FActiveNodeMap::InvokeEndEvent(int ID, bool bIsCanceled)
 {
 	FOnNodeEnded Result;
-	if (EndEventMap.RemoveAndCopyValue(ID, Result)) Result.Execute();
+	if (EndEventMap.RemoveAndCopyValue(ID, Result))
+	{
+		Result.Execute(bIsCanceled);
+	}
 }
 
 
@@ -247,7 +250,7 @@ bool UActionExecutor::SetInputArray(TArray<FActionCursorFinder> CursorArray, UAc
 	return Result;
 }
 
-void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, int RecursiveDepth)
+void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled, int RecursiveDepth)
 {
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	if (!IsValid(TargetComponent)) return;
@@ -274,7 +277,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		if (OriginInfo) OriginInfo->TryListeningPending();
 		if (bIsBlocked)
 		{
-			EndNode(WantCursor, OriginNode, false);
+			EndNode(WantCursor, OriginNode, bIsCanceled, false);
 			return;
 		}
 	}
@@ -297,7 +300,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		{
 			if (!TargetComponent->TrySetMainAction(WantCursor, TargetNode))
 			{
-				EndNode(WantCursor, OriginNode, false);
+				EndNode(WantCursor, OriginNode, true, false);
 				return;
 			}
 		}
@@ -308,6 +311,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	else CurrentNodeInfo = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
 
 	if (IsValid(TargetNode)) TargetNode->ClaimExecute(WantCursor);
+
 	if (GetValid())
 	{
 		CurrentNodeInfo = CurrentNodeMap->GetInfo(ID);
@@ -363,18 +367,19 @@ UActionNode* UActionExecutor::GetNode(const FActionCursorFinder& WantCursor)
 	return nullptr;
 }
 
-void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bEndSubNode)
+void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bIsCanceled, bool bEndSubNode)
 {
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
 	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
 	FActiveNodeMap* CursorFinder = GetNodeMap(TargetComponent);
+
 	if (CursorFinder)
 	{
 		FActiveNodeMap& Cursor = *CursorFinder;
-		if (bEndSubNode) EndSubNode(WantCursor, ID);
-		Cursor.InvokeEndEvent(ID);
+		if (bEndSubNode) EndSubNode(WantCursor, bIsCanceled, ID);
+		Cursor.InvokeEndEvent(ID, bIsCanceled);
 		Cursor.RemoveID(ID);
 
 		if (Cursor.IsEmpty())
@@ -386,7 +391,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	}
 }
 
-void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, int exceptID)
+void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, bool bIsCanceled, int exceptID)
 {
 	FActiveNodeMap* CursorFinder = GetNodeMap(WantCursor.CurrentComponent);
 	if (!CursorFinder) return;
@@ -400,7 +405,7 @@ void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, int exce
 			int CurrentID = CurrentNode.Key;
 			if (CurrentID == 0 || CurrentID == exceptID) continue;
 			SubCursor.CurrentID = CurrentID;
-			Cursor.InvokeEndEvent(CurrentID);
+			Cursor.InvokeEndEvent(CurrentID, bIsCanceled);
 			DestroyTarget.Add(CurrentNode.Value);
 		}
 		for (const FActiveNodeInfo& CurrentTarget : DestroyTarget)

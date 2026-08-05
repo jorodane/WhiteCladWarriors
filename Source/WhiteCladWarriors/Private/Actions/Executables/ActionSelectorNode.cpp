@@ -17,7 +17,7 @@ void UActionSelectorNode::FailInput_Implementation(const FActionCursorFinder& Wa
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
-	Executor->EnterNode(WantCursor, BlockedNode);
+	Executor->EnterNode(WantCursor, BlockedNode, true);
 }
 
 bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
@@ -27,7 +27,7 @@ bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
 	if (Settings.bIsCancelable)
 	{
 		OnCancelInput(WantCursor);
-		Executor->EnterNode(WantCursor, CanceledNode);
+		Executor->EnterNode(WantCursor, CanceledNode, true);
 	}
 	return Settings.bIsCancelable;
 }
@@ -59,7 +59,7 @@ bool UActionSelectorNode::ReceiveInput(const FActionCursorFinder& WantCursor, co
 
 		if (Result)
 		{
-			Executor->EnterNode(WantCursor, CurrentInputType.OnInputAccepted);
+			Executor->EnterNode(WantCursor, CurrentInputType.OnInputAccepted, false);
 			break;
 		}
 	}

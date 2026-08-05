@@ -35,7 +35,7 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 		else
 		{
 			OnComplete(WantCursor);
-			Executor->EnterNode(WantCursor, NodeInfo.Node);
+			Executor->EnterNode(WantCursor, NodeInfo.Node, false);
 		}
 	}
 	//else Executor->EndNode(WantCursor, this);
@@ -46,7 +46,7 @@ void UActionNode::MoveExecutorToNext_Implementation(const FActionCursorFinder& W
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
 	OnComplete(WantCursor);
-	Executor->EnterNode(WantCursor, NextNode);
+	Executor->EnterNode(WantCursor, NextNode, false);
 }
 
 void UActionNode::MoveExecutorToCancel_Implementation(const FActionCursorFinder& WantCursor)
@@ -54,7 +54,7 @@ void UActionNode::MoveExecutorToCancel_Implementation(const FActionCursorFinder&
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
 	OnCancel(WantCursor);
-	Executor->EnterNode(WantCursor, CanceledNode);
+	Executor->EnterNode(WantCursor, CanceledNode, true);
 }
 
 void UActionNode::MoveExecutorToInterrupt_Implementation(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode)
@@ -62,14 +62,14 @@ void UActionNode::MoveExecutorToInterrupt_Implementation(const FActionCursorFind
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
 	OnInterrupt(WantCursor, InterruptCursor, InterruptNode);
-	Executor->EnterNode(WantCursor, CanceledNode);
+	Executor->EnterNode(WantCursor, CanceledNode, true);
 }
 
 void UActionNode::EndAllSubNodes_Implementation(const FActionCursorFinder& WantCursor)
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return;
-	Executor->EndSubNode(WantCursor);
+	Executor->EndSubNode(WantCursor, true);
 }
 
 void UActionNode::OnActionMessage_Simple_Implementation(const FActionCursorFinder& WantCursor, const FName& Message)
