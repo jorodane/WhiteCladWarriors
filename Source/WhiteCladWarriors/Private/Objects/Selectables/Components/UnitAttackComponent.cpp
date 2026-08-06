@@ -25,6 +25,9 @@ void UUnitAttackComponent::TickAttack_Implementation(float DeltaTime)
     case EAttackMode::Target:
         TickAttackTarget(DeltaTime);
         break;
+    case EAttackMode::Defence:
+        TickDefenceTarget(DeltaTime);
+        break;
     case EAttackMode::Location:
         TickAttackLocation(DeltaTime);
         break;
@@ -41,19 +44,33 @@ bool UUnitAttackComponent::TickFindTarget_Implementation(float DeltaSeconds)
 void UUnitAttackComponent::TickAttackTarget_Implementation(float DeltaSeconds)
 {
     if (bIsAttackExecuted) return;
-    if (!GetValidAttackTarget())
-    {
-        OnCannotAttackable();
-        return;
-    }
-    if(GetInRange(GetOwner(), AttackFocusTarget, GetAttackRange())) ExecuteAttack(AttackFocusTarget);
+    if (!GetValidAttackTarget()) OnCannotAttackable();
+    else if(GetInRange(GetOwner(), AttackFocusTarget, GetAttackRange())) ExecuteAttack(AttackFocusTarget);
+}
+
+void UUnitAttackComponent::TickDefenceTarget_Implementation(float DeltaSeconds)
+{
+    if (bIsAttackExecuted) return;
+    if (!GetInChaseLimitRange() || !GetValidAttackTarget()) OnCannotAttackable();
+    else if (GetInRange(GetOwner(), AttackFocusTarget, GetAttackRange())) ExecuteAttack(AttackFocusTarget);
 }
 
 void UUnitAttackComponent::TickAttackLocation_Implementation(float DeltaSeconds)
 {
     if (bIsAttackExecuted) return;
-    if (GetValidAttackTarget() && GetInRange(GetOwner(), AttackFocusTarget, GetAttackRange())) ExecuteAttack(AttackFocusTarget);
-    if (TickFindTarget(DeltaSeconds)) MoveToFocusTarget();
+
+    if (IsValid(AttackFocusTarget))
+    {
+        if (!GetValidAttackTarget() || !GetInChaseLimitRange())
+        {
+            OnCannotAttackable();
+        }
+        else if (GetInRange(GetOwner(), AttackFocusTarget, GetAttackRange()))
+        {
+            ExecuteAttack(AttackFocusTarget);
+        }
+    }
+    else if (TickFindTarget(DeltaSeconds)) MoveToFocusTarget();
 }
 
 
@@ -63,6 +80,16 @@ void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, co
     AttackFocusLocation = Target;
     MoveToLocation(Target);
     ActionClaimer = Cursor;
+    SetDetectionEnable(true);
+}
+
+void UUnitAttackComponent::BeginStopOverTarget_Implementation(AActor* Target)
+{
+    AttackFocusTarget = Target;
+    if (IsValid(Target))
+    {
+        MoveToTarget(Target);
+    }
 }
 
 void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor)
@@ -73,24 +100,37 @@ void UUnitAttackComponent::BeginAttackTarget_Implementation(AActor* Target, cons
     ActionClaimer = Cursor;
 }
 
+void UUnitAttackComponent::BeginDefenceTarget_Implementation(AActor* Target)
+{
+    CurrentAttackMode = EAttackMode::Defence;
+    AttackFocusTarget = Target;
+    ActionClaimer = FActionCursorFinder::None;
+    MoveToTarget(Target);
+}
+
 void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
 {
     AActionBase* AttackAction = GetAttackAction();
-    if (!IsValid(AttackAction) || !IsValid(Target)) { OnAttackTargetCompleted(); return; }
+    if (!IsValid(AttackAction) || !IsValid(Target))
+    {
+        OnCannotAttackable();
+        return;
+    }
     UActionExecutor* ClaimExecutor = UActionExecutor::GetExecutorFromCursor(ActionClaimer);
     FOnNodeEnded NodeEndedDelegate;
     NodeEndedDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UUnitAttackComponent, OnAttackActionCompleted));
     if (IsValid(ClaimExecutor))
     {
         UActionNode* ClaimNode = ClaimExecutor->GetNode(ActionClaimer);
-        if (!IsValid(ClaimNode)) { OnAttackTargetCompleted(); return; }
+        if (!IsValid(ClaimNode)) { OnCannotAttackable(); return; }
         int ResultID = -1;
         AttackFocusTarget = Target;
         SetChaseLockTimeNow();
 
         ClaimExecutor->AddActor(L"AttackTarget", Target);
         UActionNode* ExecutedNode = ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate);
-        if(IsValid(ExecutedNode)) bIsAttackExecuted = true;
+        if (IsValid(ExecutedNode)) bIsAttackExecuted = true;
+        else OnAttackStop();
     }
     else
     {
@@ -102,7 +142,7 @@ void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
         }
         else
         {
-            OnAttackTargetCompleted();
+            OnAttackActionCompleted(true);
             bIsAttackExecuted = false;
         }
     }
@@ -114,19 +154,15 @@ void UUnitAttackComponent::OnMainActionChanged_Implementation(const FMainActionI
     {
         UUnitActionComponent* ClaimComponent = ActionInfo.Cursor.CurrentComponent;
         bool ClaimBySelf = ClaimComponent == this;
-        if(!ClaimBySelf) switch (CurrentAttackMode)
+        if (!ClaimBySelf) switch (CurrentAttackMode)
         {
-        //case EAttackMode::Target:
-        //case EAttackMode::Location:
-        //    ResetDatas();
-        //    break;
         case EAttackMode::Idle:
         case EAttackMode::Return:
             CurrentAttackMode = EAttackMode::Busy;
             break;
         }
     }
-    else switch(CurrentAttackMode)
+    else switch (CurrentAttackMode)
     {
     case EAttackMode::Target:
     case EAttackMode::Location:
@@ -155,14 +191,25 @@ void UUnitAttackComponent::OnActorUndetected_Implementation(UPrimitiveComponent*
 bool UUnitAttackComponent::OnAttackTargetDetected_Implementation(AActor* TargetActor)
 {
     if (!IsValid(TargetActor)) return false;
-    SetChaseBeginning(GetLocation());
-    BeginAttackTarget(TargetActor, FActionCursorFinder::None);
-    return true;
+    switch (CurrentAttackMode)
+    {
+    case EAttackMode::Location:
+        SetChaseBeginning(GetLocation());
+        BeginStopOverTarget(TargetActor);
+        return true;
+    case EAttackMode::Idle:
+        SetChaseBeginning(GetLocation());
+        BeginDefenceTarget(TargetActor);
+        return true;
+    default:
+        return false;
+    }
 }
 
 void UUnitAttackComponent::OnAttackStop_Implementation()
 {
     ResetDatas();
+    ResetDetectionEnable();
     SetChaseLockTimeNow();
 }
 
@@ -186,19 +233,27 @@ void UUnitAttackComponent::OnAttackLocationCompleted_Implementation()
     AttackFocusTarget = nullptr;
     AttackFocusLocation = FVector::ZeroVector;
     CurrentAttackMode = EAttackMode::Idle;
+    ResetDetectionEnable();
 }
 
 void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
 {
     bIsAttackExecuted = false;
     AttackFocusTarget = nullptr;
-    if (bIsReturnToOrigin && FVector::Dist2D(ChaseBeginLocation, GetLocation()) > 10.0f)
+    switch (CurrentAttackMode)
     {
-        MoveToChaseBeginLocation();
-        CurrentAttackMode = EAttackMode::Return;
-    }
-    else
-    {
+    case EAttackMode::Defence:
+        if (FVector::Dist2D(ChaseBeginLocation, GetLocation()) > 10.0f)
+        {
+            MoveToChaseBeginLocation();
+            CurrentAttackMode = EAttackMode::Return;
+        }
+        else
+        {
+            CurrentAttackMode = EAttackMode::Idle;
+        }
+        break;
+    default:
         CurrentAttackMode = EAttackMode::Idle;
     }
 }
@@ -208,6 +263,7 @@ void UUnitAttackComponent::OnCannotAttackable_Implementation()
     switch (CurrentAttackMode)
     {
     case EAttackMode::Target:
+    case EAttackMode::Defence:
         OnAttackTargetCompleted();
         break;
     case EAttackMode::Location:
@@ -222,10 +278,13 @@ void UUnitAttackComponent::OnMoveCompleted_Implementation()
     switch (CurrentAttackMode)
     {
     case EAttackMode::Return:
-        if (FVector::Dist2D(GetLocation(), ChaseBeginLocation) < 10.0f) CurrentAttackMode = EAttackMode::Idle;
+        if (FVector::Dist2D(GetLocation(), ChaseBeginLocation) < 10.0f)
+        {
+            CurrentAttackMode = EAttackMode::Idle;
+        }
         break;
     case EAttackMode::Location:
-        //if (FVector::Dist2D(GetLocation(), AttackFocusLocation) < 10.0f) OnAttackLocationCompleted();
+        if (FVector::Dist2D(GetLocation(), AttackFocusLocation) < 10.0f) OnAttackLocationCompleted();
         break;
     }
 }
@@ -241,16 +300,17 @@ void UUnitAttackComponent::OnUnitDamaged_Implementation(UUnitMainComponent* Targ
 
 void UUnitAttackComponent::OnDamageReaction_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
 {
+    if (!bShouldCounter) return;
     switch (CurrentAttackMode)
     {
-    case EAttackMode::Idle: if (!bShouldCounterOnIdle) return;
+    case EAttackMode::Idle:
         SetChaseBeginning(GetLocation());
+        BeginDefenceTarget(DamageInfo.DamageCauser);
         break;
-    case EAttackMode::Return: if (!bShouldCounterOnIdle) return;
+    case EAttackMode::Return:
+        if(GetTargetInChaseLimitRange(DamageInfo.DamageCauser)) BeginDefenceTarget(DamageInfo.DamageCauser);
         break;
-    default: return;
     }
-    BeginAttackTarget(DamageInfo.DamageCauser, FActionCursorFinder::None);
 }
 
 void UUnitAttackComponent::OnUnitDied_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
@@ -298,6 +358,21 @@ bool UUnitAttackComponent::GetInRange_Implementation(AActor* From, AActor* Targe
     return CurrentDistance < WantRange;
 }
 
+bool UUnitAttackComponent::GetInChaseLimitRange_Implementation()
+{
+    if (ChaseLimitRange <= 0) return true;
+    float CurrentDistance = FVector::Dist2D(ChaseBeginLocation, GetLocation());
+    return CurrentDistance <= ChaseLimitRange;
+}
+
+bool UUnitAttackComponent::GetTargetInChaseLimitRange_Implementation(AActor* Target)
+{
+    if (!IsValid(Target)) return false;
+    if (ChaseLimitRange <= 0) return true;
+    float CurrentDistance = FVector::Dist2D(ChaseBeginLocation, Target->GetActorLocation());
+    return CurrentDistance <= ChaseLimitRange;
+}
+
 float UUnitAttackComponent::GetAttackRange_Implementation()
 {
     UValueContainer* Container = UValueContainer::GetValueContainer(GetOwner());
@@ -317,13 +392,11 @@ void UUnitAttackComponent::ResetDatas_Implementation()
     AttackFocusLocation = FVector::ZeroVector;
     AttackFocusTarget = nullptr;
     bIsAttackExecuted = false;
-    bIsReturnToOrigin = false;
 }
 
 void UUnitAttackComponent::SetChaseBeginning_Implementation(FVector WantLocation)
 {
     ChaseBeginLocation = WantLocation;
-    bIsReturnToOrigin = true;
 }
 
 void UUnitAttackComponent::SetChaseLockTime_Implementation(float WantTime)

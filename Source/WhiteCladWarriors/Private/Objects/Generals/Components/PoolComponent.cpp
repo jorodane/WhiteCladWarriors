@@ -111,10 +111,7 @@ TArray<AActor*> UPoolComponent::DequeueAll_Implementation()
 void UPoolComponent::EnqueueInstance_Implementation(AActor* Target)
 {
 	if (!IsValid(Target)) return;
-	if (LiveArray.Remove(Target))
-	{
-		OnInstanceEnqueue(Target);
-	}
+	if (LiveArray.Remove(Target)) OnInstanceEnqueue(Target);
 }
 
 void UPoolComponent::EnqueueAll_Implementation()

@@ -15,7 +15,7 @@ class AOperator;
 UENUM(BlueprintType)
 enum class EAttackMode : uint8
 {
-	Busy, Idle, Return, Location, Target
+	Busy, Idle, Return, Location, Target, Defence
 };
 
 /**
@@ -66,10 +66,7 @@ protected:
 	bool bIsDetectOnIdle = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attack")
-	bool bShouldCounterOnIdle = true;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Attack")
-	bool bIsReturnToOrigin = false;
+	bool bShouldCounter = true;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	bool bIsAttackExecuted = false;
@@ -89,6 +86,10 @@ public:
 	void TickAttackTarget_Implementation(float DeltaSeconds);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void TickDefenceTarget(float DeltaSeconds);
+	void TickDefenceTarget_Implementation(float DeltaSeconds);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void TickAttackLocation(float DeltaSeconds);
 	void TickAttackLocation_Implementation(float DeltaSeconds);
 
@@ -97,8 +98,16 @@ public:
 	void BeginAttackLocation_Implementation(FVector Target, const FActionCursorFinder& Cursor);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void BeginStopOverTarget(AActor* Target);
+	void BeginStopOverTarget_Implementation(AActor* Target);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void BeginAttackTarget(AActor* Target, const FActionCursorFinder& Cursor);
 	void BeginAttackTarget_Implementation(AActor* Target, const FActionCursorFinder& Cursor);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
+	void BeginDefenceTarget(AActor* Target);
+	void BeginDefenceTarget_Implementation(AActor* Target);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void ExecuteAttack(AActor* Target);
@@ -175,6 +184,15 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
 	bool GetInRange(AActor* From, AActor* Target, float WantRange);
 	bool GetInRange_Implementation(AActor* From, AActor* Target, float WantRange);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
+	bool GetInChaseLimitRange();
+	bool GetInChaseLimitRange_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
+	bool GetTargetInChaseLimitRange(AActor* Target);
+	bool GetTargetInChaseLimitRange_Implementation(AActor* Target);
+
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Attack")
 	float GetAttackRange();
