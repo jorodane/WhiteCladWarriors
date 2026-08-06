@@ -80,7 +80,7 @@ void UUnitAttackComponent::BeginAttackLocation_Implementation(FVector Target, co
     AttackFocusLocation = Target;
     MoveToLocation(Target);
     ActionClaimer = Cursor;
-    SetDetectionEnable(true);
+    SetDetectionEnable(!AttackFocusTarget);
 }
 
 void UUnitAttackComponent::BeginStopOverTarget_Implementation(AActor* Target)

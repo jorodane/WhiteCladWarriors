@@ -4,6 +4,7 @@
 #include "Settings/ActionSetting.h"
 #include "Settings/MapSetting.h"
 #include "Actions/Executables/ActionExecutor.h"
+#include "Actions/ActionBase.h"
 
 TObjectPtr<UActionSetting> UActionSetting::CurrentSetting = nullptr;
 
@@ -31,6 +32,11 @@ void UActionSetting::OnDetached_Implementation(AMapSetting* OldOwner)
 void UActionSetting::InitiateActions_Implementation(AMapSetting* WantInfo)
 {
 	ExecutorReady(EXECUTOR_COUNT_ON_START);
+}
+
+AActionBase* UActionSetting::FindMissingAction_Implementation(const FName& MissingActionName)
+{
+	return nullptr;
 }
 
 bool UActionSetting::GetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>& Result)
@@ -89,6 +95,15 @@ AActionBase* UActionSetting::GetAction(FName WantName)
 		if (AActionBase** Result = CurrentSetting->ActionList.Find(WantName))
 		{
 			return *Result;
+		}
+		else
+		{
+			AActionBase* CreatedAction = CurrentSetting->FindMissingAction(WantName);
+			if (IsValid(CreatedAction))
+			{
+				CurrentSetting->ActionList.Add(WantName, CreatedAction);
+				return CreatedAction;
+			}
 		}
 	}
 	return nullptr;

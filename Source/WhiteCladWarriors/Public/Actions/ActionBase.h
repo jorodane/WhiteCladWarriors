@@ -50,9 +50,6 @@ protected:
 	int UIOrder = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
-	bool bIsMainAction = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")
 	bool bIsSmartKey = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Action")

@@ -46,6 +46,10 @@ public:
 	void InitiateActions(AMapSetting* WantInfo);
 	virtual void InitiateActions_Implementation(AMapSetting* WantInfo);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
+	AActionBase* FindMissingAction(const FName& MissingActionName);
+	virtual AActionBase* FindMissingAction_Implementation(const FName& MissingActionName);
+
 protected:
 	bool GetExecutor(int64 ID, TWeakObjectPtr<UActionExecutor>& Result);
 	int64 ActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& Result);
