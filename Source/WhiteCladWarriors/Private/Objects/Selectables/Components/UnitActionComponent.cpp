@@ -11,7 +11,7 @@ AActor* UUnitActionComponent::SpawnActor_Implementation(TSubclassOf<AActor> Temp
 	return nullptr;
 }
 
-bool UUnitActionComponent::GetMainActionCancelable()
+bool UUnitActionComponent::GetMainActionCancelable() const
 {
 	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) return CurrentUnit->GetMainActionCancelable();
 	return false;
@@ -23,9 +23,9 @@ bool UUnitActionComponent::TrySetMainAction_Implementation(const FActionCursorFi
 	return false;
 }
 
-void UUnitActionComponent::EndMainAction(int64 ExecutorID)
+void UUnitActionComponent::EndMainAction(int64 ExecutorID, UUnitActionComponent* OldComponent)
 {
-	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(ExecutorID, this);
+	if (UUnitMainComponent* CurrentUnit = GetOwnerUnit()) CurrentUnit->EndMainAction(ExecutorID, OldComponent);
 }
 
 void UUnitActionComponent::OnInputStart_Implementation(const FInputClaim& StartedInput)

@@ -62,19 +62,28 @@ bool FActionReservator::SetEnd(int64 EndExecutorID, UUnitActionComponent* EndCom
 UUnitMainComponent::UUnitMainComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	OwnerUnit = this;
 }
 
 
 void UUnitMainComponent::BeginPlay()
 {
 	OwnerUnit = this;
-	ValueMap = UValueContainer::GetOrAddValueContainer(GetOwner());
-	for (UActorComponent* CurrentComponent : GetOwner()->GetComponents())
+	AActor* OwnerActor = GetOwner();
+	if (!IsValid(OwnerActor)) return;
+	ValueMap = UValueContainer::GetOrAddValueContainer(OwnerActor);
+	for (UActorComponent* CurrentComponent : OwnerActor->GetComponents())
 	{
-		if (CurrentComponent == this) continue;
-		AddUnitComponent(Cast<UUnitComponentBase>(CurrentComponent));
+		if (CurrentComponent == this)
+		{
+			AddActionFromNameList(this, ActionList);
+		}
+		else
+		{
+			AddUnitComponent(Cast<UUnitComponentBase>(CurrentComponent));
+		}
 	}
-	if (ACharacter* OwnerAsCharacter = Cast<ACharacter>(GetOwner()))
+	if (ACharacter* OwnerAsCharacter = Cast<ACharacter>(OwnerActor))
 	{
 		SetMesh(OwnerAsCharacter->GetMesh());
 	};
@@ -333,22 +342,36 @@ void UUnitMainComponent::AddUnitComponent(UUnitComponentBase* NewComponent)
 
 	if (UUnitActionComponent* AsActionComponent = Cast<UUnitActionComponent>(NewComponent))
 	{
-		for (FName CurrentName : AsActionComponent->ActionList)
-		{
-			if (AActionBase* CurrentAction = UActionSetting::GetAction(CurrentName))
-			{
-				FActionTargetContainer* CurrentContainer = ActionMap.Find(CurrentAction);
-				if (CurrentContainer == nullptr) CurrentContainer = &ActionMap.Add(CurrentAction);
-				if (CurrentContainer != nullptr) CurrentContainer->Components.Add(AsActionComponent);
-			}
-		}
+		AddActionFromNameList(AsActionComponent, AsActionComponent->ActionList);
 	}
 };
 
-bool UUnitMainComponent::GetMainActionCancelable_Implementation() const
+void UUnitMainComponent::AddAction(UUnitActionComponent* From, AActionBase* WantAction)
 {
-	return !MainAction.CheckValid() || MainAction.Settings.bIsCancelable;
-};
+	FActionTargetContainer* CurrentContainer = ActionMap.Find(WantAction);
+	if (CurrentContainer == nullptr) CurrentContainer = &ActionMap.Add(WantAction);
+	if (CurrentContainer != nullptr) CurrentContainer->Components.Add(From);
+}
+
+void UUnitMainComponent::AddActionFromName(UUnitActionComponent* From, const FName& WantName)
+{
+	if (AActionBase* CurrentAction = UActionSetting::GetAction(WantName))
+	{
+		AddAction(From, CurrentAction);
+	}
+}
+
+void UUnitMainComponent::AddActionFromNameList(UUnitActionComponent* From, TArray<FName> ActionNameList)
+{
+	for (const FName& CurrentName : ActionNameList)
+	{
+		AddActionFromName(From, CurrentName);
+	}
+}
+
+
+
+
 
 bool UUnitMainComponent::GetMainActionExecutable_Implementation()
 {
@@ -389,22 +412,7 @@ bool UUnitMainComponent::StopMainAction()
 	return Result;
 }
 
-void UUnitMainComponent::EndMainAction(int64 OldExecutorID, UUnitActionComponent* OldComponent)
-{
-	UActionExecutor* OldExecutor = UActionExecutor::GetExecutorFromID(OldExecutorID);
-	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutorID != OldExecutorID || MainAction.Cursor.CurrentComponent != OldComponent) return;
 
-	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction, false);
-
-	if (CurrentReservatedAction.bIsValid)
-	{
-		if (CurrentReservatedAction.SetEnd(OldExecutorID, OldComponent)) ReservationNext();
-	}
-	else
-	{
-		ReservationNext();
-	}
-}
 
 void UUnitMainComponent::ReservationEnqueue(const FActionReservator& Reservation)
 {
@@ -556,6 +564,7 @@ void UUnitMainComponent::ResetDamageValue_Implementation()
 
 void UUnitMainComponent::UnitMessage_Simple(const FName& Message)
 {
+	ReceiveUnitMessage_Simple(Message);
 	for (UUnitComponentBase* CurrentComponent : GetComponents())
 	{
 		if (!IsValid(CurrentComponent)) continue;
@@ -565,6 +574,7 @@ void UUnitMainComponent::UnitMessage_Simple(const FName& Message)
 
 void UUnitMainComponent::UnitMessage_Detail(const FName& Message, const FName& Context)
 {
+	ReceiveUnitMessage_Detail(Message, Context);
 	for (UUnitComponentBase* CurrentComponent : GetComponents())
 	{
 		if (!IsValid(CurrentComponent)) continue;
@@ -574,6 +584,7 @@ void UUnitMainComponent::UnitMessage_Detail(const FName& Message, const FName& C
 
 void UUnitMainComponent::UnitMessage_Montage(UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
 {
+	ReceiveUnitMessage_Montage(Montage, bIsStart, bIsInterrupted);
 	for (UUnitComponentBase* CurrentComponent : GetComponents())
 	{
 		if (!IsValid(CurrentComponent)) continue;
@@ -628,6 +639,44 @@ void UUnitMainComponent::Revive_Implementation()
 	OnUnitRevive.Broadcast();
 	OnRevive();
 }
+
+bool UUnitMainComponent::GetMainActionCancelable() const
+{
+	return !MainAction.CheckValid() || MainAction.Settings.bIsCancelable;
+};
+
+bool UUnitMainComponent::TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode)
+{
+	return SetMainAction(WantCursor, TargetNode);
+}
+
+void UUnitMainComponent::EndMainAction(int64 OldExecutorID, UUnitActionComponent* OldComponent)
+{
+	UActionExecutor* OldExecutor = UActionExecutor::GetExecutorFromID(OldExecutorID);
+	if (!MainAction.CheckValid() || MainAction.Cursor.CurrentExecutorID != OldExecutorID || MainAction.Cursor.CurrentComponent != OldComponent) return;
+
+	if (MainAction.End()) OnMainActionChanged.Broadcast(MainAction, false);
+
+	if (CurrentReservatedAction.bIsValid)
+	{
+		if (CurrentReservatedAction.SetEnd(OldExecutorID, OldComponent)) ReservationNext();
+	}
+	else
+	{
+		ReservationNext();
+	}
+}
+
+void UUnitMainComponent::OnInputStart_Implementation(const FInputClaim& StartedInput)
+{
+	PlayInputReadyMontage(StartedInput.TargetReadyMontage);
+}
+
+void UUnitMainComponent::OnInputEnd_Implementation(const FInputClaim& EndedInput)
+{
+	StopInputReadyMontage();
+}
+
 
 TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const
 {

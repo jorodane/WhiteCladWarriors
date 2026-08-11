@@ -296,7 +296,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 		const bool bExitMainLine = !bIsMainAction && bWasMainAction;
 		const bool bEnterMainLine = bIsMainAction && !bWasMainAction;
 
-		if (bExitMainLine) TargetComponent->EndMainAction(ExecutorID);
+		if (bExitMainLine) TargetComponent->EndMainAction(ExecutorID, TargetComponent);
 		if (bEnterMainLine)
 		{
 			if (!TargetComponent->TrySetMainAction(WantCursor, TargetNode))
@@ -311,7 +311,15 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode(TargetNode, ID);
 	else CurrentNodeInfo = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
 
-	if (IsValid(TargetNode)) TargetNode->ClaimExecute(WantCursor);
+	if (IsValid(TargetNode))
+	{
+		TargetNode->ClaimExecute(WantCursor);
+	}
+	else
+	{
+		EndNode(WantCursor, OriginNode, false, false);
+		return;
+	}
 
 	if (GetValid())
 	{
@@ -373,7 +381,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID);
+	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID, TargetComponent);
 	FActiveNodeMap* CursorFinder = GetNodeMap(TargetComponent);
 
 	if (CursorFinder)
@@ -482,7 +490,9 @@ void UActionExecutor::AddCreatedActor(AActor* NewActor, UActionSpawnNode* SpawnN
 	CreatedActors.AddUnique(NewActor);
 	if (NewActor->GetClass()->ImplementsInterface(UActionSpawnable::StaticClass()))
 	{
-		IActionSpawnable::Execute_SpawnInitialize(NewActor, SpawnNode, BaseCursor);
+		FActionCursorFinder NewCursor = BaseCursor;
+		NewCursor.ClaimActor = NewActor;
+		IActionSpawnable::Execute_SpawnInitialize(NewActor, SpawnNode, NewCursor);
 	}
 }
 

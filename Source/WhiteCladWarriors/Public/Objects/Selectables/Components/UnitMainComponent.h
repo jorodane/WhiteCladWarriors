@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Objects/Selectables/Components/UnitComponentBase.h"
+#include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Generals/Structs/DamageStructures.h"
 #include "Generals/Structs/InputPackage.h"
 #include "Generals/Structs/ActionStructures.h"
@@ -19,7 +19,6 @@
 class AActionBase;
 class AOperator;
 class AIngameController;
-class UUnitActionComponent;
 class UActionTargetContainer;
 class UActionExecutor;
 class UActionNode;
@@ -83,7 +82,7 @@ enum class EUnitControlledType : uint8
 };
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitComponentBase, public ISelectable, public IDamageable, public IPlayerConnectable
+class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitActionComponent, public ISelectable, public IDamageable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -251,9 +250,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void AddUnitComponent(UUnitComponentBase* NewComponent);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
-	bool GetMainActionCancelable() const;
-	virtual bool GetMainActionCancelable_Implementation() const;
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddAction(UUnitActionComponent* From, AActionBase* WantAction);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddActionFromName(UUnitActionComponent* From, const FName& WantName);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddActionFromNameList(UUnitActionComponent* From, TArray<FName> ActionNameList);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Action")
 	bool GetMainActionExecutable();
@@ -268,9 +272,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool StopMainAction();
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction(int64 OldExecutorID, UUnitActionComponent* OldComponent);
 
 	UFUNCTION(BlueprintCallable, Category = "Action") 
 	void ReservationEnqueue(const FActionReservator& Reservation);
@@ -370,6 +371,12 @@ public:
 	void OnTakeDamage(const FDamageInfo& AttackDamageInfo);
 
 public:
+	virtual bool GetMainActionCancelable() const override;
+	virtual bool TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode) override;
+	virtual void EndMainAction(int64 OldExecutorID, UUnitActionComponent* OldComponent) override;
+	virtual void OnInputStart_Implementation(const FInputClaim& StartedInput) override;
+	virtual void OnInputEnd_Implementation(const FInputClaim& EndedInput) override;
+
 	virtual bool IsSelectable_Implementation(AOperator* Operator) { return true; }
 	virtual FSlateBrush GetSelectedIcon_Implementation() { return SelectedIcon; }
 	virtual FText GetSelectedName_Implementation() { return SelectedName; }

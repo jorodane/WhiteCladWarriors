@@ -30,23 +30,23 @@ public:
 	AActor* SpawnActor_Implementation(TSubclassOf<AActor> TemplateClass);
 
 	UFUNCTION(BlueprintPure, Category = "Action")
-	bool GetMainActionCancelable();
+	virtual bool GetMainActionCancelable() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	bool TrySetMainAction(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
-	bool TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
+	virtual bool TrySetMainAction_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void EndMainAction(int64 ExecutorID);
+	virtual void EndMainAction(int64 ExecutorID, UUnitActionComponent* OldComponent);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 	void OnEndMainAction(int64 ExecutorID);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void OnInputStart(const FInputClaim& StartedInput);
-	void OnInputStart_Implementation(const FInputClaim& StartedInput);
+	virtual void OnInputStart_Implementation(const FInputClaim& StartedInput);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
 	void OnInputEnd(const FInputClaim& EndedInput);
-	void OnInputEnd_Implementation(const FInputClaim& EndedInput);
+	virtual void OnInputEnd_Implementation(const FInputClaim& EndedInput);
 };
