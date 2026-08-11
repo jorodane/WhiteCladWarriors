@@ -252,6 +252,12 @@ public:
 	void CheckCursorMap();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
+	void AddCreatedActor(AActor* NewActor, UActionSpawnNode* SpawnNode, const FActionCursorFinder& BaseCursor);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void RemoveCreatedActor(AActor* OldActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
 	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);

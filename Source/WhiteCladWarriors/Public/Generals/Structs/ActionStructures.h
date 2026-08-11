@@ -35,6 +35,9 @@ struct FActionCursorFinder
 	TObjectPtr<UUnitActionComponent> CurrentComponent = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
+	TObjectPtr<AActor> ClaimActor = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	int CurrentID = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")

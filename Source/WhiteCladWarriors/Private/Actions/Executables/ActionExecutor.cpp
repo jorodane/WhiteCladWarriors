@@ -7,6 +7,7 @@
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 #include "Objects/Selectables/Components/UnitMainComponent.h"
 #include "Objects/Players/Operator.h"
+#include "Interfaces/ActionSpawnable.h"
 #include "Settings/ActionSetting.h"
 
 const FExecutorValueMap FExecutorValueMap::Default;
@@ -474,6 +475,23 @@ void UActionExecutor::CheckCursorMap()
 		DestroyExecutor(this);
 	}
 }
+
+void UActionExecutor::AddCreatedActor(AActor* NewActor, UActionSpawnNode* SpawnNode, const FActionCursorFinder& BaseCursor)
+{
+	if (!IsValid(NewActor)) return;
+	CreatedActors.AddUnique(NewActor);
+	if (NewActor->GetClass()->ImplementsInterface(UActionSpawnable::StaticClass()))
+	{
+		IActionSpawnable::Execute_SpawnInitialize(NewActor, SpawnNode, BaseCursor);
+	}
+}
+
+void UActionExecutor::RemoveCreatedActor(AActor* OldActor)
+{
+	CreatedActors.Remove(OldActor);
+	CheckCursorMap();
+}
+
 
 FActionCursorFinder UActionExecutor::CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID, bool bAsSubNode)
 {
