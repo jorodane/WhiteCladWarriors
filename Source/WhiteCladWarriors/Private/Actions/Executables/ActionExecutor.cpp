@@ -492,11 +492,14 @@ void UActionExecutor::AddCreatedActor(AActor* NewActor, UActionSpawnNode* SpawnN
 	{
 		FActionCursorFinder NewCursor = BaseCursor;
 		NewCursor.ClaimActor = NewActor;
-		IActionSpawnable::Execute_SpawnInitialize(NewActor, SpawnNode, NewCursor);
+		FOnSpawnedActorDestroyed ActorRemoveEvent;
+		ActorRemoveEvent.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UActionExecutor, RemoveCreatedActor));
+
+		IActionSpawnable::Execute_SpawnInitialize(NewActor, SpawnNode, NewCursor, ActorRemoveEvent);
 	}
 }
 
-void UActionExecutor::RemoveCreatedActor(AActor* OldActor)
+void UActionExecutor::RemoveCreatedActor(AActor* OldActor, const FActionCursorFinder& BaseCursor)
 {
 	CreatedActors.Remove(OldActor);
 	CheckCursorMap();

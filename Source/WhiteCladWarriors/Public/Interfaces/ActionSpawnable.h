@@ -7,6 +7,8 @@
 #include "Generals/Structs/ActionStructures.h"
 #include "ActionSpawnable.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FOnSpawnedActorDestroyed, AActor*, DestroyedActor, const FActionCursorFinder&, BaseCursor);
+
 class UActionSpawnNode;
 
 // This class does not need to be modified.
@@ -26,6 +28,6 @@ class WHITECLADWARRIORS_API IActionSpawnable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "ActionSpawnable")
-	void SpawnInitialize(UActionSpawnNode* SpawnedNode, const FActionCursorFinder& Cursor);
-	void SpawnInitialize_Implementation(UActionSpawnNode* SpawnedNode, const FActionCursorFinder& Cursor) {}
+	void SpawnInitialize(UActionSpawnNode* SpawnedNode, const FActionCursorFinder& Cursor, const FOnSpawnedActorDestroyed& OnDestroyEvent);
+	void SpawnInitialize_Implementation(UActionSpawnNode* SpawnedNode, const FActionCursorFinder& Cursor, const FOnSpawnedActorDestroyed& OnDestroyEvent) {}
 };

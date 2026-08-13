@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Actions/Values/ActionValueClaimer.h"
 #include "Generals/Structs/ActionStructures.h"
+#include "Interfaces/ActionSpawnable.h"
 #include "ActionExecutor.generated.h"
 
 class AOperator;
@@ -255,7 +256,7 @@ public:
 	void AddCreatedActor(AActor* NewActor, UActionSpawnNode* SpawnNode, const FActionCursorFinder& BaseCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void RemoveCreatedActor(AActor* OldActor);
+	void RemoveCreatedActor(AActor* OldActor, const FActionCursorFinder& BaseCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);

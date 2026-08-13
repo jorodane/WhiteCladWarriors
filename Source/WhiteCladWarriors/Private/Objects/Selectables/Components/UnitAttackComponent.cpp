@@ -292,7 +292,7 @@ void UUnitAttackComponent::OnMoveCompleted_Implementation()
 void UUnitAttackComponent::OnUnitDamaged_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
 {
     if (!IsValid(TargetUnit)) return;
-    if (!IsValid(DamageInfo.DamageCauser)) return;
+    if (!IsValid(DamageInfo.DamageInstigator)) return;
     if (TargetUnit->HasMainAction()) return;
 
     OnDamageReaction(TargetUnit, DamageInfo);
@@ -301,14 +301,22 @@ void UUnitAttackComponent::OnUnitDamaged_Implementation(UUnitMainComponent* Targ
 void UUnitAttackComponent::OnDamageReaction_Implementation(UUnitMainComponent* TargetUnit, const FDamageInfo& DamageInfo)
 {
     if (!bShouldCounter) return;
+
+    AActor* DamageInstigator = nullptr;
+    if (IsValid(DamageInfo.DamageInstigator)) DamageInstigator = DamageInfo.DamageInstigator->GetOwner();
+    else if (IsValid(DamageInfo.DamageCauser))
+    {
+        DamageInstigator = DamageInfo.DamageCauser->GetOwner();
+        if (!IsValid(DamageInstigator)) DamageInstigator = DamageInfo.DamageCauser;
+    }
     switch (CurrentAttackMode)
     {
     case EAttackMode::Idle:
         SetChaseBeginning(GetLocation());
-        BeginDefenceTarget(DamageInfo.DamageCauser);
+        BeginDefenceTarget(DamageInstigator);
         break;
     case EAttackMode::Return:
-        if(GetTargetInChaseLimitRange(DamageInfo.DamageCauser)) BeginDefenceTarget(DamageInfo.DamageCauser);
+        if(GetTargetInChaseLimitRange(DamageInstigator)) BeginDefenceTarget(DamageInstigator);
         break;
     }
 }
