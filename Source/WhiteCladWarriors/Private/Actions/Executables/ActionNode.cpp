@@ -65,6 +65,24 @@ void UActionNode::MoveExecutorToInterrupt_Implementation(const FActionCursorFind
 	Executor->EnterNode(WantCursor, CanceledNode, true);
 }
 
+void UActionNode::MoveExecutorToWantNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled)
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
+	if (!IsValid(Executor)) return;
+	if (bIsCanceled) OnCancel(WantCursor);
+	else			 OnComplete(WantCursor);
+	Executor->EnterNode(WantCursor, TargetNode, bIsCanceled);
+}
+
+int UActionNode::CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode)
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
+	if (!IsValid(Executor)) return -1;
+	int index;
+	Executor->CreateSubNode(WantCursor, this, TargetNode, index);
+	return index;
+}
+
 void UActionNode::EndAllSubNodes_Implementation(const FActionCursorFinder& WantCursor)
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);

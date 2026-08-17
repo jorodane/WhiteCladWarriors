@@ -76,6 +76,15 @@ public:
 	void MoveExecutorToInterrupt(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
 	void MoveExecutorToInterrupt_Implementation(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
 
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	void MoveExecutorToWantNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled);
+	virtual void MoveExecutorToWantNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	int CreateSubNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
+	int CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void EndAllSubNodes(const FActionCursorFinder& WantCursor);
 	void EndAllSubNodes_Implementation(const FActionCursorFinder& WantCursor);

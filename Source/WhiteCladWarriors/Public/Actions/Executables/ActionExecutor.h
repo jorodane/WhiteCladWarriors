@@ -7,6 +7,7 @@
 #include "Actions/Values/ActionValueClaimer.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Interfaces/ActionSpawnable.h"
+#include "StructUtils/InstancedStruct.h"
 #include "ActionExecutor.generated.h"
 
 class AOperator;
@@ -45,6 +46,7 @@ struct FActiveNodeInfo
 		SetListening(WantListeningState);
 	}
 
+	UActionNode* SetNode(UActionNode* WantNode) { CurrentNode = WantNode; }
 	inline ENodeListeningState SetListening(ENodeListeningState NewState) { return CurrentListeningState = NewState; }
 
 	inline ENodeListeningState TryListeningMute() { if(CurrentListeningState != ENodeListeningState::Mute) SetListening(ENodeListeningState::Mute); return CurrentListeningState; }
@@ -53,12 +55,23 @@ struct FActiveNodeInfo
 };
 
 USTRUCT(BlueprintType)
+struct FActiveNodeInfo_Hit : public FActiveNodeInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hit")
+	FHitResult Hit;
+
+	const FHitResult& SetHit(const FHitResult& WantHit) { return Hit = WantHit; }
+};
+
+USTRUCT(BlueprintType)
 struct FActiveNodeMap
 {
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<int, FActiveNodeInfo> NodeMap;
+	TMap<int, TInstancedStruct<FActiveNodeInfo>> NodeMap;
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<int, FOnNodeEnded> EndEventMap;
 
@@ -67,11 +80,15 @@ struct FActiveNodeMap
 	void Clear();
 
 	int AddNode(UActionNode* Node);
+	int AddNode(UActionNode* Node, const FHitResult& WantHit);
 	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
+
 	inline UActionNode* GetNode(int ID);
 	inline FActiveNodeInfo* GetInfo(int ID);
 	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
-	inline FActiveNodeInfo& SetNode(UActionNode* Node, int ID);
+
+	template< std::derived_from<FActiveNodeInfo> T>
+	inline T& SetNode(int ID);
 
 	void InvokeEndEvent(int ID, bool bIsCanceled);
 	inline void RemoveID(int ID);

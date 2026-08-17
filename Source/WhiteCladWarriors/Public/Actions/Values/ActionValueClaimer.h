@@ -140,6 +140,7 @@ class UValueGetterLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+private:
 	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> ZeroVector;
 	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> ForwardVector;
 	UPROPERTY()	TObjectPtr<UVectorGetter_Simple> BackwardVector;
@@ -607,7 +608,9 @@ class UValueClaimerLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
+private:
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfPosition;
+
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfForwardPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfBackwardPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfRightPosition;

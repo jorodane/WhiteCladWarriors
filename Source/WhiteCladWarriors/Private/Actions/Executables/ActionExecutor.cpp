@@ -22,7 +22,15 @@ int FActiveNodeMap::AddNode(UActionNode* Node)
 {
 	while (NodeMap.Find(nextID++));
 	int Result = nextID - 1;
-	NodeMap.Add(Result, Node);
+	SetNode<FActiveNodeInfo>(Result);
+	return Result;
+}
+
+int FActiveNodeMap::AddNode(UActionNode* Node, const FHitResult& WantHit)
+{
+	while (NodeMap.Find(nextID++));
+	int Result = nextID - 1;
+	SetNode<FActiveNodeInfo_Hit>(Result);
 	return Result;
 }
 
@@ -42,15 +50,14 @@ UActionNode* FActiveNodeMap::GetNode(int ID)
 FActiveNodeInfo* FActiveNodeMap::GetInfo(int ID)
 {
 	if (NodeMap.IsEmpty()) return nullptr;
-	if (FActiveNodeInfo* Result = NodeMap.Find(ID)) return Result;
+	if (TInstancedStruct<FActiveNodeInfo>* Result = NodeMap.Find(ID)) return Result->GetMutablePtr();
 	else return nullptr;
 }
 
-FActiveNodeInfo& FActiveNodeMap::SetNode(UActionNode* Node, int ID)
+template< std::derived_from<FActiveNodeInfo> T>
+T& FActiveNodeMap::SetNode(int ID)
 {
-	FActiveNodeInfo* CurrentNodeFinder = NodeMap.Find(ID);
-	if (CurrentNodeFinder) return *CurrentNodeFinder = Node;
-	else return NodeMap.Add(ID, Node);
+	return NodeMap.Add(ID, TInstancedStruct<T>::Make()).GetMutable<T>();
 }
 
 void FActiveNodeMap::InvokeEndEvent(int ID, bool bIsCanceled)
@@ -71,7 +78,7 @@ void FActiveNodeMap::RemoveID(int ID)
 
 void FActiveNodeMap::RemoveSubNodes()
 {
-	FActiveNodeInfo* MainNode = NodeMap.Find(0);
+	TInstancedStruct<FActiveNodeInfo>* MainNode = NodeMap.Find(0);
 	NodeMap.Reset();
 	if (MainNode)
 	{
@@ -82,11 +89,11 @@ void FActiveNodeMap::RemoveSubNodes()
 void FActiveNodeMap::BroadcastFunction(const FActionCursorFinder& Cursor, TFunctionRef<void(UActionNode*, const FActionCursorFinder&)> Function)
 {
 	if (IsEmpty()) return;
-	TMap<int, FActiveNodeInfo> ReceivedNodeMap = NodeMap;
+	TMap<int, TInstancedStruct<FActiveNodeInfo>> ReceivedNodeMap = NodeMap;
 
 	for (const auto& CurrentPair : ReceivedNodeMap)
 	{
-		const FActiveNodeInfo& CurrentInfo = CurrentPair.Value;
+		const FActiveNodeInfo& CurrentInfo = CurrentPair.Value.Get();
 		if (CurrentInfo.CurrentListeningState != ENodeListeningState::Listening) continue;
 
 		UActionNode* CurrentNode = CurrentInfo.CurrentNode;
@@ -408,7 +415,7 @@ void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, bool bIs
 	if (!Cursor.NodeMap.IsEmpty())
 	{
 		FActionCursorFinder SubCursor = WantCursor;
-		TArray<FActiveNodeInfo> DestroyTarget;
+		TArray<TInstancedStruct<FActiveNodeInfo>> DestroyTarget;
 		for (const auto& CurrentNode : Cursor.NodeMap)
 		{
 			int CurrentID = CurrentNode.Key;
@@ -417,11 +424,12 @@ void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, bool bIs
 			Cursor.InvokeEndEvent(CurrentID, bIsCanceled);
 			DestroyTarget.Add(CurrentNode.Value);
 		}
-		for (const FActiveNodeInfo& CurrentTarget : DestroyTarget)
+		for (const TInstancedStruct<FActiveNodeInfo>& CurrentTarget : DestroyTarget)
 		{
-			if (IsValid(CurrentTarget.CurrentNode))
+			const FActiveNodeInfo& TargetReference = CurrentTarget.Get();
+			if (IsValid(TargetReference.CurrentNode))
 			{
-				CurrentTarget.CurrentNode->MoveExecutorToCancel(SubCursor);
+				TargetReference.CurrentNode->MoveExecutorToCancel(SubCursor);
 			}
 		}
 	}
