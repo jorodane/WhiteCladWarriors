@@ -42,11 +42,11 @@ struct FActiveNodeInfo
 
 	FActiveNodeInfo(UActionNode* WantNode, ENodeListeningState WantListeningState = ENodeListeningState::Pending)
 	{
-		CurrentNode = WantNode;
+		SetNode(WantNode);
 		SetListening(WantListeningState);
 	}
 
-	UActionNode* SetNode(UActionNode* WantNode) { CurrentNode = WantNode; }
+	inline UActionNode* SetNode(UActionNode* WantNode) { return CurrentNode = WantNode; }
 	inline ENodeListeningState SetListening(ENodeListeningState NewState) { return CurrentListeningState = NewState; }
 
 	inline ENodeListeningState TryListeningMute() { if(CurrentListeningState != ENodeListeningState::Mute) SetListening(ENodeListeningState::Mute); return CurrentListeningState; }
@@ -84,11 +84,12 @@ struct FActiveNodeMap
 	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
 
 	inline UActionNode* GetNode(int ID);
-	inline FActiveNodeInfo* GetInfo(int ID);
-	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
+	template< std::derived_from<FActiveNodeInfo> T>
+	inline T* GetInfo(int ID);
+	inline FActiveNodeInfo* GetMainInfo() { return GetInfo<FActiveNodeInfo>(0); }
 
 	template< std::derived_from<FActiveNodeInfo> T>
-	inline T& SetNode(int ID);
+	inline T& SetNode(UActionNode* TargetNode, int ID);
 
 	void InvokeEndEvent(int ID, bool bIsCanceled);
 	inline void RemoveID(int ID);
@@ -101,7 +102,7 @@ struct FActiveNodeMap
 	void BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 	FActiveNodeMap() { }
-	FActiveNodeMap(UActionNode* Node) { SetNode(Node, 0); }
+	FActiveNodeMap(UActionNode* Node) { SetNode<FActiveNodeInfo>(Node, 0); }
 };
 
 USTRUCT(BlueprintType)

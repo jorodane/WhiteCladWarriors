@@ -50,7 +50,7 @@ int64 UActionSetting::ActivateExecutorFromPool(TWeakObjectPtr<UActionExecutor>& 
 {
 	int64 ResultID = lastExecutorID++;
 
-	TObjectPtr<UActionExecutor> ResultExecutor = ExecutorWaitQueue.Pop(false);
+	TObjectPtr<UActionExecutor> ResultExecutor = ExecutorWaitQueue.Pop(EAllowShrinking::No);
 	if (!ResultExecutor)
 	{
 		ExecutorReady(EXECUTOR_COUNT_ON_ADD);

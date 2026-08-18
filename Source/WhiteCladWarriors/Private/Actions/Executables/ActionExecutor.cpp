@@ -22,7 +22,7 @@ int FActiveNodeMap::AddNode(UActionNode* Node)
 {
 	while (NodeMap.Find(nextID++));
 	int Result = nextID - 1;
-	SetNode<FActiveNodeInfo>(Result);
+	SetNode<FActiveNodeInfo>(Node, Result);
 	return Result;
 }
 
@@ -30,7 +30,8 @@ int FActiveNodeMap::AddNode(UActionNode* Node, const FHitResult& WantHit)
 {
 	while (NodeMap.Find(nextID++));
 	int Result = nextID - 1;
-	SetNode<FActiveNodeInfo_Hit>(Result);
+	FActiveNodeInfo_Hit& Info = SetNode<FActiveNodeInfo_Hit>(Node, Result);
+	Info.SetHit(WantHit);
 	return Result;
 }
 
@@ -43,21 +44,25 @@ int FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded)
 
 UActionNode* FActiveNodeMap::GetNode(int ID)
 {
-	if (const FActiveNodeInfo* CurrentInfo = GetInfo(ID)) return CurrentInfo->CurrentNode;
-	else return nullptr;
-}
-
-FActiveNodeInfo* FActiveNodeMap::GetInfo(int ID)
-{
-	if (NodeMap.IsEmpty()) return nullptr;
-	if (TInstancedStruct<FActiveNodeInfo>* Result = NodeMap.Find(ID)) return Result->GetMutablePtr();
+	if (const FActiveNodeInfo* CurrentInfo = GetInfo<FActiveNodeInfo>(ID)) return CurrentInfo->CurrentNode;
 	else return nullptr;
 }
 
 template< std::derived_from<FActiveNodeInfo> T>
-T& FActiveNodeMap::SetNode(int ID)
+T* FActiveNodeMap::GetInfo(int ID)
 {
-	return NodeMap.Add(ID, TInstancedStruct<T>::Make()).GetMutable<T>();
+	if (NodeMap.IsEmpty()) return nullptr;
+	if (TInstancedStruct<FActiveNodeInfo>* Result = NodeMap.Find(ID)) return Result->GetMutablePtr<T>();
+	else return nullptr;
+}
+
+template< std::derived_from<FActiveNodeInfo> T>
+T& FActiveNodeMap::SetNode(UActionNode* TargetNode, int ID)
+{
+	T* Info = GetInfo<T>(ID);
+	if (Info == nullptr) Info = NodeMap.Add(ID).GetMutablePtr<T>();
+	Info->SetNode(TargetNode);
+	return *Info;
 }
 
 void FActiveNodeMap::InvokeEndEvent(int ID, bool bIsCanceled)
@@ -281,7 +286,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	if (CurrentNodeMap)
 	{
 		OriginNode = CurrentNodeMap->GetNode(ID);
-		FActiveNodeInfo* OriginInfo = CurrentNodeMap->GetInfo(ID);
+		FActiveNodeInfo* OriginInfo = CurrentNodeMap->GetInfo<FActiveNodeInfo>(ID);
 		if (OriginInfo) OriginInfo->TryListeningPending();
 		if (bIsBlocked)
 		{
@@ -315,7 +320,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	}
 
 	FActiveNodeInfo* CurrentNodeInfo = nullptr;
-	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode(TargetNode, ID);
+	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode<FActiveNodeInfo>(TargetNode, ID);
 	else CurrentNodeInfo = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
 
 	if (IsValid(TargetNode))
@@ -330,7 +335,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 
 	if (GetValid())
 	{
-		CurrentNodeInfo = CurrentNodeMap->GetInfo(ID);
+		CurrentNodeInfo = CurrentNodeMap->GetInfo<FActiveNodeInfo>(ID);
 		if (CurrentNodeInfo) CurrentNodeInfo->TryListeningStart();
 	}
 }
@@ -464,7 +469,7 @@ void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, U
 	TargetComponent->OnComponentMessage_Simple.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Simple);
 	TargetComponent->OnComponentMessage_Detail.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Detail);
 	TargetComponent->OnComponentMessage_Montage.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Montage);
-	CursorMap.Add(TargetComponent, StartNode);
+	CursorMap.Add(TargetComponent, FActiveNodeMap(StartNode));
 }
 
 void UActionExecutor::AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode) { AddComponentToMap(Cast<UUnitActionComponent>(TargetComponent), StartNode); }
