@@ -86,6 +86,11 @@ public:
 	int CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
+	int CreateSubNode_Hit(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, const FHitResult& Hit);
+	int CreateSubNode_Hit_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, const FHitResult& Hit);
+
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void EndAllSubNodes(const FActionCursorFinder& WantCursor);
 	void EndAllSubNodes_Implementation(const FActionCursorFinder& WantCursor);
 

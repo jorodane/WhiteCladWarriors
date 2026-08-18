@@ -83,6 +83,15 @@ int UActionNode::CreateSubNode_Implementation(const FActionCursorFinder& WantCur
 	return index;
 }
 
+int UActionNode::CreateSubNode_Hit_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, const FHitResult& Hit)
+{
+	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
+	if (!IsValid(Executor)) return -1;
+	int index;
+	Executor->CreateSubNode_Hit(WantCursor, this, TargetNode, Hit, index);
+	return index;
+}
+
 void UActionNode::EndAllSubNodes_Implementation(const FActionCursorFinder& WantCursor)
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);

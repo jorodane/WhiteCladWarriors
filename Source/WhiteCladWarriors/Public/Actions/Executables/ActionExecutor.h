@@ -85,11 +85,27 @@ struct FActiveNodeMap
 
 	inline UActionNode* GetNode(int ID);
 	template< std::derived_from<FActiveNodeInfo> T>
-	inline T* GetInfo(int ID);
+	T* GetInfo(int ID)
+	{
+		if (NodeMap.IsEmpty()) return nullptr;
+		if (TInstancedStruct<FActiveNodeInfo>* Result = NodeMap.Find(ID)) return Result->GetMutablePtr<T>();
+		else return nullptr;
+	}
 	inline FActiveNodeInfo* GetMainInfo() { return GetInfo<FActiveNodeInfo>(0); }
 
 	template< std::derived_from<FActiveNodeInfo> T>
-	inline T& SetNode(UActionNode* TargetNode, int ID);
+	T& SetNode(UActionNode* TargetNode, int ID)
+	{
+		T* Info = GetInfo<T>(ID);
+		if (Info == nullptr)
+		{
+			TInstancedStruct<FActiveNodeInfo>& Instance = NodeMap.FindOrAdd(ID);
+			Instance.InitializeAs<T>();
+			Info = Instance.GetMutablePtr<T>();
+		}
+		Info->SetNode(TargetNode);
+		return *Info;
+	}
 
 	void InvokeEndEvent(int ID, bool bIsCanceled);
 	inline void RemoveID(int ID);
@@ -229,11 +245,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	UActionNode* CreateSubNode_Hit(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	UActionNode* CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
 
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+	UActionNode* CreateSubNode_Hit(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID);
 	UActionNode* CreateSubNodeWithEvent(FActionCursorFinder BaseCursor,FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
 
 
@@ -280,6 +299,16 @@ public:
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
 	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);
+	template< std::derived_from<FActiveNodeInfo> T>
+	T* GetNodeInfo(const FActionCursorFinder& Cursor)
+	{
+		if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
+		else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(Cursor.CurrentComponent))
+		{
+			return ComponentInfo->GetInfo<T>(Cursor.CurrentID);
+		}
+		else return nullptr;
+	}
 
 	bool SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded);
 
