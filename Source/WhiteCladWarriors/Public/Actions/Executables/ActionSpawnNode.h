@@ -19,4 +19,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Spawn")
 	void InstanceRegistration(AActor* Instance, const FActionCursorFinder& BaseCursor);
 	void InstanceRegistration_Implementation(AActor* Instance, const FActionCursorFinder& BaseCursor);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Spawn")
+	void InstanceCreated(AActor* Instance, const FActionCursorFinder& BaseCursor);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Spawn")
+	void InstanceDestroyed(AActor* Instance, const FActionCursorFinder& BaseCursor);
 };

@@ -335,24 +335,21 @@ UActionNode* UActionExecutor::InitiateSubNode(FActionCursorFinder& BaseCursor, F
 
 UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
-	FActiveNodeMap* CurrentNodeMap = GetNodeMap(BaseCursor.CurrentComponent);
-	if (CurrentNodeMap) return CreateSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
-	return nullptr;
+	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent);
+	return CreateSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
 }
 
 UActionNode* UActionExecutor::CreateSubNode_Hit(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID)
 {
-	FActiveNodeMap* CurrentNodeMap = GetNodeMap(BaseCursor.CurrentComponent);
-	if (CurrentNodeMap) return CreateSubNode_Hit(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, Hit, ResultID);
-	return nullptr;
+	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent);
+	return CreateSubNode_Hit(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, Hit, ResultID);
 }
 
 
 UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
 {
-	FActiveNodeMap* CurrentNodeMap = GetNodeMap(BaseCursor.CurrentComponent);
-	if (CurrentNodeMap) return CreateSubNodeWithEvent(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID, OnNodeEnded);
-	return nullptr;
+	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent);
+	return CreateSubNodeWithEvent(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID, OnNodeEnded);
 }
 
 UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
@@ -526,6 +523,22 @@ FActiveNodeMap* UActionExecutor::GetNodeMap(UUnitActionComponent* TargetComponen
 	if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
 	else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
 	else return nullptr;
+}
+
+FActiveNodeMap* UActionExecutor::AddNodeMap(UUnitActionComponent* TargetComponent)
+{
+	if (&CursorMap == nullptr) return nullptr;
+	return &CursorMap.Add(TargetComponent);
+}
+
+FActiveNodeMap* UActionExecutor::GetOrAddNodeMap(UUnitActionComponent* TargetComponent)
+{
+	if (&CursorMap == nullptr) return nullptr;
+	FActiveNodeMap* Result;
+	if (CursorMap.IsEmpty()) Result = nullptr;
+	else Result = CursorMap.Find(TargetComponent);
+	if (Result == nullptr) Result = &CursorMap.Add(TargetComponent);
+	return Result;
 }
 
 bool UActionExecutor::SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded)

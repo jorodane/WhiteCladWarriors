@@ -299,6 +299,9 @@ public:
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
 	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);
+	FActiveNodeMap* AddNodeMap(UUnitActionComponent* TargetComponent);
+	FActiveNodeMap* GetOrAddNodeMap(UUnitActionComponent* TargetComponent);
+
 	template< std::derived_from<FActiveNodeInfo> T>
 	T* GetNodeInfo(const FActionCursorFinder& Cursor)
 	{
