@@ -285,6 +285,13 @@ AActor* UActorClaimer_HitActor::GetActor(const FActionCursorFinder& WantCursor, 
 	return HitResult->GetActor();
 }
 
+AActor* UActorClaimer_TriggerActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+{
+	if (IsValid(WantCursor.ClaimActor)) return WantCursor.ClaimActor;
+	else if (IsValid(WantCursor.CurrentComponent)) return WantCursor.CurrentComponent->GetOwner();
+	return nullptr;
+}
+
 TArray<AActor*> UActorArrayClaimer::GetActorArray(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromCursor(WantCursor);
@@ -369,4 +376,5 @@ void UValueClaimerLibrary::InitSample()
 
 	SelfActor = NewObject<UActorClaimer_SelfActor>(this, TEXT("SelfActor"));
 	HitActor = NewObject<UActorClaimer_HitActor>(this, TEXT("HitActor"));
+	TriggerActor = NewObject<UActorClaimer_TriggerActor>(this, TEXT("TriggerActor"));
 }

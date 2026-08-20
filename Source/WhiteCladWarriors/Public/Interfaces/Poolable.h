@@ -33,6 +33,6 @@ public:
 	virtual void OnPoolDequeue_Implementation(UPoolComponent* DequeueFrom) {}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Pool")
-	void ClaimPoolEnqueue();
-	virtual void ClaimPoolEnqueue_Implementation() {}
+	bool ClaimPoolEnqueue();
+	virtual bool ClaimPoolEnqueue_Implementation() { return false; }
 };

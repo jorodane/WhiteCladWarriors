@@ -74,8 +74,7 @@ protected:
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	void TickAttack(float DeltaTime);
-	void TickAttack_Implementation
-(float DeltaTime);
+	void TickAttack_Implementation(float DeltaTime);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Attack")
 	bool TickFindTarget(float DeltaSeconds);
@@ -200,6 +199,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
 	void MoveToLocation(FVector WantLocation);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
+	void MoveStop();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Attack")
 	void MoveToTarget(AActor* WantTarget);

@@ -105,18 +105,18 @@ void FActiveNodeMap::BroadcastMessage_Simple(const FActionCursorFinder& Cursor, 
 void FActiveNodeMap::BroadcastMessage_Detail(const FActionCursorFinder& Cursor, FName Message, const FName& Context)
 {
 	BroadcastFunction(Cursor,
-		[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
-		{
-			CurrentNode->OnActionMessage_Detail(NewCursor, Message, Context);
-		});
+	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+	{
+		CurrentNode->OnActionMessage_Detail(NewCursor, Message, Context);
+	});
 }
 void FActiveNodeMap::BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted)
 {
 	BroadcastFunction(Cursor,
-		[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
-		{
-			CurrentNode->OnActionMessage_Montage(NewCursor, Montage, bIsStart, bIsInterrupted);
-		});
+	[=](UActionNode* CurrentNode, const FActionCursorFinder& NewCursor)->void
+	{
+		CurrentNode->OnActionMessage_Montage(NewCursor, Montage, bIsStart, bIsInterrupted);
+	});
 }
 
 
@@ -520,20 +520,18 @@ FActionCursorFinder UActionExecutor::CreateCursorFinder(UUnitActionComponent* Ta
 
 FActiveNodeMap* UActionExecutor::GetNodeMap(UUnitActionComponent* TargetComponent)
 {
-	if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
+	if (CursorMap.IsEmpty()) return nullptr;
 	else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(TargetComponent)) { return ComponentInfo; }
 	else return nullptr;
 }
 
 FActiveNodeMap* UActionExecutor::AddNodeMap(UUnitActionComponent* TargetComponent)
 {
-	if (&CursorMap == nullptr) return nullptr;
 	return &CursorMap.Add(TargetComponent);
 }
 
 FActiveNodeMap* UActionExecutor::GetOrAddNodeMap(UUnitActionComponent* TargetComponent)
 {
-	if (&CursorMap == nullptr) return nullptr;
 	FActiveNodeMap* Result;
 	if (CursorMap.IsEmpty()) Result = nullptr;
 	else Result = CursorMap.Find(TargetComponent);
@@ -611,8 +609,6 @@ TWeakObjectPtr<UActionExecutor> UActionExecutor::CreateExecutor(AActionBase* Tar
 		Result->AddComponentToMap(CurrentComponent, StartNode);
 	}
 	return Result;
-
-	return nullptr;
 }
 
 void UActionExecutor::DestroyExecutor(UActionExecutor* TargetExecutor)

@@ -250,6 +250,7 @@ void UUnitAttackComponent::OnAttackTargetCompleted_Implementation()
         }
         else
         {
+            MoveStop();
             CurrentAttackMode = EAttackMode::Idle;
         }
         break;
@@ -293,7 +294,7 @@ void UUnitAttackComponent::OnUnitDamaged_Implementation(UUnitMainComponent* Targ
 {
     if (!IsValid(TargetUnit)) return;
     if (!IsValid(DamageInfo.DamageInstigator)) return;
-    if (TargetUnit->HasMainAction()) return;
+    if (OwnerUnit->HasMainAction()) return;
 
     OnDamageReaction(TargetUnit, DamageInfo);
 }
@@ -303,7 +304,13 @@ void UUnitAttackComponent::OnDamageReaction_Implementation(UUnitMainComponent* T
     if (!bShouldCounter) return;
 
     AActor* DamageInstigator = nullptr;
-    if (IsValid(DamageInfo.DamageInstigator)) DamageInstigator = DamageInfo.DamageInstigator->GetOwner();
+    UUnitMainComponent* CauseUnit = DamageInfo.DamageInstigator;
+
+    if (IsValid(CauseUnit))
+    {
+        if (CauseUnit->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && IDamageable::Execute_GetIsDie(CauseUnit)) return;
+        DamageInstigator = CauseUnit->GetOwner();
+    }
     else if (IsValid(DamageInfo.DamageCauser))
     {
         DamageInstigator = DamageInfo.DamageCauser->GetOwner();
@@ -417,7 +424,7 @@ void UUnitAttackComponent::SetChaseLockTimeNow_Implementation()
 }
 bool UUnitAttackComponent::GetChaseLocked_Implementation()
 {
-    return AMapSetting::GetCurrentWorldTime() < ChaseLockTime;
+    return OwnerUnit->HasMainAction() && AMapSetting::GetCurrentWorldTime() < ChaseLockTime;
 }
 
 
