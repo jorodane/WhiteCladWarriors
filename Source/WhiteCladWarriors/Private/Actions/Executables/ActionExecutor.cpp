@@ -285,8 +285,8 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 
 	if (WantCursor.CheckIsMainNode())
 	{
-		const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->Settings.bIsMainAction : false;
-		const bool bIsMainAction = IsValid(TargetNode) ? TargetNode->Settings.bIsMainAction : false;
+		const bool bWasMainAction = IsValid(OriginNode) ? OriginNode->GetIsMainAction() : false;
+		const bool bIsMainAction = IsValid(TargetNode) ? TargetNode->GetIsMainAction() : false;
 
 		const bool bExitMainLine = !bIsMainAction && bWasMainAction;
 		const bool bEnterMainLine = bIsMainAction && !bWasMainAction;
@@ -387,7 +387,7 @@ void UActionExecutor::EndNode(const FActionCursorFinder& WantCursor, UActionNode
 	UUnitActionComponent* TargetComponent = WantCursor.CurrentComponent;
 	int ID = WantCursor.CurrentID;
 	if (!IsValid(TargetComponent)) return;
-	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->Settings.bIsMainAction) TargetComponent->EndMainAction(ExecutorID, TargetComponent);
+	if (WantCursor.CheckIsMainNode() && IsValid(OldNode) && OldNode->GetIsMainAction()) TargetComponent->EndMainAction(ExecutorID, TargetComponent);
 	FActiveNodeMap* CursorFinder = GetNodeMap(TargetComponent);
 
 	if (CursorFinder)

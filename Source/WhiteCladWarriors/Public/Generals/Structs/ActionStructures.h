@@ -100,7 +100,7 @@ public:
 	bool bIsStopMovementOnStart = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
-	bool bIsStopActionMontageOnStart = true;
+	bool bIsStopActionMontageOnStart = false;
 
 public:
 	void Clear() 
@@ -108,7 +108,7 @@ public:
 		bIsMainAction = false;
 		bIsCancelable = true;
 		bIsStopMovementOnStart = false;
-		bIsStopActionMontageOnStart = true;
+		bIsStopActionMontageOnStart = false;
 	}
 };
 

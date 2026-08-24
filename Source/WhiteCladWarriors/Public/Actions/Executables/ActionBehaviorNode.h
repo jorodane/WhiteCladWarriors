@@ -19,6 +19,11 @@ UCLASS()
 class WHITECLADWARRIORS_API UActionBehaviorNode : public UActionNode
 {
 	GENERATED_BODY()
+
+
+public:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	FActionExecuteSettingContainer Settings;
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
@@ -30,4 +35,10 @@ public:
 
 	UFUNCTION(BlueprintPure, BlueprintImplementableEvent, Category = "Indicator")
 	void UpdateIndicatorSingle(UActionBehaviorNode* TargetNode, const FInputClaim& TargetInput, const FInputPackage& InputPackage, UUnitActionComponent* TargetComponent, AActionIndicatorShowerBase* TargetShower, UUnitMainComponent* TargetUnit, int Index, bool bIsIconPreview);
+
+public:
+	virtual bool GetCanEnter_Implementation(const FActionCursorFinder& WantCursor) override;
+	virtual bool GetIsMainAction_Implementation() override { return GetExecuteSetting_Implementation().bIsMainAction; }
+	virtual const FActionExecuteSettingContainer GetExecuteSetting_Implementation() override { return Settings; };
+
 };

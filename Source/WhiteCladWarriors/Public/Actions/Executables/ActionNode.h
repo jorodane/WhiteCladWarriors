@@ -32,6 +32,9 @@ class WHITECLADWARRIORS_API UActionNode : public UObject
 	GENERATED_BODY()
 
 public:
+	static const FActionExecuteSettingContainer DefaultExecuteSetting;
+
+public:
 	UPROPERTY(BlueprintReadWrite, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UActionNode> NextNode;
 
@@ -43,14 +46,19 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TMap<FName, FLinkedNodeInfo> LinkedNodes;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
-	FActionExecuteSettingContainer Settings;
 	
 public:
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Indicator")
 	float GetPercent(const FActionCursorFinder& Cursor);
 	float GetPercent_Implementation(const FActionCursorFinder& Cursor) { return 0.0f; }
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
+	bool GetIsMainAction();
+	virtual bool GetIsMainAction_Implementation() { return false; };
+
+	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
+	const FActionExecuteSettingContainer GetExecuteSetting();
+	virtual const FActionExecuteSettingContainer GetExecuteSetting_Implementation() { return DefaultExecuteSetting; };
 
 	UFUNCTION(BlueprintPure, BlueprintNativeEvent, Category = "Action")
 	bool GetCanEnter(const FActionCursorFinder& WantCursor);

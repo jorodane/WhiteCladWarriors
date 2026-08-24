@@ -24,12 +24,13 @@ bool UActionSelectorNode::CancelInput(const FActionCursorFinder& WantCursor)
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return true;
-	if (Settings.bIsCancelable)
+	if (bCanCancelInput)
 	{
-		OnCancelInput(WantCursor);
+		bool Result = OnCancelInput(WantCursor);
 		Executor->EnterNode(WantCursor, CanceledNode, true);
+		return Result;
 	}
-	return Settings.bIsCancelable;
+	return false;
 }
 
 bool UActionSelectorNode::ReceiveInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input)

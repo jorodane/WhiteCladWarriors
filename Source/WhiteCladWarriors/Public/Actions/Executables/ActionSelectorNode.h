@@ -30,6 +30,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TArray<UActionBehaviorNode*> IndicatorNodes;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
+	bool bCanCancelInput;
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 	bool OnReceiveInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input);

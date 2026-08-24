@@ -5,9 +5,12 @@
 #include "Actions/Executables/ActionExecutor.h"
 #include "Objects/Selectables/Components/UnitActionComponent.h"
 
+const FActionExecuteSettingContainer UActionNode::DefaultExecuteSetting;
+
+
 bool UActionNode::GetCanEnter_Implementation(const FActionCursorFinder& WantCursor)
 {
-	return !(Settings.bIsMainAction && !WantCursor.CurrentComponent->GetMainActionCancelable());
+	return true;
 }
 
 void UActionNode::AddNodeLink_Implementation(FName ResultName, const FLinkedNodeInfo& Destination)

@@ -20,3 +20,8 @@ void UActionBehaviorNode::UpdateIndicatorArray_Implementation(UActionBehaviorNod
 		UpdateIndicatorSingle(TargetNode, TargetInput, InputPackage, CurrentComponent, CurrentShower, CurrentUnit, i, bIsIconPreview);
 	}
 }
+
+bool UActionBehaviorNode::GetCanEnter_Implementation(const FActionCursorFinder& WantCursor)
+{
+	return !(Settings.bIsMainAction && !WantCursor.CurrentComponent->GetMainActionCancelable());
+}

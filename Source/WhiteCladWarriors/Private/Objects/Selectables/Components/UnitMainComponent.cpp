@@ -397,7 +397,7 @@ bool UUnitMainComponent::SetMainAction(const FActionCursorFinder& WantCursor, UA
 	bool Result = GetMainActionExecutable() && MainAction.Interrupt(WantCursor, WantNode);
 	if (Result)
 	{
-		const FActionExecuteSettingContainer& Settings = WantNode->Settings;
+		const FActionExecuteSettingContainer& Settings = WantNode->GetExecuteSetting();
 		if(Settings.bIsStopMovementOnStart) ClaimStopMovement();
 		MainAction.Set(WantCursor, Settings);
 		OnMainActionChanged.Broadcast(MainAction, true);
