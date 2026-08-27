@@ -59,6 +59,18 @@ struct FActionCursorFinder
 	void Set(AActionBase* WantAction, AOperator* WantOperator, int64 WantExecutorID, UUnitActionComponent* WantComponent, int WantID, bool bWantSubNode);
 
 	void Clear();
+
+	inline bool operator==(const FActionCursorFinder& Other) const { return CurrentID == Other.CurrentID && CurrentExecutorID == Other.CurrentExecutorID && CurrentComponent == Other.CurrentComponent;}
+	inline bool operator!=(const FActionCursorFinder& Other) const { return !(*this == Other); }
+
+	friend uint32 GetTypeHash(const FActionCursorFinder& Finder)
+	{
+		uint32 Hash = GetTypeHash(Finder.CurrentID);
+		Hash = HashCombine(Hash, GetTypeHash(Finder.CurrentExecutorID));
+		Hash = HashCombine(Hash, GetTypeHash(Finder.CurrentComponent));
+
+		return Hash;
+	}
 };
 
 
