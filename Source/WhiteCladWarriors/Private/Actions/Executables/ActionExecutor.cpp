@@ -242,10 +242,10 @@ FExecutorValueMap& UActionExecutor::GetValueMap(const FActionCursorFinder& WantC
 	try
 	{
 		FActiveNodeMap* NodeMap = GetNodeMap(WantCursor.CurrentComponent);
-		if (NodeMap == nullptr) throw;
+		if (NodeMap == nullptr) throw false;
 		FExecutorValueMap* ValueMap = NodeMap->GetValueMap(WantCursor.CurrentID);
 		bIsValid = ValueMap != nullptr;
-		if (!bIsValid) throw;
+		if (!bIsValid) throw false;
 
 		return *ValueMap;
 	}
@@ -354,9 +354,12 @@ UActionNode* UActionExecutor::InitiateSubNode(FActionCursorFinder& BaseCursor, F
 {
 	UActionNode* Result = TargetInfo.GetNode(ResultID);
 	if (!Result) return nullptr;
-	BaseCursor.CurrentID = ResultID;
-	BaseCursor.bAsSubNode = true;
-	EnterNode(BaseCursor, TargetNode, true);
+	FActionCursorFinder NewCursor = BaseCursor;
+	NewCursor.CurrentID = ResultID;
+	NewCursor.bAsSubNode = true;
+	FExecutorValueMap* OriginValueMap = TargetInfo.GetValueMap(BaseCursor.CurrentID);
+	if (OriginValueMap) TargetInfo.ValueMap.Add(ResultID, *OriginValueMap);
+	EnterNode(NewCursor, TargetNode, true);
 	return Result;
 }
 
@@ -693,7 +696,6 @@ FExecutorValueMap& UActionExecutor::GetValueMapFromCursor(const FActionCursorFin
 		bIsValid = false;
 		return FExecutorValueMap::GarbageValueMap;
 	}
-	bIsValid = true;
 	return Executor->GetValueMap(WantCursor, bIsValid);
 }
 
