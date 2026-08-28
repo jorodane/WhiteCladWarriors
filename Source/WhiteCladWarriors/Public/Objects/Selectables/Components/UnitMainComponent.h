@@ -12,6 +12,7 @@
 #include "Styling/SlateBrush.h"
 #include "Interfaces/Damageable.h"
 #include "Interfaces/Selectable.h"
+#include "Interfaces/Stoppable.h"
 #include "Interfaces/InfoConnectable.h"
 #include "Interfaces/PlayerConnectable.h"
 #include "UnitMainComponent.generated.h"
@@ -82,7 +83,7 @@ enum class EUnitControlledType : uint8
 };
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitActionComponent, public ISelectable, public IDamageable, public IPlayerConnectable
+class WHITECLADWARRIORS_API UUnitMainComponent : public UUnitActionComponent, public ISelectable, public IStoppable, public IDamageable, public IPlayerConnectable
 {
 	GENERATED_BODY()
 
@@ -382,6 +383,8 @@ public:
 	virtual FText GetSelectedName_Implementation() { return SelectedName; }
 	virtual TArray<UOrderedGenericWidgetClaim*> GetInfoWidget_Implementation(EInfoWidgetType WantType, AOperator* Operator) const;
 
+	virtual void SetStop_Implementation() override;
+
 	virtual float TakeDamage_Implementation(const FDamageInfo& Info, bool& bIsKill);
 	virtual bool GetIsAttackable_Implementation(UUnitMainComponent* From);
 	virtual bool GetIsDamageable_Implementation(UUnitMainComponent* From);
@@ -391,6 +394,7 @@ public:
 	virtual void OnPlayerConnected_Implementation(AIngameController* NewPlayer);
 	virtual void OnPlayerDisconnected_Implementation(AIngameController* OldPlayer);
 	virtual AIngameController* GetConnectedPlayerController_Implementation() { return PlayerController; }
+
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Unit")

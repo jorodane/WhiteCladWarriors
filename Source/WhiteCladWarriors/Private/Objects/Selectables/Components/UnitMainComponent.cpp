@@ -699,6 +699,20 @@ TArray<UOrderedGenericWidgetClaim*> UUnitMainComponent::GetInfoWidget_Implementa
 	return Result;
 }
 
+void UUnitMainComponent::SetStop_Implementation()
+{
+	if (StopMainAction())
+	{
+		StopMainActionMontage(true);
+
+		for (UUnitComponentBase* CurrentComponent : GetComponents())
+		{
+			if (!IsValid(CurrentComponent)) continue;
+			if (!CurrentComponent->GetClass()->ImplementsInterface(UStoppable::StaticClass())) continue;
+			IStoppable::Execute_SetStop(CurrentComponent);
+		}
+	}
+}
 
 float UUnitMainComponent::TakeDamage_Implementation(const FDamageInfo& Info, bool& bIsKill)
 {

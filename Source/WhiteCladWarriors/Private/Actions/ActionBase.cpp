@@ -55,7 +55,6 @@ bool AActionBase::IsNeedInputForStartCheck() const
 
 bool AActionBase::IsValidInputForStart(const FInputPackage& Input, AOperator* Operator, const TArray<UUnitActionComponent*>& TargetComponent, TArray<bool>& ResultEachComponent, EInputType& TypeResult, FText& ReasonResult)
 {
-	
 	int amount = TargetComponent.Num();
 	int index = 0;
 	bool Result = false;
