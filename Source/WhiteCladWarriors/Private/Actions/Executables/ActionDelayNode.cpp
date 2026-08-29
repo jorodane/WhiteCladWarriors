@@ -14,22 +14,18 @@ void UActionDelayNode::StartTimer(const FActionCursorFinder& BaseCursor, float W
         return;
     }
     FDelayInfo& CreatedDelay = TimerList.Add(BaseCursor);
-    CreatedDelay.CurrentRepeateCount = 0;
+    CreatedDelay.CurrentRepeatCount = 0;
     CreatedDelay.MaxRepeatCount = RepeatCount;
+    CreatedDelay.Interval = WantTime;
     if (WantTime <= 0.0f)
     {
         OnStartTimer(BaseCursor);
-        for (int i = 0; i < RepeatCount; i++) ActivateTimer(BaseCursor);
-        OnFinishTimer(BaseCursor);
+        for (int i = 0; i < RepeatCount; ++i) ActivateTimerNative(BaseCursor, CreatedDelay);
         return;
     }
-    FTimerHandle TimerHandle;
-    FTimerDelegate TimerDelegate;
-    FActionCursorFinder ClaimCursor = BaseCursor;
+    FTimerDelegate& TimerDelegate = CreatedDelay.Delegate;
     TimerDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UActionDelayNode, ActivateTimer), BaseCursor);
-
-    World->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, WantTime, false);
-    CreatedDelay.Handle = TimerHandle;
+    World->GetTimerManager().SetTimer(CreatedDelay.Handle, TimerDelegate, WantTime, RepeatCount > 1);
     OnStartTimer(BaseCursor);
 }
 
@@ -45,14 +41,34 @@ void UActionDelayNode::CancelTimer(const FActionCursorFinder& BaseCursor)
 
 void UActionDelayNode::FinishTimer(const FActionCursorFinder& BaseCursor)
 {
-    if (TimerList.Remove(BaseCursor) <= 0) return;
+    FDelayInfo* DelayInfo = TimerList.Find(BaseCursor);
+    if (!DelayInfo) return;
+    FinishTimerNative(BaseCursor, *DelayInfo);
+}
+
+void UActionDelayNode::FinishTimerNative(const FActionCursorFinder& BaseCursor, FDelayInfo& Info)
+{
     OnFinishTimer(BaseCursor);
+    if (UWorld* World = GetWorld()) World->GetTimerManager().ClearTimer(Info.Handle);
     TimerList.Remove(BaseCursor);
 }
 
 void UActionDelayNode::ActivateTimer(const FActionCursorFinder& BaseCursor)
 {
+    FDelayInfo* DelayInfo = TimerList.Find(BaseCursor);
+    if (!DelayInfo) return;
+    ActivateTimerNative(BaseCursor, *DelayInfo);
+}
 
+void UActionDelayNode::ActivateTimerNative(const FActionCursorFinder& BaseCursor, FDelayInfo& Info)
+{
+    if (Info.CurrentRepeatCount <= Info.MaxRepeatCount)
+    {
+        OnActivated(BaseCursor, Info.CurrentRepeatCount, Info.MaxRepeatCount);
+        ++Info.CurrentRepeatCount;
+    }
+
+    if(Info.CurrentRepeatCount >= Info.MaxRepeatCount) FinishTimerNative(BaseCursor, Info);
 }
 
 void UActionDelayNode::ClearAll()

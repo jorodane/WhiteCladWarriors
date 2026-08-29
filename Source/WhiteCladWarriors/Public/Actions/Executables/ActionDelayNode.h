@@ -13,9 +13,13 @@ struct FDelayInfo
 	GENERATED_BODY()
 
 	FTimerHandle Handle;
+	FTimerDelegate Delegate;
 
 	UPROPERTY(BlueprintReadOnly, Category = "ActionDelay")
-	int CurrentRepeateCount = 0;
+	float Interval = 0.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "ActionDelay")
+	int CurrentRepeatCount = 0;
 
 	UPROPERTY(BlueprintReadOnly, Category = "ActionDelay")
 	int MaxRepeatCount = 1;
@@ -48,11 +52,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ActionDelay")
 	void FinishTimer(const FActionCursorFinder& BaseCursor);
+	void FinishTimerNative(const FActionCursorFinder& BaseCursor, FDelayInfo& Info);
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "ActionDelay")
 	void OnFinishTimer(const FActionCursorFinder& BaseCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "ActionDelay")
 	void ActivateTimer(const FActionCursorFinder& BaseCursor);
+
+	void ActivateTimerNative(const FActionCursorFinder& BaseCursor, FDelayInfo& Info);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "ActionDelay")
 	void OnActivated(const FActionCursorFinder& BaseCursor, int CurrentIndex, int MaxCount);
