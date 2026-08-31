@@ -40,7 +40,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ActionDelay")
 	void StartTimer(const FActionCursorFinder& BaseCursor, float WantTime, int RepeatCount = 1);
 	UFUNCTION(BlueprintImplementableEvent, Category = "ActionDelay")
-	void OnStartTimer(const FActionCursorFinder& BaseCursor);
+	void OnStartTimer(const FActionCursorFinder& BaseCursor, int MaxCount);
 
 	UFUNCTION(BlueprintCallable, Category = "ActionDelay")
 	void CancelTimer(const FActionCursorFinder& BaseCursor);

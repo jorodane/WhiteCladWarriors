@@ -19,14 +19,14 @@ void UActionDelayNode::StartTimer(const FActionCursorFinder& BaseCursor, float W
     CreatedDelay.Interval = WantTime;
     if (WantTime <= 0.0f)
     {
-        OnStartTimer(BaseCursor);
+        OnStartTimer(BaseCursor, RepeatCount);
         for (int i = 0; i < RepeatCount; ++i) ActivateTimerNative(BaseCursor, CreatedDelay);
         return;
     }
     FTimerDelegate& TimerDelegate = CreatedDelay.Delegate;
     TimerDelegate.BindUFunction(this, GET_FUNCTION_NAME_CHECKED(UActionDelayNode, ActivateTimer), BaseCursor);
     World->GetTimerManager().SetTimer(CreatedDelay.Handle, TimerDelegate, WantTime, RepeatCount > 1);
-    OnStartTimer(BaseCursor);
+    OnStartTimer(BaseCursor, RepeatCount);
 }
 
 void UActionDelayNode::CancelTimer(const FActionCursorFinder& BaseCursor)
