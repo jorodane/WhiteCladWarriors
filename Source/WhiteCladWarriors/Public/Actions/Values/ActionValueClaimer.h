@@ -15,7 +15,7 @@ class UUnitActionComponent;
 /**
  * 
  */
-UCLASS(Abstract, BlueprintType)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class UFloatGetter : public UObject
 {
 	GENERATED_BODY()
@@ -28,7 +28,7 @@ public:
 	virtual float GetValue() const { return Value; }
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UFloatGetter_Simple : public UFloatGetter
 {
 	GENERATED_BODY()
@@ -43,7 +43,7 @@ public:
 	virtual float GetValue() const override { return Value; }
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UFloatGetter_Random : public UFloatGetter
 {
 	GENERATED_BODY()
@@ -60,7 +60,7 @@ public:
 	virtual float GetValue() const override { return FMath::RandRange(Value, MaxValue); }
 };
 
-UCLASS(Abstract, BlueprintType)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class UVectorGetter : public UObject
 {
 	GENERATED_BODY()
@@ -73,7 +73,7 @@ public:
 	virtual FVector GetValue() const { return Value; }
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UVectorGetter_Simple : public UVectorGetter
 {
 	GENERATED_BODY()
@@ -88,7 +88,7 @@ public:
 	virtual FVector GetValue() const override { return Value; }
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UVectorGetter_Random : public UVectorGetter
 {
 	GENERATED_BODY()
@@ -113,7 +113,7 @@ public:
 	}
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UVectorGetter_RandomSphere : public UVectorGetter
 {
 	GENERATED_BODY()
@@ -236,11 +236,10 @@ public:
 
 
 
+UENUM(Blueprintable, BlueprintType)
+enum class EPositionSpaceType : uint8 { Self, World };
 
-
-
-
-UCLASS(BlueprintType)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class UValueClaimer : public UObject
 {
 	GENERATED_BODY()
@@ -249,10 +248,39 @@ public:
 	static const FHitResult* GetHitResult(const FActionCursorFinder& WantCursor);
 };
 
-UENUM(BlueprintType)
-enum class EPositionSpaceType : uint8 { Self, World };
 
-UCLASS(BlueprintType)
+UCLASS(Abstract, Blueprintable, BlueprintType)
+class UFloatClaimer : public UValueClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Value")
+	virtual float GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const;
+};
+
+
+UCLASS(Blueprintable, BlueprintType)
+class UFloatClaimer_SimpleFloat : public UFloatClaimer
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
+	TObjectPtr<UFloatGetter> Value;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void Set(UFloatGetter* WantValue)
+	{
+		Value = WantValue;
+	}
+
+	virtual float GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const override;
+};
+
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
@@ -261,7 +289,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	EPositionSpaceType AdditiveSpace;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
 	TObjectPtr<UVectorGetter> AdditivePosition;
 
 public:
@@ -273,19 +301,41 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const;
 
 	UFUNCTION(BlueprintPure, Category = "Value")
 	FVector GetAdditivePosition(const UUnitActionComponent* Component) const;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
+class UPositionClaimer_SimplePosition : public UPositionClaimer
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
+	UVectorGetter* TargetPosition;
+
+public:
+	void Set(UVectorGetter* WantPosition, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		TargetPosition = WantPosition;
+		AdditiveSpace = WantAdditiveSpace;
+		AdditivePosition = WantAdditivePosition;
+	}
+
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
+};
+
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_AveragePosition : public UPositionClaimer
 {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
 	UPositionClaimer* PositionLeft;
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
 	UPositionClaimer* PositionRight;
 
 public:
@@ -297,17 +347,20 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_CombinePosition : public UPositionClaimer
 {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
 	UPositionClaimer* PositionX;
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
 	UPositionClaimer* PositionY;
+	UPROPERTY(BlueprintReadWrite, Category = "Value")
 	UPositionClaimer* PositionZ;
 
 public:
@@ -320,19 +373,19 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_SelfPosition : public UPositionClaimer
 {
 	GENERATED_BODY()
 
 public:
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_HitPosition : public UPositionClaimer
 {
 	GENERATED_BODY()
@@ -344,10 +397,10 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_SavedPosition : public UPositionClaimer
 {
 	GENERATED_BODY()
@@ -364,10 +417,10 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_ActorPosition : public UPositionClaimer
 {
 	GENERATED_BODY()
@@ -384,19 +437,19 @@ public:
 		AdditivePosition = WantAdditivePosition;
 	}
 
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UPositionClaimer_SocketPosition : public UPositionClaimer_SavedPosition
 {
 	GENERATED_BODY()
 
 public:
-	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
+	virtual FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
 };
 
-UCLASS(Abstract, BlueprintType)
+UCLASS(Abstract, Blueprintable, BlueprintType)
 class UDirectionClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
@@ -406,22 +459,22 @@ public:
 	TObjectPtr<UFloatGetter> AngleShift;
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual FVector GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const;
+	virtual FVector GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const;
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const { return DefaultDirection; }
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const { return DefaultDirection; }
 
 	UFUNCTION(BlueprintPure, Category = "Value")
 	virtual FVector GetShiftedDirection(const FVector& OriginDirection) const;
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const { return DefaultValue; }
+	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const { return DefaultValue; }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const { return DefaultPosition + (DefaultDirection * Radius); }
+	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const { return DefaultPosition + (DefaultDirection * Radius); }
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual FVector GetDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const;
+	virtual FVector GetDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UDirectionClaimer_HitNormal : public UDirectionClaimer
 {
 	GENERATED_BODY()
@@ -434,13 +487,13 @@ public:
 	}
 
 public:
-	virtual FVector GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
-	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
-	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
-	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const override;
+	virtual FVector GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
+	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
+	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UDirectionClaimer_FromPosition : public UDirectionClaimer
 {
 	GENERATED_BODY()
@@ -449,11 +502,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
 	TObjectPtr<UPositionClaimer> From;
 
-	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const override;
-	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const override;
+	virtual FVector GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const override;
+	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UDirectionClaimer_ToPosition : public UDirectionClaimer_FromPosition
 {
 	GENERATED_BODY()
@@ -470,11 +523,11 @@ public:
 		To = WantTo;
 		AngleShift = WantAngleShift;
 	}
-	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
-	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const override { return GetPosition(To, WantCursor, Component, DefaultPosition); }
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
+	virtual FVector GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius = 1.0f) const override { return GetPosition(To, WantCursor, DefaultPosition); }
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UDirectionClaimer_SimpleDirection : public UDirectionClaimer_FromPosition
 {
 	GENERATED_BODY()
@@ -494,14 +547,14 @@ public:
 		DirectionTo = WantDirection;
 		AngleShift = WantAngleShift;
 	}
-	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const override
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const override
 	{
 		if (IsValid(DirectionTo)) return DirectionTo->GetValue();
 		else return DefaultDirection;
 	}
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UDirectionClaimer_SavedDirection : public UDirectionClaimer_FromPosition
 {
 	GENERATED_BODY()
@@ -517,10 +570,10 @@ public:
 		DirectionTag = WantTag;
 		AngleShift = WantAngleShift;
 	}
-	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
+	virtual FVector GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActionClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
@@ -536,39 +589,39 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual AActionBase* GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const;
+	virtual AActionBase* GetAction(const FActionCursorFinder& WantCursor) const;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActionClaimer_UnitTagged : public UActionClaimer
 {
 	GENERATED_BODY()
 
 public:
-	virtual AActionBase* GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
+	virtual AActionBase* GetAction(const FActionCursorFinder& WantCursor) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Value")
-	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const { return nullptr; }
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor) const { return nullptr; }
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorClaimer_SelfActor : public UActorClaimer
 {
 	GENERATED_BODY()
 
 public:
-	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor) const override;
 };
 
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorClaimer_SavedActor : public UActorClaimer
 {
 	GENERATED_BODY()
@@ -583,30 +636,30 @@ public:
 		ActorTag = WantTag;
 	}
 
-	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorClaimer_HitActor : public UActorClaimer
 {
 	GENERATED_BODY()
 
 public:
-	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor) const override;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorClaimer_TriggerActor : public UActorClaimer
 {
 	GENERATED_BODY()
 
 public:
-	virtual AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const override;
+	virtual AActor* GetActor(const FActionCursorFinder& WantCursor) const override;
 };
 
 
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorArrayClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
@@ -622,16 +675,16 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value")
-	TArray<AActor*> GetActorArray(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const;
+	TArray<AActor*> GetActorArray(const FActionCursorFinder& WantCursor) const;
 };
 
-UENUM(BlueprintType)
+UENUM(Blueprintable, BlueprintType)
 enum class EActorPositionResult : uint8
 {
 	Position, Actor
 };
 
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class UActorOrPositionClaimer : public UValueClaimer
 {
 	GENERATED_BODY()
@@ -651,15 +704,15 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	inline FVector GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const { if (IsValid(PositionClaimer)) return PositionClaimer->GetPosition(WantCursor, Component, DefaultValue); return DefaultValue; };
+	inline FVector GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const { if (IsValid(PositionClaimer)) return PositionClaimer->GetPosition(WantCursor, DefaultValue); return DefaultValue; };
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	inline AActor* GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const { if (IsValid(ActorClaimer)) return ActorClaimer->GetActor(WantCursor, Component); return nullptr; };
+	inline AActor* GetActor(const FActionCursorFinder& WantCursor) const { if (IsValid(ActorClaimer)) return ActorClaimer->GetActor(WantCursor); return nullptr; };
 
 	UFUNCTION(BlueprintCallable, Category = "Value", meta = (ExpandEnumAsExecs = "ReturnValue"))
-	EActorPositionResult TryGetActorOrPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, FVector& ResultPosition, AActor*& ResultAsActor, const FVector& DefaultValue) const
+	EActorPositionResult TryGetActorOrPosition(const FActionCursorFinder& WantCursor, FVector& ResultPosition, AActor*& ResultAsActor, const FVector& DefaultValue) const
 	{
-		ResultAsActor = GetActor(WantCursor, Component);
+		ResultAsActor = GetActor(WantCursor);
 		if (ResultAsActor)
 		{
 			ResultPosition = ResultAsActor->GetActorLocation();
@@ -667,7 +720,7 @@ public:
 		}
 		else
 		{
-			ResultPosition = GetPosition(WantCursor, Component, DefaultValue);
+			ResultPosition = GetPosition(WantCursor, DefaultValue);
 			return EActorPositionResult::Position;
 		}
 	}
@@ -745,11 +798,29 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Value")
 	static UActorClaimer_TriggerActor*	 ClaimTriggerActor() { return Get()->TriggerActor; };
 
+
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UFloatClaimer_SimpleFloat* MakeFloatClaimer_SimpleFloat(UObject* Owner, UFloatGetter* Value)
+	{
+		UFloatClaimer_SimpleFloat* Result = NewObject<UFloatClaimer_SimpleFloat>(Owner);
+		if (Result) Result->Set(Value);
+		return Result;
+	}
+
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UPositionClaimer* MakePositionClaimer(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer* Result = NewObject<UPositionClaimer>(Owner);
 		if (Result) Result->Set(WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UPositionClaimer_SimplePosition* MakePositionClaimer_SimplePosition(UObject* Owner, UVectorGetter* TargetPosition, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	{
+		UPositionClaimer_SimplePosition* Result = NewObject<UPositionClaimer_SimplePosition>(Owner);
+		if (Result) Result->Set(TargetPosition, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
 
@@ -806,6 +877,14 @@ public:
 	{
 		UPositionClaimer_HitPosition* Result = NewObject<UPositionClaimer_HitPosition>(Owner);
 		if (Result) Result->Set(WantAdditiveSpace, WantAdditivePosition);
+		return Result;
+	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UDirectionClaimer_SimpleDirection* MakeDirectionClaimer_SimpleDirection(UObject* Owner, UPositionClaimer* WantFrom, UVectorGetter* DefaultDirection, EPositionSpaceType WantAdditiveSpace, UFloatGetter* WantAngleShift)
+	{
+		UDirectionClaimer_SimpleDirection* Result = NewObject<UDirectionClaimer_SimpleDirection>(Owner);
+		if (Result) Result->Set(WantFrom, WantAdditiveSpace, DefaultDirection,WantAngleShift);
 		return Result;
 	}
 

@@ -18,21 +18,21 @@ const FHitResult* UValueClaimer::GetHitResult(const FActionCursorFinder& WantCur
 	return &Info->Hit;
 }
 
-FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+float UFloatClaimer::GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const
 {
-	return GetAdditivePosition(Component);
+	return DefaultValue;
+}
 
-	//FVector Result = DefaultValue;
-	//UActionExecutor* Executor = WantCursor.CurrentExecutor;
+float UFloatClaimer_SimpleFloat::GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const
+{
+	if (!IsValid(Value)) return DefaultValue;
+	return Value->GetValue();
+}
 
-	//case EPositionGetterType::CursorPosition:
-	//{
-	//	if (IsValid(Executor))
-	//	{
-	//		const FInputPackage& LocalInput = Executor->Operator->GetInputPackage();
-	//		Result = LocalInput.MouseTerrainPosition;
-	//	}
-	//}
+
+FVector UPositionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
+{
+	return GetAdditivePosition(WantCursor.CurrentComponent);
 }
 
 FVector UPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Component) const
@@ -56,7 +56,14 @@ FVector UPositionClaimer::GetAdditivePosition(const UUnitActionComponent* Compon
 	return Result;
 }
 
-FVector UPositionClaimer_AveragePosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_SimplePosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
+{
+	FVector Result = IsValid(TargetPosition)? TargetPosition->GetValue() : DefaultValue;
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
+	return Result;
+}
+
+FVector UPositionClaimer_AveragePosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
 
@@ -64,20 +71,20 @@ FVector UPositionClaimer_AveragePosition::GetPosition(const FActionCursorFinder&
 	int SumCount = 0;
 	if (IsValid(PositionLeft))
 	{
-		SumVector+=PositionLeft->GetPosition(WantCursor, Component, DefaultValue);
+		SumVector+=PositionLeft->GetPosition(WantCursor, DefaultValue);
 		++SumCount;
 	}
 	if (IsValid(PositionRight))
 	{
-		SumVector += PositionRight->GetPosition(WantCursor, Component, DefaultValue);
+		SumVector += PositionRight->GetPosition(WantCursor, DefaultValue);
 		++SumCount;
 	}
 	if (SumCount > 0) Result = SumVector / SumCount;
-	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
 
-FVector UPositionClaimer_CombinePosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_CombinePosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
 
@@ -89,94 +96,94 @@ FVector UPositionClaimer_CombinePosition::GetPosition(const FActionCursorFinder&
 	if (SameXY && SameXZ && PositionX == nullptr && ValidX) return Result;
 
 	FVector ResultX = DefaultValue;
-	if (ValidX) ResultX = PositionX->GetPosition(WantCursor, Component, DefaultValue);
+	if (ValidX) ResultX = PositionX->GetPosition(WantCursor, DefaultValue);
 	else		ResultX = DefaultValue;
 	FVector ResultY;
 	if (SameXY) ResultY = ResultX;
-	else if (IsValid(PositionY)) ResultY = PositionY->GetPosition(WantCursor, Component, DefaultValue);
+	else if (IsValid(PositionY)) ResultY = PositionY->GetPosition(WantCursor, DefaultValue);
 	else		ResultY = DefaultValue;
 	FVector ResultZ;
 	if (SameXZ) ResultZ = ResultX;
 	if (SameYZ) ResultZ = ResultY;
-	else if (IsValid(PositionZ)) ResultZ = PositionZ->GetPosition(WantCursor, Component, DefaultValue);
+	else if (IsValid(PositionZ)) ResultZ = PositionZ->GetPosition(WantCursor, DefaultValue);
 	else		ResultZ = DefaultValue;
 
 	Result.X = ResultX.X;
 	Result.Y = ResultY.Y;
 	Result.Z = ResultZ.Z;
 
-	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
 
-FVector UPositionClaimer_SelfPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_SelfPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
 	UUnitMainComponent* ResultUnit;
-	if (IsValid(Component) && Component->TryGetOwnerUnit(ResultUnit)) Result = ResultUnit->GetOwner()->GetActorLocation();
-	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	if (IsValid(WantCursor.CurrentComponent) && WantCursor.CurrentComponent->TryGetOwnerUnit(ResultUnit)) Result = ResultUnit->GetOwner()->GetActorLocation();
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
 
-FVector UPositionClaimer_HitPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_HitPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
 	if (HitResult == nullptr) return DefaultValue;
 	return HitResult->Location;
 }
 
-FVector UPositionClaimer_SavedPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_SavedPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
 	bool bIsValidValueMap = false;
 	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
 	if(bIsValidValueMap) Result = ValueMap.GetSavedPosition(WantCursor, PositionTag);
-	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
 
-FVector UPositionClaimer_ActorPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_ActorPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	FVector Result;
 
 	if (IsValid(TargetActor))
 	{
-		if (AActor* ResultActor = TargetActor->GetActor(WantCursor, Component))
+		if (AActor* ResultActor = TargetActor->GetActor(WantCursor))
 		{
 			if (IsValid(ResultActor)) Result = ResultActor->GetActorLocation();
 		}
 	}
 	else Result = DefaultValue;
 
-	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
 
-FVector UPositionClaimer_SocketPosition::GetPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UPositionClaimer_SocketPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	FVector Result = DefaultValue;
-	if (IsValid(Component))
+	if (IsValid(WantCursor.CurrentComponent))
 	{
 		UUnitMainComponent* OwnerUnit;
-		if (Component->TryGetOwnerUnit(OwnerUnit) && IsValid(OwnerUnit)) Result = OwnerUnit->GetMesh()->GetSocketLocation(PositionTag);
+		if (WantCursor.CurrentComponent->TryGetOwnerUnit(OwnerUnit) && IsValid(OwnerUnit)) Result = OwnerUnit->GetMesh()->GetSocketLocation(PositionTag);
 	}
-	if (AdditivePosition) Result += GetAdditivePosition(Component);
+	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
 
 
-FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	if (!IsValid(Claimer))
 	{
-		if (IsValid(Component))
+		if (IsValid(WantCursor.CurrentComponent))
 		{
-			if (UUnitMainComponent* Unit = Component->GetOwnerUnit()) return Unit->GetOwner()->GetActorLocation();
+			if (UUnitMainComponent* Unit = WantCursor.CurrentComponent->GetOwnerUnit()) return Unit->GetOwner()->GetActorLocation();
 		}
 		return DefaultValue;
 	}
 
-	return Claimer->GetPosition(WantCursor, Component, DefaultValue);
+	return Claimer->GetPosition(WantCursor, DefaultValue);
 }
 
 FVector UDirectionClaimer::GetShiftedDirection(const FVector& OriginDirection) const
@@ -191,55 +198,55 @@ FVector UDirectionClaimer::GetShiftedDirection(const FVector& OriginDirection) c
 }
 
 
-FVector UDirectionClaimer::GetDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
+FVector UDirectionClaimer::GetDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	return GetShiftedDirection(GetOriginDirection(WantCursor, Component, DefaultPosition, DefaultDirection));
+	return GetShiftedDirection(GetOriginDirection(WantCursor, DefaultPosition, DefaultDirection));
 }
 
-FVector UDirectionClaimer_HitNormal::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UDirectionClaimer_HitNormal::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
 	if (HitResult == nullptr) return DefaultValue;
 	return HitResult->Location;
 }
 
-FVector UDirectionClaimer_HitNormal::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
+FVector UDirectionClaimer_HitNormal::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
 	if (HitResult == nullptr) return DefaultDirection;
 	return HitResult->ImpactNormal;
 }
 
-FVector UDirectionClaimer_HitNormal::GetStartPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UDirectionClaimer_HitNormal::GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
 	if (HitResult == nullptr) return DefaultValue;
 	return HitResult->Location;
 }
 
-FVector UDirectionClaimer_HitNormal::GetEndPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius) const
+FVector UDirectionClaimer_HitNormal::GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
 	if (HitResult == nullptr) return DefaultPosition + (DefaultDirection * Radius);
 	return HitResult->Location + GetShiftedDirection(HitResult->ImpactNormal) * Radius;
 }
 
-FVector UDirectionClaimer_FromPosition::GetStartPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultValue) const
+FVector UDirectionClaimer_FromPosition::GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 { 
-	return GetPosition(From, WantCursor, Component, DefaultValue); 
+	return GetPosition(From, WantCursor, DefaultValue); 
 }
 
-FVector UDirectionClaimer_FromPosition::GetEndPosition(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius) const 
+FVector UDirectionClaimer_FromPosition::GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius) const 
 { 
-	return GetStartPosition(WantCursor, Component, DefaultPosition) + (GetOriginDirection(WantCursor, Component, DefaultPosition, DefaultDirection) * Radius); 
+	return GetStartPosition(WantCursor, DefaultPosition) + (GetOriginDirection(WantCursor, DefaultPosition, DefaultDirection) * Radius); 
 }
 
-FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
+FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	return (GetEndPosition(WantCursor, Component, DefaultPosition, DefaultDirection) - GetStartPosition(WantCursor, Component, DefaultPosition)).GetSafeNormal();
+	return (GetEndPosition(WantCursor, DefaultPosition, DefaultDirection) - GetStartPosition(WantCursor, DefaultPosition)).GetSafeNormal();
 }
 
-FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component, const FVector& DefaultPosition, const FVector& DefaultDirection) const
+FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
 	bool bIsValidValueMap = false;
 	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
@@ -247,33 +254,29 @@ FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursor
 	else return DefaultDirection;
 }
 
-AActionBase* UActionClaimer::GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActionBase* UActionClaimer::GetAction(const FActionCursorFinder& WantCursor) const
 {
 	return UActionSetting::GetAction(ActionTag);
 }
 
-AActionBase* UActionClaimer_UnitTagged::GetAction(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActionBase* UActionClaimer_UnitTagged::GetAction(const FActionCursorFinder& WantCursor) const
 {
 	FName Finder;
 
-	if (UUnitMainComponent* Unit = Component->GetOwnerUnit()) Finder = Unit->GetActionFromTag(ActionTag);
+	if (UUnitMainComponent* Unit = WantCursor.CurrentComponent->GetOwnerUnit()) Finder = Unit->GetActionFromTag(ActionTag);
 	else Finder = ActionTag;
 
 	return UActionSetting::GetAction(Finder);
 }
 
-AActor* UActorClaimer_SelfActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActor* UActorClaimer_SelfActor::GetActor(const FActionCursorFinder& WantCursor) const
 {
-	if (!IsValid(Component))
-	{
-		Component = WantCursor.CurrentComponent;
-		if (!IsValid(Component)) return nullptr;
-	}
+	if (!IsValid(WantCursor.CurrentComponent)) return nullptr;
 
-	return Component->GetOwner();
+	return WantCursor.CurrentComponent->GetOwner();
 }
 
-AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor) const
 {
 	bool bIsValidValueMap = false;
 	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
@@ -281,21 +284,21 @@ AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor
 	return ValueMap.GetSavedActor(WantCursor, ActorTag);
 }
 
-AActor* UActorClaimer_HitActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActor* UActorClaimer_HitActor::GetActor(const FActionCursorFinder& WantCursor) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
 	if (HitResult == nullptr) return nullptr;
 	return HitResult->GetActor();
 }
 
-AActor* UActorClaimer_TriggerActor::GetActor(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+AActor* UActorClaimer_TriggerActor::GetActor(const FActionCursorFinder& WantCursor) const
 {
 	if (IsValid(WantCursor.ClaimActor)) return WantCursor.ClaimActor;
 	else if (IsValid(WantCursor.CurrentComponent)) return WantCursor.CurrentComponent->GetOwner();
 	return nullptr;
 }
 
-TArray<AActor*> UActorArrayClaimer::GetActorArray(const FActionCursorFinder& WantCursor, const UUnitActionComponent* Component) const
+TArray<AActor*> UActorArrayClaimer::GetActorArray(const FActionCursorFinder& WantCursor) const
 {
 	bool bIsValidValueMap = false;
 	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
