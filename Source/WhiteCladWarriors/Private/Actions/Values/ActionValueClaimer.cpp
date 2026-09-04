@@ -13,9 +13,9 @@ const FHitResult* UValueClaimer::GetHitResult(const FActionCursorFinder& WantCur
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromCursor(WantCursor);
 	if (!IsValid(Executor)) return nullptr;
-	FActiveNodeInfo_Hit* Info = Executor->GetNodeInfo<FActiveNodeInfo_Hit>(WantCursor);
+	FActiveNodeInfo* Info = Executor->GetNodeInfo(WantCursor);
 	if (Info == nullptr) return nullptr;
-	return &Info->Hit;
+	return nullptr;
 }
 
 float UFloatClaimer::GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const
@@ -27,6 +27,20 @@ float UFloatClaimer_SimpleFloat::GetValue(const FActionCursorFinder& WantCursor,
 {
 	if (!IsValid(Value)) return DefaultValue;
 	return Value->GetValue();
+}
+
+float UFloatClaimer_PositionDistance::GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const
+{
+	if (!IsValid(From) || !IsValid(To)) return DefaultValue;
+	FVector FromPosition = From->GetPosition(WantCursor, FVector::ZeroVector);
+	FVector ToPosition = To->GetPosition(WantCursor, FVector::ZeroVector);
+	return FVector::Dist(FromPosition, ToPosition);
+}
+
+float UFloatClaimer_DirectionDistance::GetValue(const FActionCursorFinder& WantCursor, const float DefaultValue) const
+{
+	if (!IsValid(Direction)) return DefaultValue;
+	return Direction->GetDistance(WantCursor);
 }
 
 
@@ -172,18 +186,13 @@ FVector UPositionClaimer_SocketPosition::GetPosition(const FActionCursorFinder& 
 }
 
 
-FVector UDirectionClaimer::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
+FVector UDirectionClaimer::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
-	if (!IsValid(Claimer))
+	if (IsValid(WantCursor.CurrentComponent))
 	{
-		if (IsValid(WantCursor.CurrentComponent))
-		{
-			if (UUnitMainComponent* Unit = WantCursor.CurrentComponent->GetOwnerUnit()) return Unit->GetOwner()->GetActorLocation();
-		}
-		return DefaultValue;
+		if (UUnitMainComponent* Unit = WantCursor.CurrentComponent->GetOwnerUnit()) return Unit->GetOwner()->GetActorLocation();
 	}
-
-	return Claimer->GetPosition(WantCursor, DefaultValue);
+	return DefaultValue;
 }
 
 FVector UDirectionClaimer::GetShiftedDirection(const FVector& OriginDirection) const
@@ -203,47 +212,45 @@ FVector UDirectionClaimer::GetDirection(const FActionCursorFinder& WantCursor, c
 	return GetShiftedDirection(GetOriginDirection(WantCursor, DefaultPosition, DefaultDirection));
 }
 
-FVector UDirectionClaimer_HitNormal::GetPosition(const UPositionClaimer* Claimer, const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
+FVector UDirectionClaimer_HitNormal::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
-	if (HitResult == nullptr) return DefaultValue;
-	return HitResult->Location;
+	if (HitResult != nullptr) return HitResult->Location;
+	return Super::GetPosition(WantCursor, DefaultValue);
 }
 
 FVector UDirectionClaimer_HitNormal::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
-	if (HitResult == nullptr) return DefaultDirection;
-	return HitResult->ImpactNormal;
-}
-
-FVector UDirectionClaimer_HitNormal::GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
-{
-	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
-	if (HitResult == nullptr) return DefaultValue;
-	return HitResult->Location;
+	if (HitResult != nullptr) return HitResult->ImpactNormal;
+	return DefaultDirection;
 }
 
 FVector UDirectionClaimer_HitNormal::GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius) const
 {
 	const FHitResult* HitResult = UValueClaimer::GetHitResult(WantCursor);
-	if (HitResult == nullptr) return DefaultPosition + (DefaultDirection * Radius);
-	return HitResult->Location + GetShiftedDirection(HitResult->ImpactNormal) * Radius;
+	if (HitResult != nullptr) return HitResult->Location + GetShiftedDirection(HitResult->ImpactNormal) * Radius; 
+	return Super::GetEndPosition(WantCursor, DefaultPosition, DefaultDirection, Radius);
 }
 
-FVector UDirectionClaimer_FromPosition::GetStartPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
+FVector UDirectionClaimer_FromPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 { 
-	return GetPosition(From, WantCursor, DefaultValue); 
+	if (IsValid(From))
+	{
+		return From->GetPosition(WantCursor, DefaultValue);
+	}
+
+	return Super::GetPosition(WantCursor, DefaultValue); 
 }
 
 FVector UDirectionClaimer_FromPosition::GetEndPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection, float Radius) const 
 { 
-	return GetStartPosition(WantCursor, DefaultPosition) + (GetOriginDirection(WantCursor, DefaultPosition, DefaultDirection) * Radius); 
+	return GetPosition(WantCursor, DefaultPosition) + (GetOriginDirection(WantCursor, DefaultPosition, DefaultDirection) * Radius); 
 }
 
 FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	return (GetEndPosition(WantCursor, DefaultPosition, DefaultDirection) - GetStartPosition(WantCursor, DefaultPosition)).GetSafeNormal();
+	return (GetEndPosition(WantCursor, DefaultPosition, DefaultDirection) - GetPosition(WantCursor, DefaultPosition)).GetSafeNormal();
 }
 
 FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
@@ -359,27 +366,27 @@ void UValueClaimerLibrary::InitSample()
 	HitPosition = NewObject<UPositionClaimer_HitPosition>(this, TEXT("HitPosition"));
 
 	SelfForwardDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfForwardDirection"));
-	SelfForwardDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleForwardVector());
+	SelfForwardDirection->SetDirection(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleForwardVector());
 
 	SelfBackwardDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfBackwardDirection"));
-	SelfBackwardDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleBackwardVector());
+	SelfBackwardDirection->SetDirection(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleBackwardVector());
 
 	SelfRightDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfRightDirection"));
-	SelfRightDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleRightVector());
+	SelfRightDirection->SetDirection(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleRightVector());
 
 	SelfLeftDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfLeftDirection"));
-	SelfLeftDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleLeftVector());
+	SelfLeftDirection->SetDirection(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleLeftVector());
 
 	SelfUpDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfUpDirection"));
-	SelfUpDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleUpVector());
+	SelfUpDirection->SetDirection(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleUpVector());
 
 	SelfDownDirection = NewObject<UDirectionClaimer_SimpleDirection>(this, TEXT("SelfDownDirection"));
-	SelfDownDirection->Set(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleDownVector());
+	SelfDownDirection->SetDirection(SelfPosition, EPositionSpaceType::Self, UValueGetterLibrary::GetSimpleDownVector());
 
 	HitNormal = NewObject<UDirectionClaimer_HitNormal>(this, TEXT("HitNormal"));
 
-	HitDirection = NewObject<UDirectionClaimer_HitNormal>(this, TEXT("HitDirection")); 
-	HitDirection->Set(UValueGetterLibrary::MakeSimpleFloat(this, 180.0f));
+	HitDirection = NewObject<UDirectionClaimer_HitNormal>(this, TEXT("HitDirection"));
+	HitDirection->SetDirection(UValueGetterLibrary::MakeSimpleFloat(this, 180.0f));
 
 	SelfActor = NewObject<UActorClaimer_SelfActor>(this, TEXT("SelfActor"));
 	HitActor = NewObject<UActorClaimer_HitActor>(this, TEXT("HitActor"));

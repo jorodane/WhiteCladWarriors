@@ -108,16 +108,7 @@ int FActiveNodeMap::AddNode(UActionNode* Node)
 {
 	while (NodeMap.Find(nextID++));
 	int Result = nextID - 1;
-	SetNode<FActiveNodeInfo>(Node, Result);
-	return Result;
-}
-
-int FActiveNodeMap::AddNode(UActionNode* Node, const FHitResult& WantHit)
-{
-	while (NodeMap.Find(nextID++));
-	int Result = nextID - 1;
-	FActiveNodeInfo_Hit& Info = SetNode<FActiveNodeInfo_Hit>(Node, Result);
-	Info.SetHit(WantHit);
+	SetNode(Node, Result);
 	return Result;
 }
 
@@ -130,7 +121,7 @@ int FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded)
 
 UActionNode* FActiveNodeMap::GetNode(int ID)
 {
-	if (const FActiveNodeInfo* CurrentInfo = GetInfo<FActiveNodeInfo>(ID)) return CurrentInfo->CurrentNode;
+	if (const FActiveNodeInfo* CurrentInfo = GetInfo(ID)) return CurrentInfo->CurrentNode;
 	else return nullptr;
 }
 
@@ -158,22 +149,19 @@ void FActiveNodeMap::RemoveID(int ID)
 
 void FActiveNodeMap::RemoveSubNodes()
 {
-	TInstancedStruct<FActiveNodeInfo>* MainNode = NodeMap.Find(0);
+	FActiveNodeInfo* MainNode = NodeMap.Find(0);
 	NodeMap.Reset();
-	if (MainNode)
-	{
-		NodeMap.Add(0, *MainNode);
-	}
+	if (MainNode) NodeMap.Add(0, *MainNode);
 }
 
 void FActiveNodeMap::BroadcastFunction(const FActionCursorFinder& Cursor, TFunctionRef<void(UActionNode*, const FActionCursorFinder&)> Function)
 {
 	if (IsEmpty()) return;
-	TMap<int, TInstancedStruct<FActiveNodeInfo>> ReceivedNodeMap = NodeMap;
+	TMap<int, FActiveNodeInfo> ReceivedNodeMap = NodeMap;
 
 	for (const auto& CurrentPair : ReceivedNodeMap)
 	{
-		const FActiveNodeInfo& CurrentInfo = CurrentPair.Value.Get();
+		const FActiveNodeInfo& CurrentInfo = CurrentPair.Value;
 		if (CurrentInfo.CurrentListeningState != ENodeListeningState::Listening) continue;
 
 		UActionNode* CurrentNode = CurrentInfo.CurrentNode;
@@ -296,7 +284,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	if (CurrentNodeMap)
 	{
 		OriginNode = CurrentNodeMap->GetNode(ID);
-		FActiveNodeInfo* OriginInfo = CurrentNodeMap->GetInfo<FActiveNodeInfo>(ID);
+		FActiveNodeInfo* OriginInfo = CurrentNodeMap->GetInfo(ID);
 		if (OriginInfo) OriginInfo->TryListeningPending();
 		if (bIsBlocked)
 		{
@@ -330,7 +318,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	}
 
 	FActiveNodeInfo* CurrentNodeInfo = nullptr;
-	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode<FActiveNodeInfo>(TargetNode, ID);
+	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode(TargetNode, ID);
 	else CurrentNodeInfo = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
 
 	if (IsValid(TargetNode))
@@ -345,7 +333,7 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 
 	if (GetValid())
 	{
-		if (CurrentNodeMap) CurrentNodeInfo = CurrentNodeMap->GetInfo<FActiveNodeInfo>(ID);
+		if (CurrentNodeMap) CurrentNodeInfo = CurrentNodeMap->GetInfo(ID);
 		if (CurrentNodeInfo) CurrentNodeInfo->TryListeningStart();
 	}
 }
@@ -369,13 +357,6 @@ UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, UAct
 	return CreateSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
 }
 
-UActionNode* UActionExecutor::CreateSubNode_Hit(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID)
-{
-	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent);
-	return CreateSubNode_Hit(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, Hit, ResultID);
-}
-
-
 UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
 {
 	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent);
@@ -385,12 +366,6 @@ UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCur
 UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
 	ResultID = TargetInfo.AddNode(OriginNode);
-	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
-}
-
-UActionNode* UActionExecutor::CreateSubNode_Hit(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID)
-{
-	ResultID = TargetInfo.AddNode(OriginNode, Hit);
 	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
@@ -444,7 +419,7 @@ void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, bool bIs
 	if (!Cursor.NodeMap.IsEmpty())
 	{
 		FActionCursorFinder SubCursor = WantCursor;
-		TArray<TInstancedStruct<FActiveNodeInfo>> DestroyTarget;
+		TArray<FActiveNodeInfo> DestroyTarget;
 		for (const auto& CurrentNode : Cursor.NodeMap)
 		{
 			int CurrentID = CurrentNode.Key;
@@ -453,9 +428,9 @@ void UActionExecutor::EndSubNode(const FActionCursorFinder& WantCursor, bool bIs
 			Cursor.InvokeEndEvent(CurrentID, bIsCanceled);
 			DestroyTarget.Add(CurrentNode.Value);
 		}
-		for (const TInstancedStruct<FActiveNodeInfo>& CurrentTarget : DestroyTarget)
+		for (const FActiveNodeInfo& CurrentTarget : DestroyTarget)
 		{
-			const FActiveNodeInfo& TargetReference = CurrentTarget.Get();
+			const FActiveNodeInfo& TargetReference = CurrentTarget;
 			if (IsValid(TargetReference.CurrentNode))
 			{
 				TargetReference.CurrentNode->MoveExecutorToCancel(SubCursor);

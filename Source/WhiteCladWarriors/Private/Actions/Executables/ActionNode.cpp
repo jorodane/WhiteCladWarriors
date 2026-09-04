@@ -91,7 +91,7 @@ int UActionNode::CreateSubNode_Hit_Implementation(const FActionCursorFinder& Wan
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
 	if (!IsValid(Executor)) return -1;
 	int index;
-	Executor->CreateSubNode_Hit(WantCursor, this, TargetNode, Hit, index);
+	Executor->CreateSubNode(WantCursor, this, TargetNode, index);
 	return index;
 }
 

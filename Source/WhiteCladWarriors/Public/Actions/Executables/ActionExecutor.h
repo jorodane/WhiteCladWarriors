@@ -55,17 +55,6 @@ struct FActiveNodeInfo
 };
 
 USTRUCT(BlueprintType)
-struct FActiveNodeInfo_Hit : public FActiveNodeInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadOnly, Category = "Hit")
-	FHitResult Hit;
-
-	const FHitResult& SetHit(const FHitResult& WantHit) { return Hit = WantHit; }
-};
-
-USTRUCT(BlueprintType)
 struct FExecutorValueMap
 {
 	GENERATED_BODY()
@@ -109,7 +98,7 @@ struct FActiveNodeMap
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
-	TMap<int, TInstancedStruct<FActiveNodeInfo>> NodeMap;
+	TMap<int, FActiveNodeInfo> NodeMap;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<int, FExecutorValueMap> ValueMap;
@@ -121,33 +110,43 @@ struct FActiveNodeMap
 
 	void Clear();
 
-	int AddNode(UActionNode* Node);
-	int AddNode(UActionNode* Node, const FHitResult& WantHit);
-	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
 
 	inline UActionNode* GetNode(int ID);
-	template< std::derived_from<FActiveNodeInfo> T>
-	T* GetInfo(int ID)
+
+	FActiveNodeInfo* GetInfo(int ID)
 	{
 		if (NodeMap.IsEmpty()) return nullptr;
-		if (TInstancedStruct<FActiveNodeInfo>* Result = NodeMap.Find(ID)) return Result->GetMutablePtr<T>();
+		if (FActiveNodeInfo* Result = NodeMap.Find(ID)) return Result;
 		else return nullptr;
 	}
-	inline FActiveNodeInfo* GetMainInfo() { return GetInfo<FActiveNodeInfo>(0); }
+	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
 
-	template< std::derived_from<FActiveNodeInfo> T>
-	T& SetNode(UActionNode* TargetNode, int ID)
+	FActiveNodeInfo& SetNode(UActionNode* TargetNode, int ID)
 	{
-		T* Info = GetInfo<T>(ID);
+		FActiveNodeInfo* Info = GetInfo(ID);
 		if (Info == nullptr)
 		{
-			TInstancedStruct<FActiveNodeInfo>& Instance = NodeMap.FindOrAdd(ID);
-			Instance.InitializeAs<T>();
-			Info = Instance.GetMutablePtr<T>();
+			FActiveNodeInfo& Instance = NodeMap.FindOrAdd(ID);
+			Info = &Instance;
 		}
 		Info->SetNode(TargetNode);
 		return *Info;
 	}
+
+	FActiveNodeInfo& SetNode(UActionNode* TargetNode, int ID, const FActiveNodeInfo& OriginCursor)
+	{
+		FActiveNodeInfo* Info = GetInfo(ID);
+		if (Info == nullptr)
+		{
+			FActiveNodeInfo& Instance = NodeMap.FindOrAdd(ID, OriginCursor);
+			Info = &Instance;
+		}
+		Info->SetNode(TargetNode);
+		return *Info;
+	}
+
+	int AddNode(UActionNode* Node);
+	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
 
 	FExecutorValueMap* GetValueMap(int ID);
 
@@ -162,7 +161,7 @@ struct FActiveNodeMap
 	void BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
 	FActiveNodeMap() { }
-	FActiveNodeMap(UActionNode* Node) { SetNode<FActiveNodeInfo>(Node, 0); }
+	FActiveNodeMap(UActionNode* Node) { SetNode(Node, 0); }
 };
 
 
@@ -211,14 +210,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
-	UFUNCTION(BlueprintCallable, Category = "Action")
-	UActionNode* CreateSubNode_Hit(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	UActionNode* CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
 
 	UActionNode* CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
-	UActionNode* CreateSubNode_Hit(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, const FHitResult& Hit, int& ResultID);
 	UActionNode* CreateSubNodeWithEvent(FActionCursorFinder BaseCursor,FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
 
 
@@ -268,13 +264,12 @@ public:
 	FActiveNodeMap* AddNodeMap(UUnitActionComponent* TargetComponent);
 	FActiveNodeMap* GetOrAddNodeMap(UUnitActionComponent* TargetComponent);
 
-	template< std::derived_from<FActiveNodeInfo> T>
-	T* GetNodeInfo(const FActionCursorFinder& Cursor)
+	FActiveNodeInfo* GetNodeInfo(const FActionCursorFinder& Cursor)
 	{
 		if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
 		else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(Cursor.CurrentComponent))
 		{
-			return ComponentInfo->GetInfo<T>(Cursor.CurrentID);
+			return ComponentInfo->GetInfo(Cursor.CurrentID);
 		}
 		else return nullptr;
 	}
