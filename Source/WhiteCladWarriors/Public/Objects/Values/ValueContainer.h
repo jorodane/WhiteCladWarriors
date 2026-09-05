@@ -42,8 +42,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	TArray<UValueObject*> FindAllValueOjbect() const;
 
-	//, meta = (DeterminesOutputType = "TemplateClass")
-
 	UFUNCTION(BlueprintCallable, Category = "Container")
 	UFloatValue* FindNumberObject(FName WantTag) const;
 
