@@ -43,7 +43,7 @@ bool FActionReservator::Run(TArray<UUnitActionComponent*> StartComponents)
 {
 	if (!IsValid(Cursor.CurrentAction)) return bIsValid = false;
 	RunningComponents = StartComponents;
-	UActionExecutor* CreatedExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, FExecutorValueMap(), Input);
+	UActionExecutor* CreatedExecutor = Cursor.CurrentAction->ExecuteActionWithInput(Cursor.CurrentOperator, RunningComponents, Input);
 	bIsValid = IsValid(CreatedExecutor);
 	return bIsValid;
 }

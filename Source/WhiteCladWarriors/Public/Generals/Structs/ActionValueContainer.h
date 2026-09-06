@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "StructUtils/PropertyBag.h"
-#include "ActionValueConatainer.generated.h"
+#include "ActionValueContainer.generated.h"
 /**
  * 
  */
@@ -114,7 +114,7 @@ struct FActionValueContainer
 			CurrentID = ParentID ? *ParentID : RootID;
 		}
 
-		OutResult = DefaultValue;
+		OutResult = nullptr;
 		return false;
 	}
 
@@ -192,7 +192,8 @@ struct FActionValueContainer
 	void SetStruct(int ID, const FName& Tag, const T& Value)
 	{
 		const FName Key = GetValueKey(ID, Tag);
-		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, EPropertyBagPropertyType::Struct, StaticStruct<T>());
+		const UStruct* StructClass = T::StaticStruct();
+		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, EPropertyBagPropertyType::Struct, StructClass);
 		Values.SetValueStruct<T>(Key, Value);
 	}
 

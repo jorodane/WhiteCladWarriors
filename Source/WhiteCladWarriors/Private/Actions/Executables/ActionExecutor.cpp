@@ -17,17 +17,25 @@ void FActiveNodeMap::Clear()
 	EndEventMap.Reset();
 }
 
-int FActiveNodeMap::AddNode(UActionNode* Node)
+int FActiveNodeMap::GetValueID(const FActionCursorFinder& TargetCursor)
+{
+	FActiveNodeInfo* TargetInfo = GetInfo(TargetCursor);
+	if (TargetInfo == nullptr) return -1;
+	return TargetInfo->ValueID;
+}
+
+int FActiveNodeMap::AddNode(UActionNode* Node, int CurrentValueID)
 {
 	while (NodeMap.Find(nextID++));
 	int Result = nextID - 1;
+	ValueID = CurrentValueID;
 	SetNode(Node, Result);
 	return Result;
 }
 
-int FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded)
+int FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded, int CurrentValueID)
 {
-	int Result = AddNode(Node);
+	int Result = AddNode(Node, CurrentValueID);
 	if (Result >= 0) EndEventMap.Add(Result, OnNodeEnded);
 	return Result;
 }
@@ -114,6 +122,7 @@ void UActionExecutor::Clear()
 	Operator = nullptr;
 	CursorMap.Reset();
 	CreatedActors.Reset();
+	ValueContainer.Clear();
 	ExecutorID = -1;
 }
 
@@ -206,7 +215,6 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 
 	FActiveNodeInfo* CurrentNodeInfo = nullptr;
 	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode(TargetNode, ID);
-	else CurrentNodeInfo = CursorMap.Add(TargetComponent, TargetNode).GetMainInfo();
 
 	if (IsValid(TargetNode))
 	{
@@ -232,8 +240,6 @@ UActionNode* UActionExecutor::InitiateSubNode(FActionCursorFinder& BaseCursor, F
 	FActionCursorFinder NewCursor = BaseCursor;
 	NewCursor.CurrentID = ResultID;
 	NewCursor.bAsSubNode = true;
-	FExecutorValueMap* OriginValueMap = TargetInfo.GetValueMap(BaseCursor.CurrentID);
-	if (OriginValueMap) TargetInfo.ValueMap.Add(ResultID, *OriginValueMap);
 	EnterNode(NewCursor, TargetNode, true);
 	return Result;
 }
@@ -252,13 +258,15 @@ UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCur
 
 UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
-	ResultID = TargetInfo.AddNode(OriginNode);
+	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
+	ResultID = TargetInfo.AddNode(OriginNode, ValueID);
 	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
 UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
 {
-	ResultID = TargetInfo.AddNode(OriginNode, OnNodeEnded);
+	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
+	ResultID = TargetInfo.AddNode(OriginNode, OnNodeEnded, ValueID);
 	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
@@ -348,18 +356,17 @@ void UActionExecutor::InterruptNode(const FActionCursorFinder& WantCursor, const
 	WantNode->MoveExecutorToInterrupt(WantCursor, InterruptCursor, InterruptNode);
 }
 
-void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode, const FExecutorValueMap& DefaultValues)
+void UActionExecutor::AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode)
 {
 	if (!IsValid(TargetComponent)) return;
 	TargetComponent->OnComponentRemoved.AddUniqueDynamic(this, &UActionExecutor::RemoveComponentBaseFromMap);
 	TargetComponent->OnComponentMessage_Simple.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Simple);
 	TargetComponent->OnComponentMessage_Detail.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Detail);
 	TargetComponent->OnComponentMessage_Montage.AddUniqueDynamic(this, &UActionExecutor::OnMessageFromComponent_Montage);
-	FActiveNodeMap& Result = CursorMap.Add(TargetComponent, StartNode);
-	Result.ValueMap.Add(0, DefaultValues);
+	AddNodeMap(TargetComponent);
 }
 
-void UActionExecutor::AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode, const FExecutorValueMap& DefaultValues) { AddComponentToMap(Cast<UUnitActionComponent>(TargetComponent), StartNode, DefaultValues); }
+void UActionExecutor::AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode) { AddComponentToMap(Cast<UUnitActionComponent>(TargetComponent), StartNode); }
 
 void UActionExecutor::RemoveComponentFromMap(UUnitActionComponent* TargetComponent)
 {
@@ -420,7 +427,8 @@ FActiveNodeMap* UActionExecutor::GetNodeMap(UUnitActionComponent* TargetComponen
 
 FActiveNodeMap* UActionExecutor::AddNodeMap(UUnitActionComponent* TargetComponent)
 {
-	return &CursorMap.Add(TargetComponent);
+	int NewValueID = ValueContainer.Registration(TargetComponent);
+	return &CursorMap.Add(TargetComponent, FActiveNodeMap(NewValueID));
 }
 
 FActiveNodeMap* UActionExecutor::GetOrAddNodeMap(UUnitActionComponent* TargetComponent)
@@ -428,8 +436,19 @@ FActiveNodeMap* UActionExecutor::GetOrAddNodeMap(UUnitActionComponent* TargetCom
 	FActiveNodeMap* Result;
 	if (CursorMap.IsEmpty()) Result = nullptr;
 	else Result = CursorMap.Find(TargetComponent);
-	if (Result == nullptr) Result = &CursorMap.Add(TargetComponent);
+	if (Result == nullptr) Result = AddNodeMap(TargetComponent);
 	return Result;
+}
+
+
+FActiveNodeInfo* UActionExecutor::GetNodeInfo(const FActionCursorFinder& Cursor)
+{
+	if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
+	else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(Cursor.CurrentComponent))
+	{
+		return ComponentInfo->GetInfo(Cursor.CurrentID);
+	}
+	else return nullptr;
 }
 
 bool UActionExecutor::SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded)
@@ -485,7 +504,7 @@ void UActionExecutor::OnMessageFromComponent_Montage(UUnitComponentBase* From, U
 	}
 }
 
-TWeakObjectPtr<UActionExecutor> UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues)
+TWeakObjectPtr<UActionExecutor> UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode)
 {
 	if(!IsValid(TargetAction)) return nullptr;
 	TargetComponents.RemoveAll([&](UUnitActionComponent* CurrentComponent)->bool{ return !IsValid(CurrentComponent);});
@@ -498,7 +517,7 @@ TWeakObjectPtr<UActionExecutor> UActionExecutor::CreateExecutor(AActionBase* Tar
 	for (UUnitActionComponent* CurrentComponent : TargetComponents)
 	{
 		if (!IsValid(CurrentComponent)) continue;
-		Result->AddComponentToMap(CurrentComponent, StartNode, DefaultValues);
+		Result->AddComponentToMap(CurrentComponent, StartNode);
 	}
 	return Result;
 }
@@ -552,107 +571,107 @@ UActionNode* UActionExecutor::GetNodeFromCursor(const FActionCursorFinder& WantC
 
 
 
-
-bool UActionExecutor::HasFloat(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return false;
-	return ValueMap.HasFloat(WantTag);
-}
-
-void UActionExecutor::SetFloat(const FActionCursorFinder& WantCursor, FName WantTag, const float& WantFloat)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return;
-	ValueMap.SetFloat(WantTag, WantFloat);
-}
-
-float UActionExecutor::GetSavedFloat(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return 0.0f;
-	return ValueMap.GetSavedFloat(WantCursor, WantTag);
-}
-
-bool UActionExecutor::HasPosition(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return false;
-	return ValueMap.HasPosition(WantTag);
-}
-
-void UActionExecutor::SetPosition(const FActionCursorFinder& WantCursor, FName WantTag, const FVector& WantPosition)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return;
-	return ValueMap.SetPosition(WantTag, WantPosition);
-}
-
-FVector UActionExecutor::GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return FVector::ZeroVector;
-	return ValueMap.GetSavedPosition(WantCursor, WantTag);
-}
-
-bool UActionExecutor::HasDirection(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return false;
-	return ValueMap.HasDirection(WantCursor, WantTag);
-}
-
-void UActionExecutor::SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return;
-	return ValueMap.SetDirection(WantTag,WantCursor,WantDirection);
-}
-
-FVector UActionExecutor::GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return FVector::ZeroVector;
-	return ValueMap.GetSavedDirection(WantCursor,WantTag);
-}
-
-void UActionExecutor::AddActor(const FActionCursorFinder& WantCursor, FName WantTag, AActor* WantActor)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return;
-	return ValueMap.AddActor(WantTag, WantActor);
-}
-
-void UActionExecutor::RemoveActor(const FActionCursorFinder& WantCursor, FName WantTag, AActor* WantActor)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return;
-	return ValueMap.RemoveActor(WantTag, WantActor);
-}
-
-AActor* UActionExecutor::GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return nullptr;
-	return ValueMap.GetSavedActor(WantCursor, WantTag);
-}
-
-TArray<AActor*>	UActionExecutor::GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag)
-{
-	bool bIsValidValueMap;
-	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return TArray<AActor*>();
-	return ValueMap.GetSavedActorArray(WantCursor, WantTag);
-}
+//
+//bool UActionExecutor::HasFloat(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return false;
+//	return ValueMap.HasFloat(WantTag);
+//}
+//
+//void UActionExecutor::SetFloat(const FActionCursorFinder& WantCursor, FName WantTag, const float& WantFloat)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return;
+//	ValueMap.SetFloat(WantTag, WantFloat);
+//}
+//
+//float UActionExecutor::GetSavedFloat(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return 0.0f;
+//	return ValueMap.GetSavedFloat(WantCursor, WantTag);
+//}
+//
+//bool UActionExecutor::HasPosition(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return false;
+//	return ValueMap.HasPosition(WantTag);
+//}
+//
+//void UActionExecutor::SetPosition(const FActionCursorFinder& WantCursor, FName WantTag, const FVector& WantPosition)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return;
+//	return ValueMap.SetPosition(WantTag, WantPosition);
+//}
+//
+//FVector UActionExecutor::GetSavedPosition(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return FVector::ZeroVector;
+//	return ValueMap.GetSavedPosition(WantCursor, WantTag);
+//}
+//
+//bool UActionExecutor::HasDirection(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return false;
+//	return ValueMap.HasDirection(WantCursor, WantTag);
+//}
+//
+//void UActionExecutor::SetDirection(FName WantTag, const FActionCursorFinder& WantCursor, const FVector& WantDirection)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return;
+//	return ValueMap.SetDirection(WantTag,WantCursor,WantDirection);
+//}
+//
+//FVector UActionExecutor::GetSavedDirection(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return FVector::ZeroVector;
+//	return ValueMap.GetSavedDirection(WantCursor,WantTag);
+//}
+//
+//void UActionExecutor::AddActor(const FActionCursorFinder& WantCursor, FName WantTag, AActor* WantActor)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return;
+//	return ValueMap.AddActor(WantTag, WantActor);
+//}
+//
+//void UActionExecutor::RemoveActor(const FActionCursorFinder& WantCursor, FName WantTag, AActor* WantActor)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return;
+//	return ValueMap.RemoveActor(WantTag, WantActor);
+//}
+//
+//AActor* UActionExecutor::GetSavedActor(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return nullptr;
+//	return ValueMap.GetSavedActor(WantCursor, WantTag);
+//}
+//
+//TArray<AActor*>	UActionExecutor::GetSavedActorArray(const FActionCursorFinder& WantCursor, FName WantTag)
+//{
+//	bool bIsValidValueMap;
+//	FExecutorValueMap& ValueMap = GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+//	if (!bIsValidValueMap) return TArray<AActor*>();
+//	return ValueMap.GetSavedActorArray(WantCursor, WantTag);
+//}

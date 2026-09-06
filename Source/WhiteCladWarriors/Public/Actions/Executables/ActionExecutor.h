@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Actions/Values/ActionValueClaimer.h"
+#include "Generals/Structs/ActionValueContainer.h"
 #include "Generals/Structs/ActionStructures.h"
 #include "Interfaces/ActionSpawnable.h"
 #include "StructUtils/InstancedStruct.h"
@@ -38,10 +39,15 @@ struct FActiveNodeInfo
 	UPROPERTY(BlueprintReadOnly, Category = "Message")
 	ENodeListeningState CurrentListeningState = ENodeListeningState::Pending;
 
-	FActiveNodeInfo() {}
+	int ValueID = -1;
 
-	FActiveNodeInfo(UActionNode* WantNode, ENodeListeningState WantListeningState = ENodeListeningState::Pending)
+	FActiveNodeInfo() { }
+
+	FActiveNodeInfo(int CurrentValueID) { ValueID = CurrentValueID; }
+
+	FActiveNodeInfo(UActionNode* WantNode, int CurrentValueID, ENodeListeningState WantListeningState = ENodeListeningState::Pending)
 	{
+		ValueID = CurrentValueID;
 		SetNode(WantNode);
 		SetListening(WantListeningState);
 	}
@@ -65,6 +71,8 @@ struct FActiveNodeMap
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<int, FOnNodeEnded> EndEventMap;
 
+	int ValueID = -1;
+
 	int nextID = 1;
 
 	void Clear();
@@ -78,6 +86,12 @@ struct FActiveNodeMap
 		if (FActiveNodeInfo* Result = NodeMap.Find(ID)) return Result;
 		else return nullptr;
 	}
+
+	FActiveNodeInfo* GetInfo(const FActionCursorFinder& TargetCursor)
+	{
+		return GetInfo(TargetCursor.CurrentID);
+	}
+
 	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
 
 	FActiveNodeInfo& SetNode(UActionNode* TargetNode, int ID)
@@ -104,8 +118,10 @@ struct FActiveNodeMap
 		return *Info;
 	}
 
-	int AddNode(UActionNode* Node);
-	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
+	int GetValueID(const FActionCursorFinder& TargetCursor);
+
+	int AddNode(UActionNode* Node, int CurrentValueID);
+	int AddNode(UActionNode* Node, FOnNodeEnded, int CurrentValueID);
 
 	void InvokeEndEvent(int ID, bool bIsCanceled);
 	inline void RemoveID(int ID);
@@ -117,8 +133,9 @@ struct FActiveNodeMap
 	void BroadcastMessage_Detail(const FActionCursorFinder& Cursor, FName Message, const FName& Context);
 	void BroadcastMessage_Montage(const FActionCursorFinder& Cursor, UAnimMontage* Montage, bool bIsStart, bool bIsInterrupted);
 
-	FActiveNodeMap() { }
-	FActiveNodeMap(UActionNode* Node) { SetNode(Node, 0); }
+	FActiveNodeMap() {  }
+	FActiveNodeMap(int CurrentValueID) { ValueID = CurrentValueID; }
+	FActiveNodeMap(UActionNode* Node, int CurrentValueID) { SetNode(Node, 0); ValueID = CurrentValueID; }
 };
 
 
@@ -138,6 +155,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TArray<AActor*> CreatedActors;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Action")
+	FActionValueContainer ValueContainer;
 
 	uint64 ExecutorID;
 
@@ -191,10 +211,10 @@ public:
 	void InterruptNode(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode, const FExecutorValueMap& DefaultValues);
+	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode, const FExecutorValueMap& DefaultValues);
+	void AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void RemoveComponentFromMap(UUnitActionComponent* TargetComponent);
@@ -218,15 +238,7 @@ public:
 	FActiveNodeMap* AddNodeMap(UUnitActionComponent* TargetComponent);
 	FActiveNodeMap* GetOrAddNodeMap(UUnitActionComponent* TargetComponent);
 
-	FActiveNodeInfo* GetNodeInfo(const FActionCursorFinder& Cursor)
-	{
-		if (&CursorMap == nullptr || CursorMap.IsEmpty()) return nullptr;
-		else if (FActiveNodeMap* ComponentInfo = CursorMap.Find(Cursor.CurrentComponent))
-		{
-			return ComponentInfo->GetInfo(Cursor.CurrentID);
-		}
-		else return nullptr;
-	}
+	FActiveNodeInfo* GetNodeInfo(const FActionCursorFinder& Cursor);
 
 	bool SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded);
 
@@ -244,7 +256,7 @@ public:
 
 
 public:
-	static  TWeakObjectPtr<UActionExecutor> CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, const FExecutorValueMap& DefaultValues);
+	static  TWeakObjectPtr<UActionExecutor> CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void DestroyExecutor(UActionExecutor* TargetExecutor);

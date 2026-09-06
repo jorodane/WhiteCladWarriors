@@ -150,8 +150,9 @@ FVector UPositionClaimer_SavedPosition::GetPosition(const FActionCursorFinder& W
 {
 	FVector Result = DefaultValue;
 	bool bIsValidValueMap = false;
-	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if(bIsValidValueMap) Result = ValueMap.GetSavedPosition(WantCursor, PositionTag);
+	//Warning :: With Default Value
+	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+	//if(bIsValidValueMap) Result = ValueMap.GetSavedPosition(WantCursor, PositionTag);
 	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
@@ -256,9 +257,11 @@ FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFind
 FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
 	bool bIsValidValueMap = false;
-	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (bIsValidValueMap && !DirectionTag.IsNone()) return ValueMap.GetSavedDirection(WantCursor, DirectionTag);
-	else return DefaultDirection;
+	//Warning :: With Default Value
+	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+	//if (bIsValidValueMap && !DirectionTag.IsNone()) return ValueMap.GetSavedDirection(WantCursor, DirectionTag);
+	//else 
+		return DefaultDirection;
 }
 
 AActionBase* UActionClaimer::GetAction(const FActionCursorFinder& WantCursor) const
@@ -286,9 +289,11 @@ AActor* UActorClaimer_SelfActor::GetActor(const FActionCursorFinder& WantCursor)
 AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor) const
 {
 	bool bIsValidValueMap = false;
-	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return nullptr;
-	return ValueMap.GetSavedActor(WantCursor, ActorTag);
+	//Warning :: With Default Value
+	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+	//if (!bIsValidValueMap) return nullptr;
+	//return ValueMap.GetSavedActor(WantCursor, ActorTag);
+	return nullptr;
 }
 
 AActor* UActorClaimer_HitActor::GetActor(const FActionCursorFinder& WantCursor) const
@@ -308,9 +313,11 @@ AActor* UActorClaimer_TriggerActor::GetActor(const FActionCursorFinder& WantCurs
 TArray<AActor*> UActorArrayClaimer::GetActorArray(const FActionCursorFinder& WantCursor) const
 {
 	bool bIsValidValueMap = false;
-	FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	if (!bIsValidValueMap) return TArray<AActor*>();
-	return ValueMap.GetSavedActorArray(WantCursor, ActorArrayTag);
+	//Warning :: With Default Value
+	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
+	//if (!bIsValidValueMap) return TArray<AActor*>();
+	//return ValueMap.GetSavedActorArray(WantCursor, ActorArrayTag);
+	return TArray<AActor*>();
 }
 
 void UValueGetterLibrary::InitSample()

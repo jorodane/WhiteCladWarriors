@@ -151,14 +151,14 @@ public:
 	inline UActionSelectorNode*		RootNodeAsSelector() const;
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	UActionExecutor* ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues);
-	UActionExecutor* ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues);
+	UActionExecutor* ExecuteAction(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
+	UActionExecutor* ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	UActionExecutor* ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input);
-	UActionExecutor* ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input);
+	UActionExecutor* ExecuteActionWithInput(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
+	UActionExecutor* ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action", meta = (DefaultToSelf = "WantComponent"))
-	UActionExecutor* ExecuteActionToTarget(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor, const FExecutorValueMap& DefaultValues);
-	UActionExecutor* ExecuteActionToTarget_Implementation(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor, const FExecutorValueMap& DefaultValues);
+	UActionExecutor* ExecuteActionToTarget(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor);
+	UActionExecutor* ExecuteActionToTarget_Implementation(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor);
 };

@@ -81,7 +81,7 @@ UActionSelectorNode* AActionBase::RootNodeAsSelector() const
 	return Cast<UActionSelectorNode>(RootNode);
 }
 
-UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues)
+UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents)
 {
 	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	TWeakObjectPtr<UActionExecutor> NewExecutor;
@@ -90,7 +90,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 	if (ClaimedComponents.IsEmpty()) return nullptr;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
 		if (!NewExecutor.IsValid()) return nullptr;
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
@@ -102,7 +102,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 	return nullptr;
 }
 
-UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FExecutorValueMap& DefaultValues, const FInputPackage& Input)
+UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* TargetOperator, const TArray<UUnitActionComponent*>& TargetComponents, const FInputPackage& Input)
 {
 	TArray<UUnitActionComponent*> ClaimedComponents = TargetComponents;
 	const FInputPackage& ClaimedInput = Input;
@@ -112,7 +112,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	if (ClaimedComponents.IsEmpty()) return nullptr;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, DefaultValues);
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
 		if (!NewExecutor.IsValid()) return nullptr;
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
@@ -124,12 +124,12 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	return nullptr;
 }
 
-UActionExecutor* AActionBase::ExecuteActionToTarget_Implementation(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor, const FExecutorValueMap& DefaultValues)
+UActionExecutor* AActionBase::ExecuteActionToTarget_Implementation(AOperator* WantOperator, UUnitActionComponent* WantComponent, AActor* TargetActor)
 {
 	if (!IsValid(WantComponent) || !IsValid(TargetActor)) return nullptr;
 	FInputPackage CreatedInput;
 	CreatedInput.SelectedActors = { WantComponent->GetOwner() };
 	CreatedInput.MouseHitActor = TargetActor;
 	CreatedInput.MouseTerrainPosition = TargetActor->GetActorLocation();
-	return ExecuteActionWithInput(WantOperator, { WantComponent }, DefaultValues, CreatedInput);
+	return ExecuteActionWithInput(WantOperator, { WantComponent }, CreatedInput);
 }

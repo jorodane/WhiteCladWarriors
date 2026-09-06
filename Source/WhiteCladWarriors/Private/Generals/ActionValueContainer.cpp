@@ -19,6 +19,10 @@ int FActionValueContainer::Registration(int ParentID)
 int FActionValueContainer::Registration(UUnitActionComponent* Component, int ParentID)
 {
 	if (!IsValid(Component)) return InvalidID;
+	int* FindedID = ComponentMap.Find(Component);
+	if (FindedID != nullptr) return *FindedID;
+
+	ParentID = FMath::Max(0, ParentID);
 	int NewID = Registration(ParentID);
 	ComponentMap.Add(Component, NewID);
 	return NewID;
@@ -66,7 +70,7 @@ bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, EP
 bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, const FPropertyBagPropertyDesc*& OutDescriptor) const
 {
 	int FoundID = InvalidID;
-	return GetValueDescriptor(StartID, Tag, PropertyType, OutDescriptor);
+	return GetValueDescriptor(StartID, Tag, PropertyType, OutDescriptor, FoundID);
 }
 
 const FPropertyBagPropertyDesc* FActionValueContainer::GetLocalValueDescriptor(int TargetID, const FName& Tag) const
