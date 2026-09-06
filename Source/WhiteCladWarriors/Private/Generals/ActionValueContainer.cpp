@@ -29,10 +29,10 @@ FName FActionValueContainer::GetValueKey(int StartID, const FName& Tag) const
 	return FName(Tag, StartID);
 }
 
-bool FActionValueContainer::HasValue(int StartID, const FName& Tag, int& OutFoundID) const
+bool FActionValueContainer::HasValue(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, int& OutFoundID) const
 {
 	const FPropertyBagPropertyDesc* CurrentDescriptor = nullptr;
-	return GetValueDescriptor(StartID, Tag, CurrentDescriptor, OutFoundID);
+	return GetValueDescriptor(StartID, Tag, PropertyType, CurrentDescriptor, OutFoundID);
 }
 
 bool FActionValueContainer::HasLocalValue(int TargetID, const FName& Tag) const
@@ -40,13 +40,14 @@ bool FActionValueContainer::HasLocalValue(int TargetID, const FName& Tag) const
 	return GetLocalValueDescriptor(TargetID, Tag) != nullptr;
 }
 
-bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, const FPropertyBagPropertyDesc*& OutDescriptor, int& OutFoundID) const
+bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, const FPropertyBagPropertyDesc*& OutDescriptor, int& OutFoundID) const
 {
 	int CurrentID = StartID;
 	while (CurrentID >= RootID)
 	{
 		const FPropertyBagPropertyDesc* CurrentDescriptor = GetLocalValueDescriptor(CurrentID, Tag);
-		if (CurrentDescriptor != nullptr)
+		
+		if (CurrentDescriptor != nullptr && CurrentDescriptor->ValueType == PropertyType)
 		{
 			OutFoundID = CurrentID;
 			OutDescriptor = CurrentDescriptor;
@@ -62,10 +63,10 @@ bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, co
 	return false;
 }
 
-bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, const FPropertyBagPropertyDesc*& OutDescriptor) const
+bool FActionValueContainer::GetValueDescriptor(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, const FPropertyBagPropertyDesc*& OutDescriptor) const
 {
 	int FoundID = InvalidID;
-	return GetValueDescriptor(StartID, Tag, OutDescriptor);
+	return GetValueDescriptor(StartID, Tag, PropertyType, OutDescriptor);
 }
 
 const FPropertyBagPropertyDesc* FActionValueContainer::GetLocalValueDescriptor(int TargetID, const FName& Tag) const
@@ -76,7 +77,7 @@ const FPropertyBagPropertyDesc* FActionValueContainer::GetLocalValueDescriptor(i
 bool FActionValueContainer::GetClass(int StartID, const FName& Tag, UClass*& OutResult) const
 {
 	const FPropertyBagPropertyDesc* Descriptor = nullptr;
-	if (GetValueDescriptor(StartID, Tag, Descriptor))
+	if (GetValueDescriptor(StartID, Tag, EPropertyBagPropertyType::Class, Descriptor))
 	{
 		TValueOrError<UClass*, EPropertyBagResult> Result = Values.GetValueClass(*Descriptor);
 		if (Result.IsValid())

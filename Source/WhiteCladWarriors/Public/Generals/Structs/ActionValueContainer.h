@@ -37,17 +37,17 @@ struct FActionValueContainer
 
 	FName GetValueKey(int StartID, const FName& Tag) const;
 
-	bool HasValue(int StartID, const FName& Tag, int& OutFoundID) const;
+	bool HasValue(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, int& OutFoundID) const;
 	bool HasLocalValue(int TargetID, const FName& Tag) const;
-	bool GetValueDescriptor(int StartID, const FName& Tag, const FPropertyBagPropertyDesc*& OutDescriptor, int& OutFoundID) const;
-	bool GetValueDescriptor(int StartID, const FName& Tag, const FPropertyBagPropertyDesc*& OutDescriptor) const;
+	bool GetValueDescriptor(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, const FPropertyBagPropertyDesc*& OutDescriptor, int& OutFoundID) const;
+	bool GetValueDescriptor(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, const FPropertyBagPropertyDesc*& OutDescriptor) const;
 	const FPropertyBagPropertyDesc* GetLocalValueDescriptor(int TargetID, const FName& Tag) const;
 
 	template <typename T, typename GetValueFunction>
-	bool GetValue(int StartID, const FName& Tag, T& OutResult, const T& DefaultValue, GetValueFunction Getter) const
+	bool GetValue(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, T& OutResult, const T& DefaultValue, GetValueFunction Getter) const
 	{
 		const FPropertyBagPropertyDesc* Descriptor = nullptr;
-		if (GetValueDescriptor(StartID, Tag, Descriptor))
+		if (GetValueDescriptor(StartID, Tag, PropertyType, Descriptor))
 		{
 			TValueOrError<T, EPropertyBagResult> Result = Getter(Values, *Descriptor);
 			if (Result.IsValid())
@@ -61,36 +61,60 @@ struct FActionValueContainer
 	}
 
 	template <typename T>
-	bool GetStruct(int StartID, const FName& Tag, T& OutResult, const T& DefaultValue) const
+	bool GetStruct(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, T& OutResult, const T& DefaultValue) const
 	{
-		const FPropertyBagPropertyDesc* Descriptor = nullptr;
-		if (GetValueDescriptor(StartID, Tag, Descriptor))
+		int CurrentID = StartID;
+
+		while (CurrentID >= RootID)
 		{
-			TValueOrError<T*, EPropertyBagResult> Result = Values.GetValueStruct<T>(*Descriptor);
-			if (Result.IsValid())
+			const FPropertyBagPropertyDesc* Descriptor = GetLocalValueDescriptor(CurrentID, Tag);
+
+			if (Descriptor != nullptr)
 			{
-				OutResult = *Result.GetValue();
-				return true;
+				TValueOrError<T*, EPropertyBagResult> Result = Values.GetValueStruct<T>(*Descriptor);
+
+				if (Result.IsValid())
+				{
+					OutResult = *Result.GetValue();
+					return true;
+				}
 			}
+
+			if (CurrentID <= RootID) break;
+			const int* ParentID = Hierarchy.Find(CurrentID);
+			CurrentID = ParentID ? *ParentID : RootID;
 		}
+
 		OutResult = DefaultValue;
 		return false;
 	}
 
 	template <typename T>
-	bool GetObject(int StartID, const FName& Tag, T*& OutResult) const
+	bool GetObject(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, T*& OutResult) const
 	{
-		const FPropertyBagPropertyDesc* Descriptor = nullptr;
-		if (GetValueDescriptor(StartID, Tag, Descriptor))
+		int CurrentID = StartID;
+
+		while (CurrentID >= RootID)
 		{
-			TValueOrError<T*, EPropertyBagResult> Result = Values.GetValueObject<T>(*Descriptor);
-			if (Result.IsValid())
+			const FPropertyBagPropertyDesc* Descriptor = GetLocalValueDescriptor(CurrentID, Tag);
+
+			if (Descriptor != nullptr)
 			{
-				OutResult = Result.GetValue();
-				return true;
+				TValueOrError<T*, EPropertyBagResult> Result = Values.GetValueObject<T>(*Descriptor);
+
+				if (Result.IsValid())
+				{
+					OutResult = *Result.GetValue();
+					return true;
+				}
 			}
+
+			if (CurrentID <= RootID) break;
+			const int* ParentID = Hierarchy.Find(CurrentID);
+			CurrentID = ParentID ? *ParentID : RootID;
 		}
-		OutResult = nullptr;
+
+		OutResult = DefaultValue;
 		return false;
 	}
 
@@ -98,62 +122,62 @@ struct FActionValueContainer
 
 	bool GetSoftObjectPath(int StartID, const FName& Tag, FSoftObjectPath& OutResult, const FSoftObjectPath& DefaultValue) const
 	{
-		return GetValue<FSoftObjectPath>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueSoftPath(Descriptor); });
+		return GetValue<FSoftObjectPath>(StartID, Tag, EPropertyBagPropertyType::SoftObject, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueSoftPath(Descriptor); });
 	}
 
 	bool GetBoolean(int StartID, const FName& Tag, bool& OutResult, bool DefaultValue = false) const
 	{
-		return GetValue<bool>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueBool(Descriptor); });
+		return GetValue<bool>(StartID, Tag, EPropertyBagPropertyType::Bool, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueBool(Descriptor); });
 	}
 
 	bool GetFloat(int StartID, const FName& Tag, float& OutResult, float DefaultValue = 0.0f) const
 	{
-		return GetValue<float>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor){return Values.GetValueFloat(Descriptor);});
+		return GetValue<float>(StartID, Tag, EPropertyBagPropertyType::Float, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueFloat(Descriptor); });
 	}
 
 	bool GetDouble(int StartID, const FName& Tag, double& OutResult, double DefaultValue = 0.0) const
 	{
-		return GetValue<double>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueDouble(Descriptor); });
+		return GetValue<double>(StartID, Tag, EPropertyBagPropertyType::Double, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueDouble(Descriptor); });
 	}
 
 	bool GetInteger32(int StartID, const FName& Tag, int32& OutResult, int32 DefaultValue = 0) const
 	{
-		return GetValue<int32>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueInt32(Descriptor); });
+		return GetValue<int32>(StartID, Tag, EPropertyBagPropertyType::Int32, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueInt32(Descriptor); });
 	}
 
 	bool GetInteger64(int StartID, const FName& Tag, int64& OutResult, int64 DefaultValue = 0) const
 	{
-		return GetValue<int64>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueInt64(Descriptor); });
+		return GetValue<int64>(StartID, Tag, EPropertyBagPropertyType::Int64, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueInt64(Descriptor); });
 	}
 
 	bool GetUnsignedInteger32(int StartID, const FName& Tag, uint32& OutResult, uint32 DefaultValue = 0) const
 	{
-		return GetValue<uint32>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueUInt32(Descriptor); });
+		return GetValue<uint32>(StartID, Tag, EPropertyBagPropertyType::UInt32, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueUInt32(Descriptor); });
 	}
 
 	bool GetUnsignedInteger64(int StartID, const FName& Tag, uint64& OutResult, uint64 DefaultValue = 0) const
 	{
-		return GetValue<uint64>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueUInt64(Descriptor); });
+		return GetValue<uint64>(StartID, Tag, EPropertyBagPropertyType::UInt64, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueUInt64(Descriptor); });
 	}
 
 	bool GetByte(int StartID, const FName& Tag, uint8& OutResult, uint8 DefaultValue = 0) const
 	{
-		return GetValue<uint8>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueByte(Descriptor); });
+		return GetValue<uint8>(StartID, Tag, EPropertyBagPropertyType::Byte, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueByte(Descriptor); });
 	}
 
 	bool GetName(int StartID, const FName& Tag, FName& OutResult, const FName& DefaultValue = NAME_None) const
 	{
-		return GetValue<FName>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueName(Descriptor); });
+		return GetValue<FName>(StartID, Tag, EPropertyBagPropertyType::Name, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueName(Descriptor); });
 	}
 
 	bool GetString(int StartID, const FName& Tag, FString& OutResult, const FString& DefaultValue = TEXT("")) const
 	{
-		return GetValue<FString>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueString(Descriptor); });
+		return GetValue<FString>(StartID, Tag, EPropertyBagPropertyType::String, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueString(Descriptor); });
 	}
 
 	bool GetText(int StartID, const FName& Tag, FText& OutResult, const FText& DefaultValue = FText::GetEmpty()) const
 	{
-		return GetValue<FText>(StartID, Tag, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueText(Descriptor); });
+		return GetValue<FText>(StartID, Tag, EPropertyBagPropertyType::Text, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueText(Descriptor); });
 	}
 
 	template<typename T, typename SetValueFunction>
@@ -168,7 +192,7 @@ struct FActionValueContainer
 	void SetStruct(int ID, const FName& Tag, const T& Value)
 	{
 		const FName Key = GetValueKey(ID, Tag);
-		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, PropertyType, StaticStruct<T>());
+		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, EPropertyBagPropertyType::Struct, StaticStruct<T>());
 		Values.SetValueStruct<T>(Key, Value);
 	}
 
@@ -176,7 +200,7 @@ struct FActionValueContainer
 	void SetObject(int ID, const FName& Tag, T* Value) 
 	{
 		const FName Key = GetValueKey(ID, Tag);
-		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, PropertyType, T::StaticClass());
+		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, EPropertyBagPropertyType::Object, T::StaticClass());
 		Values.SetValueObject<T>(Key, Value);
 	}
 	void SetClass(int ID, const FName& Tag, UClass* Value) 

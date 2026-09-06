@@ -107,8 +107,6 @@ struct FActiveNodeMap
 	int AddNode(UActionNode* Node);
 	int AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded);
 
-	FExecutorValueMap* GetValueMap(int ID);
-
 	void InvokeEndEvent(int ID, bool bIsCanceled);
 	inline void RemoveID(int ID);
 	inline void RemoveSubNodes();
