@@ -15,6 +15,16 @@ void FActiveNodeMap::Clear()
 {
 	NodeMap.Reset();
 	EndEventMap.Reset();
+	ValueID = -1;
+	nextID = 1;
+}
+
+FActiveNodeInfo* FActiveNodeMap::SetNode(UActionNode* TargetNode, int ID)
+{
+	FActiveNodeInfo* Info = GetInfo(ID);
+	if (Info == nullptr) return Info;
+	Info->SetNode(TargetNode);
+	return Info;
 }
 
 int FActiveNodeMap::GetValueID(const FActionCursorFinder& TargetCursor) const
@@ -24,19 +34,18 @@ int FActiveNodeMap::GetValueID(const FActionCursorFinder& TargetCursor) const
 	return TargetInfo->ValueID;
 }
 
-int FActiveNodeMap::AddNode(UActionNode* Node, int CurrentValueID)
+FActiveNodeInfo& FActiveNodeMap::AddNode(UActionNode* Node, int CurrentValueID, int& OutNodeID)
 {
 	while (NodeMap.Find(nextID++));
-	int Result = nextID - 1;
+	OutNodeID = nextID - 1;
 	ValueID = CurrentValueID;
-	SetNode(Node, Result);
-	return Result;
+	return NodeMap.Add(OutNodeID, FActiveNodeInfo(Node, ValueID));
 }
 
-int FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded, int CurrentValueID)
+FActiveNodeInfo& FActiveNodeMap::AddNode(UActionNode* Node, FOnNodeEnded OnNodeEnded, int CurrentValueID, int& OutNodeID)
 {
-	int Result = AddNode(Node, CurrentValueID);
-	if (Result >= 0) EndEventMap.Add(Result, OnNodeEnded);
+	FActiveNodeInfo& Result = AddNode(Node, CurrentValueID, OutNodeID);
+	if (OutNodeID >= 0) EndEventMap.Add(OutNodeID, OnNodeEnded);
 	return Result;
 }
 
@@ -214,8 +223,15 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	}
 
 	FActiveNodeInfo* CurrentNodeInfo = nullptr;
-	if (CurrentNodeMap) CurrentNodeInfo = &CurrentNodeMap->SetNode(TargetNode, ID);
-
+	if (CurrentNodeMap)
+	{
+		CurrentNodeInfo = CurrentNodeMap->SetNode(TargetNode, ID);
+		if (CurrentNodeInfo == nullptr)
+		{
+			int NewValueID = ValueContainer.Registration(CurrentNodeMap->ValueID);
+			CurrentNodeInfo = &CurrentNodeMap->AddNode(TargetNode, NewValueID, ID);
+		}
+	}
 	if (IsValid(TargetNode))
 	{
 		TargetNode->ClaimExecute(WantCursor);
@@ -259,14 +275,14 @@ UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCur
 UActionNode* UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
 	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
-	ResultID = TargetInfo.AddNode(OriginNode, ValueID);
+	TargetInfo.AddNode(OriginNode, ValueID, ResultID);
 	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
 UActionNode* UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
 {
 	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
-	ResultID = TargetInfo.AddNode(OriginNode, OnNodeEnded, ValueID);
+	TargetInfo.AddNode(OriginNode, OnNodeEnded, ValueID, ResultID);
 	return InitiateSubNode(BaseCursor, TargetInfo, TargetNode, ResultID);
 }
 
@@ -595,11 +611,22 @@ int UActionExecutor::GetValueID(const FActionCursorFinder& WantCursor) const
 	return NodeMap->GetValueID(WantCursor);
 }
 
+int UActionExecutor::GetOrAddValueID(const FActionCursorFinder& WantCursor)
+{
+	const FActiveNodeMap* NodeMap = GetActiveNodeMap(WantCursor);
+	if (NodeMap == nullptr)
+	{
+		if(!IsValid(WantCursor.CurrentComponent)) return FActionValueContainer::InvalidID;
+		return ValueContainer.Registration(WantCursor.CurrentComponent);
+	}
+	return NodeMap->GetValueID(WantCursor);
+}
+
 #define DEFINE_ACTION_VALUE_FUNCTIONS(TypeName, Type, DefaultParam, Getter, Setter) \
 bool UActionExecutor::Get##TypeName(const FActionCursorFinder& Cursor, const FName& Tag, Type& OutResult, DefaultParam DefaultValue) const \
 { \
 	const int ValueID = GetValueID(Cursor); \
-	if (ValueID == FActionValueContainer::InvalidID) \
+	if (ValueID <= FActionValueContainer::InvalidID) \
 	{ \
 		OutResult = DefaultValue; \
 		return false; \
@@ -607,11 +634,7 @@ bool UActionExecutor::Get##TypeName(const FActionCursorFinder& Cursor, const FNa
 	return ValueContainer.Getter(ValueID, Tag, OutResult, DefaultValue); \
 } \
 \
-bool UActionExecutor::Get##TypeName##FromCursor( \
-	const FActionCursorFinder& Cursor, \
-	const FName& Tag, \
-	Type& OutResult, \
-	DefaultParam DefaultValue) \
+bool UActionExecutor::Get##TypeName##FromCursor( const FActionCursorFinder& Cursor, const FName& Tag, Type& OutResult, DefaultParam DefaultValue) \
 { \
 	UActionExecutor* Executor = GetExecutorFromCursor(Cursor); \
 	if (!IsValid(Executor)) \
@@ -622,20 +645,14 @@ bool UActionExecutor::Get##TypeName##FromCursor( \
 	return Executor->Get##TypeName(Cursor, Tag, OutResult, DefaultValue); \
 } \
 \
-void UActionExecutor::Set##TypeName( \
-	const FActionCursorFinder& Cursor, \
-	const FName& Tag, \
-	DefaultParam Value) \
+void UActionExecutor::Set##TypeName(const FActionCursorFinder& Cursor, const FName& Tag, DefaultParam Value) \
 { \
-	const int ValueID = GetValueID(Cursor); \
+	const int ValueID = GetOrAddValueID(Cursor); \
 	if (ValueID == FActionValueContainer::InvalidID) return; \
 	ValueContainer.Setter(ValueID, Tag, Value); \
 } \
 \
-void UActionExecutor::Set##TypeName##FromCursor( \
-	const FActionCursorFinder& Cursor, \
-	const FName& Tag, \
-	DefaultParam Value) \
+void UActionExecutor::Set##TypeName##ToCursor( const FActionCursorFinder& Cursor, const FName& Tag, DefaultParam Value) \
 { \
 	UActionExecutor* Executor = GetExecutorFromCursor(Cursor); \
 	if (IsValid(Executor)) \
@@ -644,288 +661,76 @@ void UActionExecutor::Set##TypeName##FromCursor( \
 	} \
 }
 
-DEFINE_ACTION_VALUE_FUNCTIONS(HitResult, FHitResult, const FHitResult&, GetStruct<FHitResult>, SetStruct<FHitResult>)
-DEFINE_ACTION_VALUE_FUNCTIONS(Actor, AActor*, AActor*, GetObject<AActor>, SetObject<AActor>)
-DEFINE_ACTION_VALUE_FUNCTIONS(Class, UClass*, UClass*, GetClass, SetClass)
-DEFINE_ACTION_VALUE_FUNCTIONS(SoftObjectPath, FSoftObjectPath, const FSoftObjectPath&, GetSoftObjectPath, SetSoftObjectPath)
+#define DEFINE_ACTION_STRUCT_FUNCTIONS(STRUCT_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(STRUCT_NAME, F##STRUCT_NAME, const F##STRUCT_NAME&, GetStruct<F##STRUCT_NAME>, SetStruct<F##STRUCT_NAME>)
+#define DEFINE_ACTION_OBJECT_FUNCTIONS(OBJECT_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(OBJECT_NAME, A##OBJECT_NAME*, A##OBJECT_NAME*, GetObject<A##OBJECT_NAME>, SetObject<A##OBJECT_NAME>)
+#define DEFINE_ACTION_SENTENCE_FUNCTIONS(SENTENCE_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(SENTENCE_NAME, F##SENTENCE_NAME, const F##SENTENCE_NAME&, Get##SENTENCE_NAME, Set##SENTENCE_NAME)
+#define DEFINE_ACTION_SOFTPATH_FUNCTIONS(SOFTPATH_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(SOFTPATH_NAME, F##SOFTPATH_NAME, const F##SOFTPATH_NAME&, Get##SOFTPATH_NAME, Set##SOFTPATH_NAME)
+#define DEFINE_ACTION_CLASSTYPE_FUNCTIONS(CLASSTYPE_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(CLASSTYPE_NAME, U##CLASSTYPE_NAME*, U##CLASSTYPE_NAME*, Get##CLASSTYPE_NAME, Set##CLASSTYPE_NAME)
+#define DEFINE_ACTION_NUMERAL_FUNCTIONS(FUNCTION_NAME, TYPE_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(FUNCTION_NAME, TYPE_NAME, TYPE_NAME, Get##FUNCTION_NAME, Set##FUNCTION_NAME)
 
-DEFINE_ACTION_VALUE_FUNCTIONS(Boolean, bool, bool, GetBoolean, SetBoolean)
-DEFINE_ACTION_VALUE_FUNCTIONS(Float, float, float, GetFloat, SetFloat)
-DEFINE_ACTION_VALUE_FUNCTIONS(Double, double, double, GetDouble, SetDouble)
-DEFINE_ACTION_VALUE_FUNCTIONS(Integer, int32, int32, GetInteger32, SetInteger32)
-DEFINE_ACTION_VALUE_FUNCTIONS(Integer64, int64, int64, GetInteger64, SetInteger64)
-DEFINE_ACTION_VALUE_FUNCTIONS(Byte, uint8, uint8, GetByte, SetByte)
+//DEFINE_ACTION_STRUCT_FUNCTIONS(Vector)
+bool UActionExecutor::GetVector(const FActionCursorFinder& Cursor, const FName& Tag, FVector& OutResult, const FVector& DefaultValue) const
+{
+	const int ValueID = GetValueID(Cursor);
+	if (ValueID <= FActionValueContainer::InvalidID)
+	{
+		OutResult = DefaultValue;
+		return false;
+	}
+	return ValueContainer.GetStruct(ValueID, Tag, OutResult, DefaultValue);
+}
 
-DEFINE_ACTION_VALUE_FUNCTIONS(Name, FName, const FName&, GetName, SetName)
-DEFINE_ACTION_VALUE_FUNCTIONS(String, FString, const FString&, GetString, SetString)
-DEFINE_ACTION_VALUE_FUNCTIONS(Text, FText, const FText&, GetText, SetText)
+bool UActionExecutor::GetVectorFromCursor(const FActionCursorFinder& Cursor,const FName& Tag,FVector& OutResult,const FVector& DefaultValue)
+{
+	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
+	if (!IsValid(Executor))
+	{
+		OutResult = DefaultValue;
+		return false;
+	}
+	return Executor->GetVector(Cursor, Tag, OutResult, DefaultValue);
+}
 
+void UActionExecutor::SetVector(const FActionCursorFinder& Cursor,const FName& Tag,const FVector& Value)
+{
+	const int ValueID = GetValueID(Cursor);
+	if (ValueID == FActionValueContainer::InvalidID) return;
+	ValueContainer.SetStruct(ValueID, Tag, Value);
+}
 
+void UActionExecutor::SetVectorToCursor(
+	const FActionCursorFinder& Cursor,
+	const FName& Tag,
+	const FVector& Value)
+{
+	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
+	if (IsValid(Executor))
+	{
+		Executor->SetVector(Cursor, Tag, Value);
+	}
+}
+DEFINE_ACTION_STRUCT_FUNCTIONS(HitResult)
+DEFINE_ACTION_OBJECT_FUNCTIONS(Actor)
+DEFINE_ACTION_CLASSTYPE_FUNCTIONS(Class)
+DEFINE_ACTION_SOFTPATH_FUNCTIONS(SoftObjectPath)
 
+DEFINE_ACTION_NUMERAL_FUNCTIONS(Boolean, bool)
+DEFINE_ACTION_NUMERAL_FUNCTIONS(Float, float)
+DEFINE_ACTION_NUMERAL_FUNCTIONS(Double, double)
+DEFINE_ACTION_NUMERAL_FUNCTIONS(Integer, int32)
+DEFINE_ACTION_NUMERAL_FUNCTIONS(Integer64, int64)
+DEFINE_ACTION_NUMERAL_FUNCTIONS(Byte, uint8)
 
-//bool UActionExecutor::GetHitResult(const FActionCursorFinder& Cursor, const FName& Tag, FHitResult& OutResult, const FHitResult& DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetStruct<FHitResult>(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetHitResultFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FHitResult& OutResult, const FHitResult& DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetHitResult(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetActor(const FActionCursorFinder& Cursor, const FName& Tag, AActor*& OutResult) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = nullptr;
-//		return false;
-//	}
-//	return ValueContainer.GetObject<AActor>(ValueID, Tag, OutResult);
-//}
-//bool UActionExecutor::GetActorFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, AActor*& OutResult)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = nullptr;
-//		return false;
-//	}
-//	return Executor->GetActor(Cursor, Tag, OutResult);
-//}
-//bool UActionExecutor::GetClass(const FActionCursorFinder& Cursor, const FName& Tag, UClass*& OutResult) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = nullptr;
-//		return false;
-//	}
-//	return ValueContainer.GetClass(ValueID, Tag, OutResult);
-//}
-//bool UActionExecutor::GetClassFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, UClass*& OutResult)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = nullptr;
-//		return false;
-//	}
-//	return Executor->GetClass(Cursor, Tag, OutResult);
-//}
-//bool UActionExecutor::GetSoftObjectPath(const FActionCursorFinder& Cursor, const FName& Tag, FSoftObjectPath& OutResult, const FSoftObjectPath& DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetSoftObjectPath(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetSoftObjectPathFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FSoftObjectPath& OutResult, const FSoftObjectPath& DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetSoftObjectPath(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetBoolean(const FActionCursorFinder& Cursor, const FName& Tag, bool& OutResult, bool DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetBoolean(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetBooleanFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, bool& OutResult, bool DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetBoolean(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetFloat(const FActionCursorFinder& Cursor, const FName& Tag, float& OutResult, float DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetFloat(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetFloatFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, float& OutResult, float DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetFloat(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetDouble(const FActionCursorFinder& Cursor, const FName& Tag, double& OutResult, double DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetDouble(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetDoubleFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, double& OutResult, double DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetDouble(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetInteger(const FActionCursorFinder& Cursor, const FName& Tag, int32& OutResult, int32 DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetInteger32(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetIntegerFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, int32& OutResult, int32 DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetInteger(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetInteger64(const FActionCursorFinder& Cursor, const FName& Tag, int64& OutResult, int64 DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetInteger64(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetInteger64FromCursor(const FActionCursorFinder& Cursor, const FName& Tag, int64& OutResult, int64 DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetInteger64(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetByte(const FActionCursorFinder& Cursor, const FName& Tag, uint8& OutResult, uint8 DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetByte(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetByteFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, uint8& OutResult, uint8 DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetByte(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetName(const FActionCursorFinder& Cursor, const FName& Tag, FName& OutResult, const FName& DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetName(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetNameFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FName& OutResult, const FName& DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetName(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetString(const FActionCursorFinder& Cursor, const FName& Tag, FString& OutResult, const FString& DefaultValue) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetString(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetStringFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FString& OutResult, const FString& DefaultValue)
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetString(Cursor, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetText(const FActionCursorFinder& Cursor, const FName& Tag, FText& OutResult, const FText& DefaultValue = FText::GetEmpty()) const
-//{
-//	int ValueID = GetValueID(Cursor);
-//	if (ValueID == FActionValueContainer::InvalidID)
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return ValueContainer.GetText(ValueID, Tag, OutResult, DefaultValue);
-//}
-//bool UActionExecutor::GetTextFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FText& OutResult, const FText& DefaultValue = FText::GetEmpty())
-//{
-//	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-//	if (!IsValid(Executor))
-//	{
-//		OutResult = DefaultValue;
-//		return false;
-//	}
-//	return Executor->GetText(Cursor, Tag, OutResult, DefaultValue);
-//}
+DEFINE_ACTION_SENTENCE_FUNCTIONS(Name)
+DEFINE_ACTION_SENTENCE_FUNCTIONS(String)
+DEFINE_ACTION_SENTENCE_FUNCTIONS(Text)
 
 
-//
+
+
+
+
+
 //bool UActionExecutor::HasFloat(const FActionCursorFinder& WantCursor, FName WantTag)
 //{
 //	bool bIsValidValueMap;

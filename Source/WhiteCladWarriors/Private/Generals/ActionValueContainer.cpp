@@ -7,6 +7,7 @@ void FActionValueContainer::Clear()
 	Hierarchy.Reset();
 	ComponentMap.Reset();
 	Values.Reset();
+	NextID = 1;
 }
 
 int FActionValueContainer::Registration(int ParentID)

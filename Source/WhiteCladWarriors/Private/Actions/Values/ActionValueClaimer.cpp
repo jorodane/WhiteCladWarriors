@@ -148,11 +148,8 @@ FVector UPositionClaimer_HitPosition::GetPosition(const FActionCursorFinder& Wan
 
 FVector UPositionClaimer_SavedPosition::GetPosition(const FActionCursorFinder& WantCursor, const FVector& DefaultValue) const
 {
-	FVector Result = DefaultValue;
-	bool bIsValidValueMap = false;
-	//Warning :: With Default Value
-	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	//if(bIsValidValueMap) Result = ValueMap.GetSavedPosition(WantCursor, PositionTag);
+	FVector Result;
+	UActionExecutor::GetVectorFromCursor(WantCursor, PositionTag, Result, DefaultValue);
 	if (AdditivePosition) Result += GetAdditivePosition(WantCursor.CurrentComponent);
 	return Result;
 }
@@ -256,12 +253,9 @@ FVector UDirectionClaimer_ToPosition::GetOriginDirection(const FActionCursorFind
 
 FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursorFinder& WantCursor, const FVector& DefaultPosition, const FVector& DefaultDirection) const
 {
-	bool bIsValidValueMap = false;
-	//Warning :: With Default Value
-	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	//if (bIsValidValueMap && !DirectionTag.IsNone()) return ValueMap.GetSavedDirection(WantCursor, DirectionTag);
-	//else 
-		return DefaultDirection;
+	FVector ResultDirection;
+	UActionExecutor::GetVectorFromCursor(WantCursor, DirectionTag, ResultDirection, DefaultDirection);
+	return DefaultDirection;
 }
 
 AActionBase* UActionClaimer::GetAction(const FActionCursorFinder& WantCursor) const
@@ -289,11 +283,9 @@ AActor* UActorClaimer_SelfActor::GetActor(const FActionCursorFinder& WantCursor)
 AActor* UActorClaimer_SavedActor::GetActor(const FActionCursorFinder& WantCursor) const
 {
 	bool bIsValidValueMap = false;
-	//Warning :: With Default Value
-	//FExecutorValueMap& ValueMap = UActionExecutor::GetValueMapFromCursor(WantCursor, bIsValidValueMap);
-	//if (!bIsValidValueMap) return nullptr;
-	//return ValueMap.GetSavedActor(WantCursor, ActorTag);
-	return nullptr;
+	AActor* Result;
+	UActionExecutor::GetActorFromCursor(WantCursor, ActorTag, Result, nullptr);
+	return Result;
 }
 
 AActor* UActorClaimer_HitActor::GetActor(const FActionCursorFinder& WantCursor) const

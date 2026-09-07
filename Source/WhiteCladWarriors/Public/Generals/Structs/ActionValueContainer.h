@@ -140,7 +140,7 @@ struct FActionValueContainer
 		return GetValue<double>(StartID, Tag, EPropertyBagPropertyType::Double, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueDouble(Descriptor); });
 	}
 
-	bool GetInteger32(int StartID, const FName& Tag, int32& OutResult, int32 DefaultValue = 0) const
+	bool GetInteger(int StartID, const FName& Tag, int32& OutResult, int32 DefaultValue = 0) const
 	{
 		return GetValue<int32>(StartID, Tag, EPropertyBagPropertyType::Int32, OutResult, DefaultValue, [](const FInstancedPropertyBag& Values, const FPropertyBagPropertyDesc& Descriptor) {return Values.GetValueInt32(Descriptor); });
 	}
@@ -188,11 +188,18 @@ struct FActionValueContainer
 		Setter(Values, Key, Value);
 	}
 
+	template<typename T>
+	const UScriptStruct* GetScriptStructType()
+	{
+		if constexpr (requires { T::StaticStruct(); }) return T::StaticStruct();
+		else return TBaseStructure<T>::Get();
+	}
+
 	template <typename T>
 	void SetStruct(int ID, const FName& Tag, const T& Value)
 	{
 		const FName Key = GetValueKey(ID, Tag);
-		const UStruct* StructClass = T::StaticStruct();
+		const UScriptStruct* StructClass = GetScriptStructType<T>();
 		if (!Values.FindPropertyDescByName(Key)) Values.AddProperty(Key, EPropertyBagPropertyType::Struct, StructClass);
 		Values.SetValueStruct<T>(Key, Value);
 	}
@@ -224,7 +231,7 @@ struct FActionValueContainer
 	{ 
 		SetValue(ID, Tag, EPropertyBagPropertyType::Double, Value, [](FInstancedPropertyBag& Values, const FName& Key, double Value) { Values.SetValueDouble(Key, Value); });
 	}
-	void SetInteger32(int ID, const FName& Tag, int32 Value) 
+	void SetInteger(int ID, const FName& Tag, int32 Value) 
 	{ 
 		SetValue(ID, Tag, EPropertyBagPropertyType::Int32, Value, [](FInstancedPropertyBag& Values, const FName& Key, int32 Value) { Values.SetValueInt32(Key, Value); });
 	}
