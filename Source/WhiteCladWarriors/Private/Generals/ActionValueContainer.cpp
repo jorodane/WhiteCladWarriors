@@ -78,7 +78,7 @@ const FPropertyBagPropertyDesc* FActionValueContainer::GetLocalValueDescriptor(i
 	return Values.FindPropertyDescByName(GetValueKey(TargetID, Tag));
 }
 
-bool FActionValueContainer::GetClass(int StartID, const FName& Tag, UClass*& OutResult) const
+bool FActionValueContainer::GetClass(int StartID, const FName& Tag, UClass*& OutResult, UClass* DefaultValue) const
 {
 	const FPropertyBagPropertyDesc* Descriptor = nullptr;
 	if (GetValueDescriptor(StartID, Tag, EPropertyBagPropertyType::Class, Descriptor))
@@ -90,6 +90,6 @@ bool FActionValueContainer::GetClass(int StartID, const FName& Tag, UClass*& Out
 			return true;
 		}
 	}
-	OutResult = nullptr;
+	OutResult = DefaultValue;
 	return false;
 }

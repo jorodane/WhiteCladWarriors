@@ -61,7 +61,7 @@ struct FActionValueContainer
 	}
 
 	template <typename T>
-	bool GetStruct(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, T& OutResult, const T& DefaultValue) const
+	bool GetStruct(int StartID, const FName& Tag, T& OutResult, const T& DefaultValue) const
 	{
 		int CurrentID = StartID;
 
@@ -90,7 +90,7 @@ struct FActionValueContainer
 	}
 
 	template <typename T>
-	bool GetObject(int StartID, const FName& Tag, EPropertyBagPropertyType PropertyType, T*& OutResult) const
+	bool GetObject(int StartID, const FName& Tag, T*& OutResult, T* DefaultValue = nullptr) const
 	{
 		int CurrentID = StartID;
 
@@ -104,7 +104,7 @@ struct FActionValueContainer
 
 				if (Result.IsValid())
 				{
-					OutResult = *Result.GetValue();
+					OutResult = Result.GetValue();
 					return true;
 				}
 			}
@@ -118,7 +118,7 @@ struct FActionValueContainer
 		return false;
 	}
 
-	bool GetClass(int StartID, const FName& Tag, UClass*& OutResult) const;
+	bool GetClass(int StartID, const FName& Tag, UClass*& OutResult, UClass* DefaultValue = nullptr) const;
 
 	bool GetSoftObjectPath(int StartID, const FName& Tag, FSoftObjectPath& OutResult, const FSoftObjectPath& DefaultValue) const
 	{

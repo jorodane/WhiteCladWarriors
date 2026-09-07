@@ -82,12 +82,21 @@ struct FActiveNodeMap
 
 	FActiveNodeInfo* GetInfo(int ID)
 	{
-		if (NodeMap.IsEmpty()) return nullptr;
-		if (FActiveNodeInfo* Result = NodeMap.Find(ID)) return Result;
-		else return nullptr;
+		return NodeMap.Find(ID);
+	}
+
+	const FActiveNodeInfo* GetInfo(int ID) const
+	{
+		return NodeMap.Find(ID);
 	}
 
 	FActiveNodeInfo* GetInfo(const FActionCursorFinder& TargetCursor)
+	{
+		return GetInfo(TargetCursor.CurrentID);
+	}
+
+
+	const FActiveNodeInfo* GetInfo(const FActionCursorFinder& TargetCursor) const 
 	{
 		return GetInfo(TargetCursor.CurrentID);
 	}
@@ -118,7 +127,7 @@ struct FActiveNodeMap
 		return *Info;
 	}
 
-	int GetValueID(const FActionCursorFinder& TargetCursor);
+	int GetValueID(const FActionCursorFinder& TargetCursor) const;
 
 	int AddNode(UActionNode* Node, int CurrentValueID);
 	int AddNode(UActionNode* Node, FOnNodeEnded, int CurrentValueID);
@@ -195,6 +204,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Action")
 	UActionNode* GetNode(const FActionCursorFinder& WantCursor);
 
+	FActiveNodeMap* GetActiveNodeMap(const FActionCursorFinder& WantCursor);
+	const FActiveNodeMap* GetActiveNodeMap(const FActionCursorFinder& WantCursor) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void EndNode(const FActionCursorFinder& WantCursor, UActionNode* OldNode, bool bIsCanceled, bool bEndSubNode);
 
@@ -235,6 +247,7 @@ public:
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0, bool bAsSubNode = false);
 
 	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);
+	const FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent) const;
 	FActiveNodeMap* AddNodeMap(UUnitActionComponent* TargetComponent);
 	FActiveNodeMap* GetOrAddNodeMap(UUnitActionComponent* TargetComponent);
 
@@ -282,4 +295,204 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Action")
 	static UActionNode* GetNodeFromCursor(const FActionCursorFinder& WantCursor);
+
+	UFUNCTION(BlueprintPure, Category = "Action")
+	static int GetValueIDFromCursor(const FActionCursorFinder& WantCursor);
+
+public:
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	int GetValueID(const FActionCursorFinder& WantCursor) const;
+
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetHitResult(const FActionCursorFinder& Cursor, const FName& Tag, FHitResult& OutResult, const FHitResult& DefaultValue) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetHitResultFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FHitResult& OutResult, const FHitResult& DefaultValue);
+
+	UFUNCTION(BlueprintCallable, Category = "ValueContainer")
+	void SetHitResult(const FActionCursorFinder& Cursor, const FName& Tag, const FHitResult& Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetHitResultFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, const FHitResult& Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetActor(const FActionCursorFinder& Cursor, const FName& Tag, AActor*& OutResult, AActor* DefaultValue) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetActorFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, AActor*& OutResult, AActor* DefaultValue);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetActor(const FActionCursorFinder& Cursor, const FName& Tag, AActor* Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetActorFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, AActor* Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetClass(const FActionCursorFinder& Cursor, const FName& Tag, UClass*& OutResult, UClass* DefaultValue) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetClassFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, UClass*& OutResult, UClass* DefaultValue);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetClass(const FActionCursorFinder& Cursor, const FName& Tag, UClass* Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetClassFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, UClass* Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetSoftObjectPath(const FActionCursorFinder& Cursor, const FName& Tag, FSoftObjectPath& OutResult, const FSoftObjectPath& DefaultValue) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetSoftObjectPathFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FSoftObjectPath& OutResult, const FSoftObjectPath& DefaultValue);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetSoftObjectPath(const FActionCursorFinder& Cursor, const FName& Tag, const FSoftObjectPath& Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetSoftObjectPathFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, const FSoftObjectPath& Value);
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetBoolean(const FActionCursorFinder& Cursor, const FName& Tag, bool& OutResult, bool DefaultValue = false) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetBooleanFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, bool& OutResult, bool DefaultValue = false);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetBoolean(const FActionCursorFinder& Cursor, const FName& Tag, bool Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetBooleanFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, bool Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetFloat(const FActionCursorFinder& Cursor, const FName& Tag, float& OutResult, float DefaultValue = 0.0f) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetFloatFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, float& OutResult, float DefaultValue = 0.0f);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetFloat(const FActionCursorFinder& Cursor, const FName& Tag, float Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetFloatFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, float Value);
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetDouble(const FActionCursorFinder& Cursor, const FName& Tag, double& OutResult, double DefaultValue = 0.0) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetDoubleFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, double& OutResult, double DefaultValue = 0.0);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetDouble(const FActionCursorFinder& Cursor, const FName& Tag, double Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetDoubleFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, double Value);
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetInteger(const FActionCursorFinder& Cursor, const FName& Tag, int32& OutResult, int32 DefaultValue = 0) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetIntegerFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, int32& OutResult, int32 DefaultValue = 0);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetInteger(const FActionCursorFinder& Cursor, const FName& Tag, int32 Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetIntegerFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, int32 Value);
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetInteger64(const FActionCursorFinder& Cursor, const FName& Tag, int64& OutResult, int64 DefaultValue = 0) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetInteger64FromCursor(const FActionCursorFinder& Cursor, const FName& Tag, int64& OutResult, int64 DefaultValue = 0);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetInteger64(const FActionCursorFinder& Cursor, const FName& Tag, int64 Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetInteger64FromCursor(const FActionCursorFinder& Cursor, const FName& Tag, int64 Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetByte(const FActionCursorFinder& Cursor, const FName& Tag, uint8& OutResult, uint8 DefaultValue = 0) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetByteFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, uint8& OutResult, uint8 DefaultValue = 0);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetByte(const FActionCursorFinder& Cursor, const FName& Tag, uint8 Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetByteFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, uint8 Value);
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetName(const FActionCursorFinder& Cursor, const FName& Tag, FName& OutResult, const FName& DefaultValue = NAME_None) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetNameFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FName& OutResult, const FName& DefaultValue = NAME_None);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetName(const FActionCursorFinder& Cursor, const FName& Tag, const FName& Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetNameFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, const FName& Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetString(const FActionCursorFinder& Cursor, const FName& Tag, FString& OutResult, const FString& DefaultValue = TEXT("")) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetStringFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FString& OutResult, const FString& DefaultValue = TEXT(""));
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetString(const FActionCursorFinder& Cursor, const FName& Tag, const FString& Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetStringFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, const FString& Value);
+
+
+
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	bool GetText(const FActionCursorFinder& Cursor, const FName& Tag, FText& OutResult, const FText& DefaultValue = FText::GetEmpty()) const;
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static bool GetTextFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, FText& OutResult, const FText& DefaultValue = FText::GetEmpty());
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	void SetText(const FActionCursorFinder& Cursor, const FName& Tag, const FText& Value);
+
+	UFUNCTION(BlueprintPure, Category = "ValueContainer")
+	static void SetTextFromCursor(const FActionCursorFinder& Cursor, const FName& Tag, const FText& Value);
+
+
 };
