@@ -128,12 +128,10 @@ void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
         SetChaseLockTimeNow();
 
         bool bIsValidValueMap = false;
-        //Warning :: With Default Value
-        //FExecutorValueMap& ValueMap = ClaimExecutor->GetValueMap(ActionClaimer, bIsValidValueMap);
-        //if(bIsValidValueMap) ValueMap.AddActor(L"AttackTarget", Target);
-        UActionNode* ExecutedNode = ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate);
-        if (IsValid(ExecutedNode)) bIsAttackExecuted = true;
-        else OnAttackStop();
+        FActiveNodeInfo& CreatedInfo = ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate);
+        ClaimExecutor->ValueContainer.SetObject<AActor>(CreatedInfo.ValueID, "AttackTarget", Target);
+        ClaimExecutor->Execute(ActionClaimer);
+        bIsAttackExecuted = true;
     }
     else
     {

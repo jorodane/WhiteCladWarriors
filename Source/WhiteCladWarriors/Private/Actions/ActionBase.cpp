@@ -95,6 +95,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor->ExecutorID, CurrentComponent, 0, false);
+			FActiveNodeMap* NewNodeMap = NewExecutor->AddNodeMap(CurrentComponent, RootNode);
 			RootNode->ClaimExecute(MainFinder);
 		}
 		return NewExecutor.Get();
@@ -117,6 +118,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
 		{
 			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor->ExecutorID, CurrentComponent, 0, false);
+			FActiveNodeMap* NewNodeMap = NewExecutor->AddNodeMap(CurrentComponent, RootNode);
 			RootNode->ClaimExecuteWithInput(MainFinder, ClaimedInput);
 		}
 		return NewExecutor.Get();
