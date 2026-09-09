@@ -11,6 +11,7 @@
 class UActionNode;
 class UActionBehaviorNode;
 class AActionIndicatorShowerBase;
+class UPositionClaimer;
 /**
  * 
  */
@@ -23,7 +24,7 @@ class WHITECLADWARRIORS_API UActionSelectorNode : public UActionNode
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Action")
 	FText InputFailReason;
-
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Action", Meta = (ExposeOnSpawn = "true"))
 	TArray<FSelectorInput> InputTypes;
 
@@ -41,7 +42,7 @@ protected:
 	bool OnReceivePosition(const FActionCursorFinder& WantCursor, const FName& TargetTag, const FVector& TargetPosition);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
-	bool OnReceiveDirection(const FActionCursorFinder& WantCursor, const FName& TargetTag, const FVector& TargetDirection);
+	bool OnReceiveDirection(const FActionCursorFinder& WantCursor, const FName& TargetTag, const FVector& Destination);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Action")
 	bool OnReceiveActor(const FActionCursorFinder& WantCursor, const FName& TargetTag, AActor* TargetActor);

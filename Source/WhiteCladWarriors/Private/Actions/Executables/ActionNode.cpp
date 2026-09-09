@@ -29,10 +29,12 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 		FLinkedNodeInfo& NodeInfo = *Result;
 		if (NodeInfo.bIsSubNode)
 		{
-			int ResultID;
 			if (FActiveNodeMap* ResultInfo = Executor->GetNodeMap(TargetComponent))
 			{
-				Executor->CreateSubNode(WantCursor, *ResultInfo, this, NodeInfo.Node, ResultID);
+				int ResultID;
+				FActionCursorFinder ResultCursor;
+				Executor->CreateSubNode(WantCursor, this, NodeInfo.Node, ResultID, ResultCursor);
+				Executor->EnterNode(ResultCursor, this, false);
 			}
 		}
 		else
@@ -77,21 +79,14 @@ void UActionNode::MoveExecutorToWantNode_Implementation(const FActionCursorFinde
 	Executor->EnterNode(WantCursor, TargetNode, bIsCanceled);
 }
 
-int UActionNode::CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode)
+int UActionNode::CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, FActionCursorFinder& ResultCursor)
 {
 	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
+	ResultCursor = WantCursor;
 	if (!IsValid(Executor)) return -1;
 	int index;
-	Executor->CreateSubNode(WantCursor, this, TargetNode, index);
-	return index;
-}
-
-int UActionNode::CreateSubNode_Hit_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, const FHitResult& Hit)
-{
-	UActionExecutor* Executor = UActionExecutor::GetExecutorFromID(WantCursor.CurrentExecutorID);
-	if (!IsValid(Executor)) return -1;
-	int index;
-	Executor->CreateSubNode(WantCursor, this, TargetNode, index);
+	Executor->CreateSubNode(WantCursor, this, TargetNode, index, ResultCursor);
+	Executor->EnterNode(ResultCursor, this, false);
 	return index;
 }
 

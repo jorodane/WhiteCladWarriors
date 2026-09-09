@@ -39,6 +39,7 @@ struct FActiveNodeInfo
 	UPROPERTY(BlueprintReadOnly, Category = "Message")
 	ENodeListeningState CurrentListeningState = ENodeListeningState::Pending;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Message")
 	int ValueID = -1;
 
 	FActiveNodeInfo() { }
@@ -71,6 +72,7 @@ struct FActiveNodeMap
 	UPROPERTY(BlueprintReadOnly, Category = "Action")
 	TMap<int, FOnNodeEnded> EndEventMap;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Message")
 	int ValueID = -1;
 
 	int nextID = 0;
@@ -155,13 +157,13 @@ public:
 	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	FActiveNodeInfo& CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+	FActiveNodeInfo& CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, FActionCursorFinder& ResultCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	FActiveNodeInfo& CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
+	FActiveNodeInfo& CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FOnNodeEnded& OnNodeEnded, int& ResultID, FActionCursorFinder& ResultCursor);
 
-	FActiveNodeInfo& CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
-	FActiveNodeInfo& CreateSubNodeWithEvent(FActionCursorFinder BaseCursor,FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded);
+	FActiveNodeInfo& AddSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
+	FActiveNodeInfo& AddSubNodeWithEvent(FActionCursorFinder BaseCursor,FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, const FOnNodeEnded& OnNodeEnded, int& ResultID);
 
 
 	UFUNCTION(BlueprintPure, Category = "Action")

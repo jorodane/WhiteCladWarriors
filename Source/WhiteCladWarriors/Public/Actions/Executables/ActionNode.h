@@ -90,13 +90,8 @@ public:
 	virtual void MoveExecutorToWantNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	int CreateSubNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
-	int CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
-	int CreateSubNode_Hit(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, const FHitResult& Hit);
-	int CreateSubNode_Hit_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, const FHitResult& Hit);
-
+	int CreateSubNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, FActionCursorFinder& ResultCursor);
+	int CreateSubNode_Implementation(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, FActionCursorFinder& ResultCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Action")
 	void EndAllSubNodes(const FActionCursorFinder& WantCursor);

@@ -255,7 +255,7 @@ FVector UDirectionClaimer_SavedDirection::GetOriginDirection(const FActionCursor
 {
 	FVector ResultDirection;
 	UActionExecutor::GetVectorFromCursor(WantCursor, DirectionTag, ResultDirection, DefaultDirection);
-	return DefaultDirection;
+	return ResultDirection;
 }
 
 AActionBase* UActionClaimer::GetAction(const FActionCursorFinder& WantCursor) const

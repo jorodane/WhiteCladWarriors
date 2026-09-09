@@ -128,9 +128,10 @@ void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
         SetChaseLockTimeNow();
 
         bool bIsValidValueMap = false;
-        FActiveNodeInfo& CreatedInfo = ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, NodeEndedDelegate);
-        ClaimExecutor->ValueContainer.SetObject<AActor>(CreatedInfo.ValueID, "AttackTarget", Target);
-        ClaimExecutor->Execute(ActionClaimer);
+        FActionCursorFinder ResultCursor;
+        FActiveNodeInfo& CreatedInfo = ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, NodeEndedDelegate, ResultID, ResultCursor);
+        ClaimExecutor->SetActor(ResultCursor, "AttackTarget", Target);
+        ClaimExecutor->Execute(ResultCursor);
         bIsAttackExecuted = true;
     }
     else

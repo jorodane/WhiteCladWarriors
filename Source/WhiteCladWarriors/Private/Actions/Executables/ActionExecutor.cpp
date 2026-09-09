@@ -257,25 +257,35 @@ void UActionExecutor::EnterNode(const FActionCursorFinder& WantCursor, UActionNo
 	}
 }
 
-FActiveNodeInfo& UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
+FActiveNodeInfo& UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, FActionCursorFinder& ResultCursor)
 {
 	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent, TargetNode);
-	return CreateSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
+	FActiveNodeInfo& ResultInfo = AddSubNode(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID);
+	ResultCursor = BaseCursor;
+	ResultCursor.bAsSubNode = true;
+	ResultCursor.CurrentID = ResultID;
+	EnterNode(ResultCursor, TargetNode, false);
+	return ResultInfo;
 }
 
-FActiveNodeInfo& UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
+FActiveNodeInfo& UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FOnNodeEnded& OnNodeEnded, int& ResultID, FActionCursorFinder& ResultCursor)
 {
 	FActiveNodeMap* CurrentNodeMap = GetOrAddNodeMap(BaseCursor.CurrentComponent, TargetNode);
-	return CreateSubNodeWithEvent(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, ResultID, OnNodeEnded);
+	FActiveNodeInfo& ResultInfo = AddSubNodeWithEvent(BaseCursor, *CurrentNodeMap, OriginNode, TargetNode, OnNodeEnded, ResultID);
+	ResultCursor = BaseCursor;
+	ResultCursor.bAsSubNode = true;
+	ResultCursor.CurrentID = ResultID;
+	EnterNode(ResultCursor, TargetNode, false);
+	return ResultInfo;
 }
 
-FActiveNodeInfo& UActionExecutor::CreateSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
+FActiveNodeInfo& UActionExecutor::AddSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
 	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
 	return TargetInfo.AddNode(OriginNode, ValueID, ResultID);
 }
 
-FActiveNodeInfo& UActionExecutor::CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, const FOnNodeEnded& OnNodeEnded)
+FActiveNodeInfo& UActionExecutor::AddSubNodeWithEvent(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, const FOnNodeEnded& OnNodeEnded, int& ResultID)
 {
 	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
 	return TargetInfo.AddNode(OriginNode, OnNodeEnded, ValueID, ResultID);
