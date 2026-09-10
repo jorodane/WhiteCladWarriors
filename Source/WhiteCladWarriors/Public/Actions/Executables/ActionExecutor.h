@@ -92,6 +92,7 @@ struct FActiveNodeMap
 	inline FActiveNodeInfo* GetMainInfo() { return GetInfo(0); }
 
 	FActiveNodeInfo* SetNode(UActionNode* TargetNode, int ID);
+	bool SetEndEvent(int ID, const FOnNodeEnded& OnNodeEnded);
 
 	int GetValueID(const FActionCursorFinder& TargetCursor) const;
 
@@ -157,13 +158,13 @@ public:
 	void EnterNode(const FActionCursorFinder& WantCursor, UActionNode* TargetNode, bool bIsCanceled, int RecursiveDepth = 12);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	FActiveNodeInfo& CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, FActionCursorFinder& ResultCursor);
+	FActiveNodeInfo& CreateMainNode(UUnitActionComponent* ActionCompoenent, UActionNode* RootNode, FActionCursorFinder& ResultCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	FActiveNodeInfo& CreateSubNodeWithEvent(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, const FOnNodeEnded& OnNodeEnded, int& ResultID, FActionCursorFinder& ResultCursor);
+	FActiveNodeInfo& CreateSubNode(FActionCursorFinder BaseCursor, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID, FActionCursorFinder& ResultCursor);
 
+	FActiveNodeInfo& AddMainNode(FActiveNodeMap& TargetInfo, UActionNode* RootNode);
 	FActiveNodeInfo& AddSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID);
-	FActiveNodeInfo& AddSubNodeWithEvent(FActionCursorFinder BaseCursor,FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, const FOnNodeEnded& OnNodeEnded, int& ResultID);
 
 
 	UFUNCTION(BlueprintPure, Category = "Action")
@@ -188,10 +189,10 @@ public:
 	void InterruptNode(const FActionCursorFinder& WantCursor, const FActionCursorFinder& InterruptCursor, UActionNode* InterruptNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode);
+	void AddComponentToMap(UUnitActionComponent* TargetComponent, UActionNode* StartNode, FActionCursorFinder& OutMainCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode);
+	void AddComponentBaseToMap(UUnitComponentBase* TargetComponent, UActionNode* StartNode, FActionCursorFinder& OutMainCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void RemoveComponentFromMap(UUnitActionComponent* TargetComponent);
@@ -208,6 +209,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	void RemoveCreatedActor(AActor* OldActor, const FActionCursorFinder& BaseCursor);
 
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void Execute(const FActionCursorFinder& Cursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
@@ -215,12 +217,14 @@ public:
 
 	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);
 	const FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent) const;
-	FActiveNodeMap* AddNodeMap(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
-	FActiveNodeMap* GetOrAddNodeMap(UUnitActionComponent* TargetComponent, UActionNode* TargetNode);
+	FActiveNodeMap* AddNodeMap(UUnitActionComponent* TargetComponent);
+	FActiveNodeMap* GetOrAddNodeMap(UUnitActionComponent* TargetComponent);
 
 	FActiveNodeInfo* GetNodeInfo(const FActionCursorFinder& Cursor);
 
-	bool SetEndEventOnMainCursor(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded);
+	bool SetEndEvent(UUnitActionComponent* TargetComponent, int ID, const FOnNodeEnded& OnNodeEnded);
+	bool SetEndEvent(const FActionCursorFinder& Cursor, const FOnNodeEnded& OnNodeEnded) { return SetEndEvent(Cursor.CurrentComponent, Cursor.CurrentID, OnNodeEnded); }
+	bool SetEndEventOnMain(UUnitActionComponent* TargetComponent, const FOnNodeEnded& OnNodeEnded) { return SetEndEvent(TargetComponent, 0, OnNodeEnded); }
 
 	bool GetValid() { return ExecutorID != -1; }
 
@@ -236,7 +240,7 @@ public:
 
 
 public:
-	static  TWeakObjectPtr<UActionExecutor> CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode);
+	static  TWeakObjectPtr<UActionExecutor> CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, FActionCursorFinder& OutMainCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	static void DestroyExecutor(UActionExecutor* TargetExecutor);

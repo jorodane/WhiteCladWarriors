@@ -90,14 +90,10 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 	if (ClaimedComponents.IsEmpty()) return nullptr;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
+		FActionCursorFinder MainCursor;
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, MainCursor);
 		if (!NewExecutor.IsValid()) return nullptr;
-		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
-		{
-			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor->ExecutorID, CurrentComponent, 0, false);
-			FActiveNodeMap* NewNodeMap = NewExecutor->AddNodeMap(CurrentComponent, RootNode);
-			RootNode->ClaimExecute(MainFinder);
-		}
+		for (UUnitActionComponent* CurrentComponent : ClaimedComponents) NewExecutor->Execute(MainCursor);
 		return NewExecutor.Get();
 	}
 	return nullptr;
@@ -113,14 +109,10 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 	if (ClaimedComponents.IsEmpty()) return nullptr;
 	if (IsValid(RootNode))
 	{
-		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode);
+		FActionCursorFinder MainCursor;
+		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, MainCursor);
 		if (!NewExecutor.IsValid()) return nullptr;
-		for (UUnitActionComponent* CurrentComponent : ClaimedComponents)
-		{
-			FActionCursorFinder MainFinder(this, TargetOperator, NewExecutor->ExecutorID, CurrentComponent, 0, false);
-			FActiveNodeMap* NewNodeMap = NewExecutor->AddNodeMap(CurrentComponent, RootNode);
-			RootNode->ClaimExecuteWithInput(MainFinder, ClaimedInput);
-		}
+		for (UUnitActionComponent* CurrentComponent : ClaimedComponents) NewExecutor->Execute(MainCursor);
 		return NewExecutor.Get();
 	}
 	return nullptr;

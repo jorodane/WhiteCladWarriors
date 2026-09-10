@@ -86,7 +86,6 @@ int UActionNode::CreateSubNode_Implementation(const FActionCursorFinder& WantCur
 	if (!IsValid(Executor)) return -1;
 	int index;
 	Executor->CreateSubNode(WantCursor, this, TargetNode, index, ResultCursor);
-	Executor->EnterNode(ResultCursor, this, false);
 	return index;
 }
 

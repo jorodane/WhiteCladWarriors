@@ -129,8 +129,9 @@ void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
 
         bool bIsValidValueMap = false;
         FActionCursorFinder ResultCursor;
-        FActiveNodeInfo& CreatedInfo = ClaimExecutor->CreateSubNodeWithEvent(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, NodeEndedDelegate, ResultID, ResultCursor);
+        FActiveNodeInfo& CreatedInfo = ClaimExecutor->CreateSubNode(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, ResultCursor);
         ClaimExecutor->SetActor(ResultCursor, "AttackTarget", Target);
+        ClaimExecutor->SetEndEvent(ResultCursor, NodeEndedDelegate);
         ClaimExecutor->Execute(ResultCursor);
         bIsAttackExecuted = true;
     }
@@ -139,7 +140,7 @@ void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
         ClaimExecutor = AttackAction->ExecuteActionToTarget(GetOperator(), this, Target);
         if (IsValid(ClaimExecutor))
         {
-            ClaimExecutor->SetEndEventOnMainCursor(this, NodeEndedDelegate);
+            ClaimExecutor->SetEndEvent(this, 0, NodeEndedDelegate);
             bIsAttackExecuted = true;
         }
         else
