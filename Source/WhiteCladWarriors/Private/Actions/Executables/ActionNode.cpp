@@ -34,7 +34,7 @@ void UActionNode::MoveExecutorToLinkedNode_Implementation(const FActionCursorFin
 				int ResultID;
 				FActionCursorFinder ResultCursor;
 				Executor->CreateSubNode(WantCursor, this, NodeInfo.Node, ResultID, ResultCursor);
-				Executor->EnterNode(ResultCursor, this, false);
+				Executor->EnterNode(ResultCursor, NodeInfo.Node, false);
 			}
 		}
 		else

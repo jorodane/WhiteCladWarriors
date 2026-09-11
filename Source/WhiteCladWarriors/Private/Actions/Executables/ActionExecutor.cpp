@@ -296,7 +296,7 @@ FActiveNodeInfo& UActionExecutor::AddMainNode(FActiveNodeMap& TargetInfo, UActio
 FActiveNodeInfo& UActionExecutor::AddSubNode(FActionCursorFinder BaseCursor, FActiveNodeMap& TargetInfo, UActionNode* OriginNode, UActionNode* TargetNode, int& ResultID)
 {
 	int ValueID = ValueContainer.Registration(TargetInfo.GetValueID(BaseCursor));
-	return TargetInfo.AddNode(OriginNode, ValueID, ResultID);
+	return TargetInfo.AddNode(TargetNode, ValueID, ResultID);
 }
 UActionNode* UActionExecutor::GetNode(const FActionCursorFinder& WantCursor)
 {
@@ -452,11 +452,6 @@ void UActionExecutor::RemoveCreatedActor(AActor* OldActor, const FActionCursorFi
 	CheckCursorMap();
 }
 
-void UActionExecutor::Execute(const FActionCursorFinder& Cursor)
-{
-	EnterNode(Cursor, GetNode(Cursor), false);
-}
-
 FActiveNodeMap* UActionExecutor::GetNodeMap(UUnitActionComponent* TargetComponent)
 {
 	return CursorMap.Find(TargetComponent);
@@ -539,6 +534,21 @@ void UActionExecutor::OnMessageFromComponent_Montage(UUnitComponentBase* From, U
 		}
 	}
 }
+
+void UActionExecutor::ExecuteCursor(const FActionCursorFinder& WantCursor)
+{
+	UActionNode* TargetNode = GetNodeFromCursor(WantCursor);
+	if (!IsValid(TargetNode)) return;
+	TargetNode->ClaimExecute(WantCursor);
+}
+
+void UActionExecutor::ExecuteCursorWithInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input)
+{
+	UActionNode* TargetNode = GetNodeFromCursor(WantCursor);
+	if (!IsValid(TargetNode)) return;
+	TargetNode->ClaimExecuteWithInput(WantCursor, Input);
+}
+
 
 TWeakObjectPtr<UActionExecutor> UActionExecutor::CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, FActionCursorFinder& OutMainCursor)
 {

@@ -93,7 +93,7 @@ UActionExecutor* AActionBase::ExecuteAction_Implementation(AOperator* TargetOper
 		FActionCursorFinder MainCursor;
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, MainCursor);
 		if (!NewExecutor.IsValid()) return nullptr;
-		for (UUnitActionComponent* CurrentComponent : ClaimedComponents) NewExecutor->Execute(MainCursor);
+		for (UUnitActionComponent* CurrentComponent : ClaimedComponents) NewExecutor->ExecuteCursor(MainCursor);
 		return NewExecutor.Get();
 	}
 	return nullptr;
@@ -112,7 +112,7 @@ UActionExecutor* AActionBase::ExecuteActionWithInput_Implementation(AOperator* T
 		FActionCursorFinder MainCursor;
 		NewExecutor = UActionExecutor::CreateExecutor(this, TargetOperator, ClaimedComponents, RootNode, MainCursor);
 		if (!NewExecutor.IsValid()) return nullptr;
-		for (UUnitActionComponent* CurrentComponent : ClaimedComponents) NewExecutor->Execute(MainCursor);
+		for (UUnitActionComponent* CurrentComponent : ClaimedComponents) NewExecutor->ExecuteCursorWithInput(MainCursor, Input);
 		return NewExecutor.Get();
 	}
 	return nullptr;

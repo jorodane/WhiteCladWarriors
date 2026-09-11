@@ -132,7 +132,7 @@ void UUnitAttackComponent::ExecuteAttack_Implementation(AActor* Target)
         FActiveNodeInfo& CreatedInfo = ClaimExecutor->CreateSubNode(ActionClaimer, ClaimNode, AttackAction->RootAsSubNode, ResultID, ResultCursor);
         ClaimExecutor->SetActor(ResultCursor, "AttackTarget", Target);
         ClaimExecutor->SetEndEvent(ResultCursor, NodeEndedDelegate);
-        ClaimExecutor->Execute(ResultCursor);
+        ClaimExecutor->ExecuteCursor(ResultCursor);
         bIsAttackExecuted = true;
     }
     else

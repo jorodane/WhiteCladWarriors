@@ -210,9 +210,6 @@ public:
 	void RemoveCreatedActor(AActor* OldActor, const FActionCursorFinder& BaseCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void Execute(const FActionCursorFinder& Cursor);
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
 	FActionCursorFinder CreateCursorFinder(UUnitActionComponent* TargetComponent, int TargetID = 0);
 
 	FActiveNodeMap* GetNodeMap(UUnitActionComponent* TargetComponent);
@@ -240,6 +237,14 @@ public:
 
 
 public:
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void ExecuteCursor(const FActionCursorFinder& WantCursor);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	static void ExecuteCursorWithInput(const FActionCursorFinder& WantCursor, const FInputPackage& Input);
+
+
 	static  TWeakObjectPtr<UActionExecutor> CreateExecutor(AActionBase* TargetAction, AOperator* TargetOperator, TArray<UUnitActionComponent*> TargetComponents, UActionNode* StartNode, FActionCursorFinder& OutMainCursor);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
