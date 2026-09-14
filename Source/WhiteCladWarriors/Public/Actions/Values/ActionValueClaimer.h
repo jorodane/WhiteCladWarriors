@@ -243,9 +243,6 @@ UCLASS(Abstract, Blueprintable, BlueprintType)
 class UValueClaimer : public UObject
 {
 	GENERATED_BODY()
-
-public:
-	static const FHitResult* GetHitResult(const FActionCursorFinder& WantCursor);
 };
 
 
@@ -434,8 +431,13 @@ class UPositionClaimer_HitPosition : public UPositionClaimer
 	GENERATED_BODY()
 
 public:
-	void Set(EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	FName HitTag;
+
+public:
+	void Set(const FName& WantTag, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
+		HitTag = WantTag;
 		AdditiveSpace = WantAdditiveSpace;
 		AdditivePosition = WantAdditivePosition;
 	}
@@ -524,10 +526,20 @@ class UDirectionClaimer_HitNormal : public UDirectionClaimer
 	GENERATED_BODY()
 
 public:
+	EPositionSpaceType AdditiveSpace;
+	UVectorGetter* AdditivePosition;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	FName HitTag;
+
+public:
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	void SetDirection(UFloatGetter* WantAngleShift)
+	void SetDirection(const FName& WantTag, UFloatGetter* WantAngleShift, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
+		HitTag = WantTag;
 		AngleShift = WantAngleShift;
+		AdditiveSpace = WantAdditiveSpace;
+		AdditivePosition = WantAdditivePosition;
 	}
 
 public:
@@ -674,7 +686,7 @@ public:
 	FName ActorTag;
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	void Set(FName WantTag)
+	void Set(const FName& WantTag)
 	{
 		ActorTag = WantTag;
 	}
@@ -686,6 +698,18 @@ UCLASS(Blueprintable, BlueprintType)
 class UActorClaimer_HitActor : public UActorClaimer
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Value")
+	FName HitTag;
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Value")
+	void Set(const FName& WantTag)
+	{
+		HitTag = WantTag;
+	}
 
 public:
 	virtual AActor* GetActor(const FActionCursorFinder& WantCursor) const override;
@@ -712,7 +736,7 @@ public:
 	FName ActorArrayTag;
 
 	UFUNCTION(BlueprintCallable, Category = "Value")
-	void Set(FName WantTag)
+	void Set(const FName& WantTag)
 	{
 		ActorArrayTag = WantTag;
 	}
@@ -783,7 +807,7 @@ private:
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfLeftPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfUpPosition;
 	UPROPERTY() TObjectPtr<UPositionClaimer> SelfDownPosition;
-	UPROPERTY() TObjectPtr<UPositionClaimer_HitPosition> HitPosition;
+
 
 	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfForwardDirection;
 	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfBackwardDirection;
@@ -791,12 +815,9 @@ private:
 	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfLeftDirection;
 	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfUpDirection;
 	UPROPERTY() TObjectPtr<UDirectionClaimer_SimpleDirection> SelfDownDirection;
-	UPROPERTY() TObjectPtr<UDirectionClaimer_HitNormal> HitNormal;
-	UPROPERTY() TObjectPtr<UDirectionClaimer_HitNormal> HitDirection;
+
 
 	UPROPERTY() TObjectPtr<UActorClaimer_SelfActor>	 SelfActor;
-
-	UPROPERTY() TObjectPtr<UActorClaimer_HitActor>	 HitActor;
 
 	UPROPERTY() TObjectPtr<UActorClaimer_TriggerActor>	 TriggerActor;
 
@@ -823,21 +844,10 @@ public:
 	static UPositionClaimer* ClaimSelfUpPosition() { return Get()->SelfUpPosition; };
 	UFUNCTION(BlueprintPure, Category = "Value")
 	static UPositionClaimer* ClaimSelfDownPosition() { return Get()->SelfDownPosition; };
-	UFUNCTION(BlueprintPure, Category = "Value")
-	static UPositionClaimer_HitPosition* ClaimHitPosition() { return Get()->HitPosition; };
-
-
-	UFUNCTION(BlueprintPure, Category = "Value")
-	static UDirectionClaimer_HitNormal* ClaimHitNormal() { return Get()->HitNormal; };
-
-	UFUNCTION(BlueprintPure, Category = "Value")
-	static UDirectionClaimer_HitNormal* ClaimHitDirection() { return Get()->HitDirection; };
 
 
 	UFUNCTION(BlueprintPure, Category = "Value")
 	static UActorClaimer_SelfActor*	 ClaimSelfActor() { return Get()->SelfActor; };
-	UFUNCTION(BlueprintPure, Category = "Value")
-	static UActorClaimer_HitActor*	 ClaimHitActor() { return Get()->HitActor; };
 	UFUNCTION(BlueprintPure, Category = "Value")
 	static UActorClaimer_TriggerActor*	 ClaimTriggerActor() { return Get()->TriggerActor; };
 
@@ -932,10 +942,10 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UPositionClaimer_HitPosition* MakePositionClaimer_HitPosition(UObject* Owner, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
+	static UPositionClaimer_HitPosition* MakePositionClaimer_HitPosition(UObject* Owner, FName WantTag, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UPositionClaimer_HitPosition* Result = NewObject<UPositionClaimer_HitPosition>(Owner);
-		if (Result) Result->Set(WantAdditiveSpace, WantAdditivePosition);
+		if (Result) Result->Set(WantTag, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
 
@@ -948,10 +958,10 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
-	static UDirectionClaimer_HitNormal* MakeDirectionClaimer_HitNormal(UObject* Owner, UFloatGetter* WantAngleShift)
+	static UDirectionClaimer_HitNormal* MakeDirectionClaimer_HitNormal(UObject* Owner, FName WantTag, UFloatGetter* WantAngleShift, EPositionSpaceType WantAdditiveSpace, UVectorGetter* WantAdditivePosition)
 	{
 		UDirectionClaimer_HitNormal* Result = NewObject<UDirectionClaimer_HitNormal>(Owner);
-		if (Result) Result->SetDirection(WantAngleShift);
+		if (Result) Result->SetDirection(WantTag, WantAngleShift, WantAdditiveSpace, WantAdditivePosition);
 		return Result;
 	}
 
@@ -994,6 +1004,15 @@ public:
 		if (Result) Result->Set(WantTag);
 		return Result;
 	}
+
+	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
+	static UActorClaimer_HitActor* MakeActorClaimer_HitActor(UObject* Owner, FName WantTag)
+	{
+		UActorClaimer_HitActor* Result = NewObject<UActorClaimer_HitActor>(Owner);
+		if (Result) Result->Set(WantTag);
+		return Result;
+	}
+
 
 	UFUNCTION(BlueprintPure, Category = "Value", Meta = (DefaultToSelf = "Owner"))
 	static UActorArrayClaimer* MakeActorArrayClaimer(UObject* Owner, FName WantTag)

@@ -21,7 +21,7 @@ public:
 	void InstanceRegistration_Implementation(AActor* Instance, const FActionCursorFinder& BaseCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Spawn")
-	void InstanceCreated(AActor* Instance, const FActionCursorFinder& BaseCursor);
+	FActionCursorFinder InstanceCreated(AActor* Instance, const FActionCursorFinder& BaseCursor);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Spawn")
 	void InstanceDestroyed(AActor* Instance, const FActionCursorFinder& BaseCursor);

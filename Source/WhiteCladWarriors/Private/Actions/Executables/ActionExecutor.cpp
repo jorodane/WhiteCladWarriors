@@ -684,47 +684,7 @@ void UActionExecutor::Set##TypeName##ToCursor( const FActionCursorFinder& Cursor
 #define DEFINE_ACTION_CLASSTYPE_FUNCTIONS(CLASSTYPE_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(CLASSTYPE_NAME, U##CLASSTYPE_NAME*, U##CLASSTYPE_NAME*, Get##CLASSTYPE_NAME, Set##CLASSTYPE_NAME)
 #define DEFINE_ACTION_NUMERAL_FUNCTIONS(FUNCTION_NAME, TYPE_NAME) DEFINE_ACTION_VALUE_FUNCTIONS(FUNCTION_NAME, TYPE_NAME, TYPE_NAME, Get##FUNCTION_NAME, Set##FUNCTION_NAME)
 
-//DEFINE_ACTION_STRUCT_FUNCTIONS(Vector)
-bool UActionExecutor::GetVector(const FActionCursorFinder& Cursor, const FName& Tag, FVector& OutResult, const FVector& DefaultValue) const
-{
-	const int ValueID = GetValueID(Cursor);
-	if (ValueID <= FActionValueContainer::InvalidID)
-	{
-		OutResult = DefaultValue;
-		return false;
-	}
-	return ValueContainer.GetStruct(ValueID, Tag, OutResult, DefaultValue);
-}
-
-bool UActionExecutor::GetVectorFromCursor(const FActionCursorFinder& Cursor,const FName& Tag,FVector& OutResult,const FVector& DefaultValue)
-{
-	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-	if (!IsValid(Executor))
-	{
-		OutResult = DefaultValue;
-		return false;
-	}
-	return Executor->GetVector(Cursor, Tag, OutResult, DefaultValue);
-}
-
-void UActionExecutor::SetVector(const FActionCursorFinder& Cursor,const FName& Tag,const FVector& Value)
-{
-	const int ValueID = GetValueID(Cursor);
-	if (ValueID == FActionValueContainer::InvalidID) return;
-	ValueContainer.SetStruct(ValueID, Tag, Value);
-}
-
-void UActionExecutor::SetVectorToCursor(
-	const FActionCursorFinder& Cursor,
-	const FName& Tag,
-	const FVector& Value)
-{
-	UActionExecutor* Executor = GetExecutorFromCursor(Cursor);
-	if (IsValid(Executor))
-	{
-		Executor->SetVector(Cursor, Tag, Value);
-	}
-}
+DEFINE_ACTION_STRUCT_FUNCTIONS(Vector)
 DEFINE_ACTION_STRUCT_FUNCTIONS(HitResult)
 DEFINE_ACTION_OBJECT_FUNCTIONS(Actor)
 DEFINE_ACTION_CLASSTYPE_FUNCTIONS(Class)
