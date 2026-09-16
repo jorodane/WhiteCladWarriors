@@ -1,85 +1,72 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
-#include "Interfaces/Stackable.h"
+#include "UObject/Object.h"
 #include "ItemBase.generated.h"
 
-/**
- * 
- */
-
 class UItemInstanceBase;
-
-DECLARE_DELEGATE_OneParam(FOnInstanceRemoved, UItemInstanceBase*, RemovedInstance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemInstanceReplaced, UItemInstanceBase*, ReplaceFrom, UItemInstanceBase*, ReplaceTo);
+class UInventoryBase;
 
 UCLASS(BlueprintType, Blueprintable)
 class WHITECLADWARRIORS_API UItemBase : public UObject
 {
-	GENERATED_BODY()
-
-protected:
-	TArray<TWeakObjectPtr<UItemInstanceBase>> InstancedItems;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Item")
-	FText DisplayName = FText::GetEmpty();
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Item")
-	FText DisplayContext = FText::GetEmpty();
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Item")
-	int MaxStackEachSlot = 1;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Item")
-	int MaxStackEachInventory = 1;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Item")
-	TSubclassOf<UItemInstanceBase> InstanceClass;
-
+    GENERATED_BODY()
 public:
-	const FText& GetDisplayName() const { return DisplayName; }
-	const FText& GetDisplayContext() const { return DisplayContext; }
-	int GetMaxStackEachSlot() const { return MaxStackEachSlot; }
-	int GetMaxStackEachInventory() const { return MaxStackEachInventory; }
+    UItemBase();
 
-public:
-	UItemInstanceBase* CreateItemInstance();
-	void RemoveItemInstance(UItemInstanceBase* TargetInstance);
-	void ReplaceItemInstance(UItemInstanceBase* TargetInstance, UItemInstanceBase* NewInstance);
-	void ReceiveItemRemoved(TObjectPtr<UItemInstanceBase> RemovedInstance);
-	void ReceiveItemReplaced(TObjectPtr<UItemInstanceBase> ReplacedInstance, TObjectPtr<UItemInstanceBase> NewInstance);
+    // Configuration phase only. First registration/creation permanently seals this object.
+    UFUNCTION(BlueprintCallable, Category="Item")
+    bool InitializeDefinition(FName InItemId, int32 InSlotMax, int32 InInventoryMax,
+        TSubclassOf<UItemInstanceBase> InInstanceClass);
+
+    // Detached instance. The caller must keep a strong reference until adoption.
+    UFUNCTION(BlueprintCallable, Category="Item")
+    UItemInstanceBase* CreateItemInstance(int32 Amount = 0);
+
+    UFUNCTION(BlueprintPure, Category="Item")
+    bool IsDefinitionSealed() const { return bDefinitionSealed; }
+
+    UFUNCTION(BlueprintPure, Category="Item")
+    FName GetItemId() const { return ItemId; }
+    UFUNCTION(BlueprintPure, Category="Item")
+    int32 GetMaxStackEachSlot() const { return MaxStackEachSlot; }
+    UFUNCTION(BlueprintPure, Category="Item")
+    int32 GetMaxStackEachInventory() const { return MaxStackEachInventory; }
+
+    const FText& GetDisplayName() const { return DisplayName; }
+    const FText& GetDisplayContext() const { return DisplayContext; }
+
+    // Snapshot: safe to iterate even when replacement unregisters instances.
+    UFUNCTION(BlueprintCallable, Category="Item")
+    TArray<UItemInstanceBase*> GetLiveInstances();
+
+    // Only committed, inventory-owned instances. Not a market-availability metric.
+    UFUNCTION(BlueprintPure, Category="Item")
+    int64 GetOwnedTotal() const;
+
+private:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(AllowPrivateAccess="true"))
+    FName ItemId = NAME_None;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(AllowPrivateAccess="true"))
+    FText DisplayName;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(AllowPrivateAccess="true"))
+    FText DisplayContext;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(ClampMin="1", AllowPrivateAccess="true"))
+    int32 MaxStackEachSlot = 1;
+    // -1 means unlimited. 0 means this definition cannot be acquired.
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(ClampMin="-1", AllowPrivateAccess="true"))
+    int32 MaxStackEachInventory = -1;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(AllowPrivateAccess="true"))
+    TSubclassOf<UItemInstanceBase> InstanceClass;
+
+private:
+    friend class UInventoryBase;
+    bool SealDefinition();
+    void UnregisterInstance(UItemInstanceBase* Instance);
+
+    UPROPERTY(Transient)
+    bool bDefinitionSealed = false;
+
+    UPROPERTY(Transient)
+    TArray<TWeakObjectPtr<UItemInstanceBase>> InstancedItems;
 };
-
-UCLASS(BlueprintType, Blueprintable)
-class WHITECLADWARRIORS_API UItemInstanceBase : public UObject, public IStackable
-{
-	GENERATED_BODY()
-
-protected:
-	UPROPERTY(BlueprintAssignable, Category = "Item")
-	FOnItemInstanceReplaced OnReplaced;
-
-protected:
-	UPROPERTY(BlueprintReadOnly, Category = "Item")
-	TObjectPtr<UItemBase> Base = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Item")
-	int CurrentStack = 0;
-
-public:
-	const UItemBase* GetBase() const { return Base; }
-	void Replace(UItemInstanceBase* NewInstance);
-
-public:
-	virtual bool GetIsEmpty_Implementation() const;
-	virtual int GetStack_Implementation() const; 
-	virtual int GetEmptySpace_Implementation() const;
-	virtual int GetMaxStackEachSlot_Implementation() const;
-	virtual int GetMaxStackEachInventory_Implementation() const;
-	virtual int SetStack_Implementation(int Amount);
-	virtual int AddStack_Implementation(int Amount);
-};
-
