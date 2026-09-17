@@ -3,53 +3,69 @@
 #include "Items/InventoryBase.h"
 #include "Items/InventorySlot.h"
 
-UInventoryBase* UItemInstanceBase::GetInventoryOwner() const { return InventoryOwner.Get(); }
-int32 UItemInstanceBase::GetMaxStackEachSlot() const
-{ return Base ? Base->GetMaxStackEachSlot() : 0; }
-int32 UItemInstanceBase::GetMaxStackEachInventory() const
-{ return Base ? Base->GetMaxStackEachInventory() : 0; }
-
-bool UItemInstanceBase::CanInitializeState() const
+int UItemInstanceBase::SetStack(int Amount)
 {
-    return !bRetired && (!bReservedForInventoryOperation || bAllowReservedStateInitialization)
-        && InventoryOwner.IsExplicitlyNull() && AllocatedSlots.IsEmpty();
+    if (Amount == Stack) return;
+    if (Amount > Stack) IncreaseStack(Amount - Stack);
+    if (Amount < Stack) DecreaseStack(Stack - Amount);
+    return Stack;
 }
 
-TArray<UInventorySlot*> UItemInstanceBase::GetSlotSnapshot() const
+int UItemInstanceBase::IncreaseStack(int Amount)
 {
-    TArray<UInventorySlot*> Result;
-    Result.Reserve(AllocatedSlots.Num());
-    for (const auto& WeakSlot : AllocatedSlots)
-        if (UInventorySlot* Slot = WeakSlot.Get()) Result.Add(Slot);
-    return Result;
+    UInventoryBase* Owner = GetInventory();
+    if (IsValid(Owner))
+    {
+        int OriginStack = Stack;
+        int Addable = Owner->GetAddableAmount(this, Amount);
+        if (Addable <= 0) return Amount;
+        Stack += Addable;
+        OnStackChanged.Broadcast(OriginStack, Stack);
+        Owner->Notify_AddItem(this, Addable);
+        return Amount - Addable;
+    }
+    else
+    {
+        Stack += Amount;
+        return 0;
+    }
 }
 
-bool UItemInstanceBase::TryAddStack(int32 Amount)
+int UItemInstanceBase::DecreaseStack(int Amount)
 {
-    UInventoryBase* Owner = InventoryOwner.Get();
-    return Owner && Owner->TryAddToItem(this, Amount);
+    int OriginStack = Stack;
+    int Removable = FMath::Min(Stack, Amount);
+    if (Removable <= 0) return Amount;
+    Stack -= Removable;
+    OnStackChanged.Broadcast(OriginStack, Stack);
+    UInventoryBase* Owner = GetInventory();
+    if (IsValid(Owner)) Owner->Notify_RemoveItem(this, Removable);
+    return Amount - Removable;
 }
 
-bool UItemInstanceBase::TryRemoveStack(int32 Amount)
+void UItemInstanceBase::AddSlot(TObjectPtr<UInventorySlot> AddedSlot)
 {
-    UInventoryBase* Owner = InventoryOwner.Get();
-    return Owner && Owner->TryRemoveItem(this, Amount);
+    if (!IsValid(AddedSlot)) return;
+    if (Slots.Find(AddedSlot) != INDEX_NONE) return;
+    int NewPosition = AddedSlot->GetPosition();
+    int NewIndex = Slots.IndexOfByPredicate([NewPosition](TWeakObjectPtr<UInventorySlot> CurrentPointer)->bool
+    {
+        UInventorySlot* FoundSlot = CurrentPointer.Get();
+        if (!IsValid(FoundSlot)) return false;
+        return FoundSlot->GetPosition() > NewPosition;
+    });
+    if (NewIndex == INDEX_NONE) Slots.Add(AddedSlot);
+    else Slots.Insert(AddedSlot, NewIndex);
 }
 
-bool UItemInstanceBase::CanStackWith(const UItemInstanceBase* Other) const
+void UItemInstanceBase::RemoveSlot(TObjectPtr<UInventorySlot> RemovedSlot)
 {
-    return IsValid(Other) && !bRetired && !Other->bRetired
-        && Base && Base == Other->Base && GetClass() == Other->GetClass()
-        && HasSameStackState(Other) && Other->HasSameStackState(this);
+    Slots.Remove(RemovedSlot);
 }
 
-bool UItemInstanceBase::HasSameStackState_Implementation(const UItemInstanceBase* Other) const
+bool UItemInstanceBase::GetIsSameItem(const UItemInstanceBase* Other) const
 {
-    // Unknown derived state must not accidentally disappear through merging.
-    return Other && GetClass() == StaticClass() && Other->GetClass() == StaticClass();
-}
-
-bool UItemInstanceBase::CopyStateTo_Implementation(UItemInstanceBase* Destination) const
-{
-    return Destination && GetClass() == StaticClass() && Destination->GetClass() == StaticClass();
+    if (!IsValid(Other)) return false;
+    if (Base == nullptr || Base != Other->Base) return false;
+    return GetClass() == Other->GetClass();
 }

@@ -30,8 +30,6 @@ public:
     FName GetItemId() const { return ItemId; }
     UFUNCTION(BlueprintPure, Category="Item")
     int32 GetMaxStackEachSlot() const { return MaxStackEachSlot; }
-    UFUNCTION(BlueprintPure, Category="Item")
-    int32 GetMaxStackEachInventory() const { return MaxStackEachInventory; }
 
     const FText& GetDisplayName() const { return DisplayName; }
     const FText& GetDisplayContext() const { return DisplayContext; }
@@ -53,9 +51,6 @@ private:
     FText DisplayContext;
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(ClampMin="1", AllowPrivateAccess="true"))
     int32 MaxStackEachSlot = 1;
-    // -1 means unlimited. 0 means this definition cannot be acquired.
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(ClampMin="-1", AllowPrivateAccess="true"))
-    int32 MaxStackEachInventory = -1;
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Item", meta=(AllowPrivateAccess="true"))
     TSubclassOf<UItemInstanceBase> InstanceClass;
 

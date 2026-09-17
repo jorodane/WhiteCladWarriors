@@ -12,24 +12,24 @@ UCLASS(BlueprintType)
 class WHITECLADWARRIORS_API UInventorySlot : public UObject
 {
     GENERATED_BODY()
-public:
-    UFUNCTION(BlueprintPure, Category="Inventory")
-    int32 GetPosition() const { return Position; }
-    UFUNCTION(BlueprintPure, Category="Inventory")
-    int32 GetAllocatedAmount() const { return AllocatedAmount; }
-    UFUNCTION(BlueprintPure, Category="Inventory")
-    UInventoryBase* GetInventoryOwner() const;
-    UFUNCTION(BlueprintPure, Category="Inventory")
-    UItemInstanceBase* GetItem() const;
 
-private:
-    friend class UInventoryBase;
-    UPROPERTY(Transient)
-    TWeakObjectPtr<UInventoryBase> InventoryOwner;
-    UPROPERTY(Transient)
+protected:
+    UPROPERTY(BlueprintReadOnly, Category = "Item")
     TWeakObjectPtr<UItemInstanceBase> Item;
-    UPROPERTY(Transient)
-    int32 Position = INDEX_NONE;
-    UPROPERTY(Transient)
-    int32 AllocatedAmount = 0;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Item")
+    int Position = INDEX_NONE;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Item")
+    int Amount = 0;
+
+public:
+    UFUNCTION(BlueprintPure, Category="Item")
+    int32 GetPosition() const { return Position; }
+    UFUNCTION(BlueprintPure, Category="Item")
+    int32 GetAmount() const { return Amount; }
+    UFUNCTION(BlueprintPure, Category="Item")
+    UInventoryBase* GetInventory() const;
+    UFUNCTION(BlueprintPure, Category="Item")
+    UItemInstanceBase* GetItem() const { return Item.Get(); }
 };
