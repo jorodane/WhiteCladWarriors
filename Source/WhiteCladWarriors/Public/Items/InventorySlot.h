@@ -21,15 +21,19 @@ protected:
     int Position = INDEX_NONE;
 
     UPROPERTY(BlueprintReadOnly, Category = "Item")
-    int Amount = 0;
+    int Index = INDEX_NONE;
 
 public:
     UFUNCTION(BlueprintPure, Category="Item")
-    int32 GetPosition() const { return Position; }
-    UFUNCTION(BlueprintPure, Category="Item")
-    int32 GetAmount() const { return Amount; }
-    UFUNCTION(BlueprintPure, Category="Item")
-    UInventoryBase* GetInventory() const;
-    UFUNCTION(BlueprintPure, Category="Item")
     UItemInstanceBase* GetItem() const { return Item.Get(); }
+
+    UFUNCTION(BlueprintPure, Category = "Item")
+    UInventoryBase* GetInventory() const;
+
+    UFUNCTION(BlueprintPure, Category = "Item")
+    int GetPosition() const { return Position; }
+    UFUNCTION(BlueprintPure, Category = "Item")
+    int GetIndex() const { return Index; }
+    UFUNCTION(BlueprintPure, Category = "Item")
+    int GetAmount() const;
 };

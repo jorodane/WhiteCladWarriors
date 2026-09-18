@@ -26,7 +26,8 @@ public:
     FOnItemStackChanged OnStackChanged;
 
 private:
-    TArray<TWeakObjectPtr<UInventorySlot>> Slots;
+    UPROPERTY(BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
+    TArray<int> Amounts;
 
     UPROPERTY(BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
     TWeakObjectPtr<UInventoryBase> InventoryFrom;
@@ -46,6 +47,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Item")
     int DecreaseStack(int Amount);
+
+    int ClaimSlot(int Claim);
+    int FreeSlot(int Index);
 
     void AddSlot(TObjectPtr<UInventorySlot> AddedSlot);
     void RemoveSlot(TObjectPtr<UInventorySlot> RemovedSlot);

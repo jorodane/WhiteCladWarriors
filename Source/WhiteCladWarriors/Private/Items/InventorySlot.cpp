@@ -7,3 +7,11 @@ UInventoryBase* UInventorySlot::GetInventory() const
 	if (IsValid(ItemGetter)) return ItemGetter->GetInventory();
 	return nullptr;
 }
+
+int UInventorySlot::GetAmount() const
+{
+	UItemInstanceBase* ItemGetter = GetItem();
+	if (IsValid(ItemGetter)) return ItemGetter->GetAmount(Index);
+	return 0;
+}
+
