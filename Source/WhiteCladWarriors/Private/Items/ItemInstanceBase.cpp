@@ -5,14 +5,19 @@
 
 int UItemInstanceBase::SetStack(int Amount)
 {
-    if (Amount == Stack) return;
     if (Amount > Stack) IncreaseStack(Amount - Stack);
-    if (Amount < Stack) DecreaseStack(Stack - Amount);
+    else if (Amount < Stack) DecreaseStack(Stack - Amount);
     return Stack;
 }
 
 int UItemInstanceBase::IncreaseStack(int Amount)
 {
+    if (!IsValid(Base)) return Amount;
+    int MaxStack = Base->GetMaxStackEachSlot();
+    Amount = PushToExistSlots(Amount, MaxStack);
+    if (Amount <= 0) return 0;
+    Amount = PushToClaimSlots(Amount, MaxStack);
+    return Amount;
     UInventoryBase* Owner = GetInventory();
     if (IsValid(Owner))
     {
@@ -41,6 +46,21 @@ int UItemInstanceBase::DecreaseStack(int Amount)
     UInventoryBase* Owner = GetInventory();
     if (IsValid(Owner)) Owner->Notify_RemoveItem(this, Removable);
     return Amount - Removable;
+}
+
+int UItemInstanceBase::PushToExistSlots(int Amount, int MaxStack)
+{
+
+}
+
+int UItemInstanceBase::PushToClaimSlots(int Amount, int MaxStack)
+{
+
+}
+
+int UItemInstanceBase::PopFromExistSlots(int Amount)
+{
+
 }
 
 void UItemInstanceBase::AddSlot(TObjectPtr<UInventorySlot> AddedSlot)
