@@ -47,15 +47,15 @@ public:
     UFUNCTION(BlueprintCallable, Category="Item")
     int DecreaseStack(int Amount);
 
-    int PushToExistSlots(int Amount, int MaxStack);
+    /*int PushToExistSlots(int Amount, int MaxStack);
     int PushToClaimSlots(int Amount, int MaxStack);
-    int PopFromExistSlots(int Amount);
+    int PopFromExistSlots(int Amount);*/
 
-    UFUNCTION(BlueprintCallable, Category = "Item")
-    int ClaimSlot(int Number);
+    //UFUNCTION(BlueprintCallable, Category = "Item")
+    //int ClaimSlot(int Number);
 
-    UFUNCTION(BlueprintCallable, Category = "Item")
-    int FreeSlot(int Number);
+    //UFUNCTION(BlueprintCallable, Category = "Item")
+    //int FreeSlot(int Number);
 
     void AddSlot(TObjectPtr<UInventorySlot> AddedSlot);
     void RemoveSlot(TObjectPtr<UInventorySlot> RemovedSlot);
@@ -75,8 +75,8 @@ public:
     UFUNCTION(BlueprintPure, Category = "Item")
     UInventoryBase* GetInventory() const { return InventoryFrom.Get(); }
 
-    UFUNCTION(BlueprintPure, Category = "Item")
-    int GetMaxStackEachSlot() const { return Base ? Base->GetMaxStackEachSlot() : 0; }
+    //UFUNCTION(BlueprintPure, Category = "Item")
+    //int GetMaxStackEachSlot() const { return Base ? Base->GetMaxStackEachSlot() : 0; }
 
     const TArray<TWeakObjectPtr<UInventorySlot>>& GetSlots() const { return Slots; }
 };

@@ -14,19 +14,19 @@ int UItemInstanceBase::IncreaseStack(int Amount)
 {
     if (!IsValid(Base)) return Amount;
     int MaxStack = Base->GetMaxStackEachSlot();
-    Amount = PushToExistSlots(Amount, MaxStack);
+    //Amount = PushToExistSlots(Amount, MaxStack);
     if (Amount <= 0) return 0;
-    Amount = PushToClaimSlots(Amount, MaxStack);
+    //Amount = PushToClaimSlots(Amount, MaxStack);
     return Amount;
     UInventoryBase* Owner = GetInventory();
     if (IsValid(Owner))
     {
         int OriginStack = Stack;
-        int Addable = Owner->GetAddableAmount(this, Amount);
+        int Addable = 0;//Owner->GetAddableAmount(this, Amount);
         if (Addable <= 0) return Amount;
         Stack += Addable;
         OnStackChanged.Broadcast(OriginStack, Stack);
-        Owner->Notify_AddItem(this, Addable);
+        //Owner->Notify_AddItem(this, Addable);
         return Amount - Addable;
     }
     else
@@ -43,25 +43,25 @@ int UItemInstanceBase::DecreaseStack(int Amount)
     if (Removable <= 0) return Amount;
     Stack -= Removable;
     OnStackChanged.Broadcast(OriginStack, Stack);
-    UInventoryBase* Owner = GetInventory();
-    if (IsValid(Owner)) Owner->Notify_RemoveItem(this, Removable);
+    //UInventoryBase* Owner = GetInventory();
+    //if (IsValid(Owner)) Owner->Notify_RemoveItem(this, Removable);
     return Amount - Removable;
 }
 
-int UItemInstanceBase::PushToExistSlots(int Amount, int MaxStack)
-{
-
-}
-
-int UItemInstanceBase::PushToClaimSlots(int Amount, int MaxStack)
-{
-
-}
-
-int UItemInstanceBase::PopFromExistSlots(int Amount)
-{
-
-}
+//int UItemInstanceBase::PushToExistSlots(int Amount, int MaxStack)
+//{
+//
+//}
+//
+//int UItemInstanceBase::PushToClaimSlots(int Amount, int MaxStack)
+//{
+//
+//}
+//
+//int UItemInstanceBase::PopFromExistSlots(int Amount)
+//{
+//
+//}
 
 void UItemInstanceBase::AddSlot(TObjectPtr<UInventorySlot> AddedSlot)
 {
