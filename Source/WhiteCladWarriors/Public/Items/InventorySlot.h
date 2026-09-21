@@ -52,9 +52,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Item")
     int SetAmount(int Value) { return Amount = Value; }
 
-    //UFUNCTION(BlueprintPure, Category = "Item")
-    //int AddAmount(int Value, int MaxAmount);
+    UFUNCTION(BlueprintPure, Category = "Item")
+    int AddAmount(int Value, const int& MaxAmount);
 
-    //UFUNCTION(BlueprintPure, Category = "Item")
-    //int RemoveAmount(int Value, bool& OutIsEmpty);
+    UFUNCTION(BlueprintPure, Category = "Item")
+    int RemoveAmount(int Value, bool& OutIsEmpty);
 };

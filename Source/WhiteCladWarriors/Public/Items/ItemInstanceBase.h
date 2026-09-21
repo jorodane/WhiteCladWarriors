@@ -47,9 +47,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="Item")
     int DecreaseStack(int Amount);
 
-    /*int PushToExistSlots(int Amount, int MaxStack);
-    int PushToClaimSlots(int Amount, int MaxStack);
-    int PopFromExistSlots(int Amount);*/
+    int PushToExistSlots(int Amount, const int& MaxStack);
+    int PushToClaimSlots(int Amount, const int& MaxStack);
+    int PopFromExistSlots(int Amount);
 
     //UFUNCTION(BlueprintCallable, Category = "Item")
     //int ClaimSlot(int Number);
