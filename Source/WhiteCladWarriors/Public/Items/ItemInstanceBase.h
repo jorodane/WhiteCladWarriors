@@ -38,6 +38,19 @@ private:
     int Stack = 0;
 
 public:
+    int ClaimSlot(int Number);
+    void FreeSlot(UInventorySlot* TargetSlot);
+    void FreeSlot(TArray<UInventorySlot*> TargetSlots);
+
+protected:
+    int PushToExistSlots(int Amount, const int& MaxStack);
+    int PushToClaimSlots(int Amount, const int& MaxStack);
+    int PopFromExistSlots(int Amount);
+
+    void OnSlotAdded(TObjectPtr<UInventorySlot> AddedSlot);
+    void OnSlotRemoved(TObjectPtr<UInventorySlot> RemovedSlot);
+
+public:
     UFUNCTION(BlueprintCallable, Category = "Item")
     int SetStack(int Amount);
 
@@ -46,22 +59,6 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Item")
     int DecreaseStack(int Amount);
-
-    int PushToExistSlots(int Amount, const int& MaxStack);
-    int PushToClaimSlots(int Amount, const int& MaxStack);
-    int PopFromExistSlots(int Amount);
-
-    //UFUNCTION(BlueprintCallable, Category = "Item")
-    //int ClaimSlot(int Number);
-
-    //UFUNCTION(BlueprintCallable, Category = "Item")
-    //int FreeSlot(int Number);
-
-    void AddSlot(TObjectPtr<UInventorySlot> AddedSlot);
-    void RemoveSlot(TObjectPtr<UInventorySlot> RemovedSlot);
-
-    UFUNCTION(BlueprintPure, Category = "Item")
-    bool GetIsSameItem(const UItemInstanceBase* Other) const;
 
     UFUNCTION(BlueprintPure, Category = "Item")
     UItemBase* GetBase() const { return Base; }
@@ -74,6 +71,9 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Item")
     UInventoryBase* GetInventory() const { return InventoryFrom.Get(); }
+
+    UFUNCTION(BlueprintPure, Category = "Item")
+    bool GetIsSameItem(const UItemInstanceBase* Other) const;
 
     //UFUNCTION(BlueprintPure, Category = "Item")
     //int GetMaxStackEachSlot() const { return Base ? Base->GetMaxStackEachSlot() : 0; }

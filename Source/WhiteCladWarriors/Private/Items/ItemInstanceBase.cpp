@@ -3,34 +3,21 @@
 #include "Items/InventoryBase.h"
 #include "Items/InventorySlot.h"
 
-int UItemInstanceBase::SetStack(int Amount)
+int UItemInstanceBase::ClaimSlot(int Number)
 {
-    if (Amount > Stack) IncreaseStack(Amount - Stack);
-    else if (Amount < Stack) DecreaseStack(Stack - Amount);
-    return Stack;
+    return Number;
+}
+void UItemInstanceBase::FreeSlot(UInventorySlot* TargetSlot)
+{
+
+}
+void UItemInstanceBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
+{
+    if (TargetSlots.IsEmpty()) return;
+    for (UInventorySlot* CurrentSlot : TargetSlots) FreeSlot(CurrentSlot);
 }
 
-int UItemInstanceBase::IncreaseStack(int Amount)
-{
-    if (!IsValid(Base)) return Amount;
-    int MaxStack        = Base->GetMaxStackEachSlot();
-    int Left            = PushToExistSlots(Amount, MaxStack);
-    if (Left > 0) Left  = PushToClaimSlots(Left, MaxStack);
-    int Added = Amount - Left;
-    Stack += Added;
 
-    return Left;
-}
-
-int UItemInstanceBase::DecreaseStack(int Amount)
-{
-    int OriginStack = Stack;
-    int Left = PopFromExistSlots(Amount);
-    int Removed = Amount - Left;
-    Stack -= Removed;
-    OnStackChanged.Broadcast(OriginStack, Stack);
-    return Left;
-}
 
 int UItemInstanceBase::PushToExistSlots(int Amount, const int& MaxStack)
 {
@@ -72,6 +59,7 @@ int UItemInstanceBase::PopFromExistSlots(int Amount)
 {
     if (!Slots.IsEmpty())
     {
+        TArray<UInventorySlot*> RemovedSlot;
         for (int i = Slots.Num() - 1; i >= 0; --i)
         {
             if (Amount <= 0) break;
@@ -80,31 +68,65 @@ int UItemInstanceBase::PopFromExistSlots(int Amount)
             UInventorySlot* CurrentSlot = CurrentPtr.Get();
             bool bIsEmpty = false;
             Amount = CurrentSlot->AddAmount(Amount, bIsEmpty);
+            if (bIsEmpty) RemovedSlot.Add(CurrentSlot);
         }
+        FreeSlot(RemovedSlot);
     }
 
     return Amount;
 }
 
-void UItemInstanceBase::AddSlot(TObjectPtr<UInventorySlot> AddedSlot)
+void UItemInstanceBase::OnSlotAdded(TObjectPtr<UInventorySlot> AddedSlot)
 {
     if (!IsValid(AddedSlot)) return;
     if (Slots.Find(AddedSlot) != INDEX_NONE) return;
     int NewPosition = AddedSlot->GetPosition();
     int NewIndex = Slots.IndexOfByPredicate([NewPosition](TWeakObjectPtr<UInventorySlot> CurrentPointer)->bool
-    {
-        UInventorySlot* FoundSlot = CurrentPointer.Get();
-        if (!IsValid(FoundSlot)) return false;
-        return FoundSlot->GetPosition() > NewPosition;
-    });
+        {
+            UInventorySlot* FoundSlot = CurrentPointer.Get();
+            if (!IsValid(FoundSlot)) return false;
+            return FoundSlot->GetPosition() > NewPosition;
+        });
     if (NewIndex == INDEX_NONE) Slots.Add(AddedSlot);
     else Slots.Insert(AddedSlot, NewIndex);
 }
 
-void UItemInstanceBase::RemoveSlot(TObjectPtr<UInventorySlot> RemovedSlot)
+void UItemInstanceBase::OnSlotRemoved(TObjectPtr<UInventorySlot> RemovedSlot)
 {
     Slots.Remove(RemovedSlot);
 }
+
+
+int UItemInstanceBase::SetStack(int Amount)
+{
+    if (Amount > Stack) IncreaseStack(Amount - Stack);
+    else if (Amount < Stack) DecreaseStack(Stack - Amount);
+    return Stack;
+}
+
+int UItemInstanceBase::IncreaseStack(int Amount)
+{
+    if (!IsValid(Base)) return Amount;
+    int MaxStack        = Base->GetMaxStackEachSlot();
+    int Left            = PushToExistSlots(Amount, MaxStack);
+    if (Left > 0) Left  = PushToClaimSlots(Left, MaxStack);
+    int Added = Amount - Left;
+    Stack += Added;
+
+    return Left;
+}
+
+int UItemInstanceBase::DecreaseStack(int Amount)
+{
+    int OriginStack = Stack;
+    int Left = PopFromExistSlots(Amount);
+    int Removed = Amount - Left;
+    Stack -= Removed;
+    OnStackChanged.Broadcast(OriginStack, Stack);
+    return Left;
+}
+
+
 
 bool UItemInstanceBase::GetIsSameItem(const UItemInstanceBase* Other) const
 {
