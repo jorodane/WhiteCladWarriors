@@ -38,7 +38,7 @@ private:
     int Stack = 0;
 
 public:
-    int ClaimSlot(int Number);
+    TArray<UInventorySlot*> ClaimSlot(int Number);
     void FreeSlot(UInventorySlot* TargetSlot);
     void FreeSlot(TArray<UInventorySlot*> TargetSlots);
 

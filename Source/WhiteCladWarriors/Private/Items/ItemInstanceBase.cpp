@@ -3,9 +3,9 @@
 #include "Items/InventoryBase.h"
 #include "Items/InventorySlot.h"
 
-int UItemInstanceBase::ClaimSlot(int Number)
+TArray<UInventorySlot*> UItemInstanceBase::ClaimSlot(int Number)
 {
-    return Number;
+    return TArray<UInventorySlot*>();
 }
 void UItemInstanceBase::FreeSlot(UInventorySlot* TargetSlot)
 {
@@ -38,9 +38,17 @@ int UItemInstanceBase::PushToExistSlots(int Amount, const int& MaxStack)
 
 int UItemInstanceBase::PushToClaimSlots(int Amount, const int& MaxStack)
 {
+    if (Amount <= 0 || MaxStack <= 0) return 0;
     UInventoryBase* Owner = GetInventory();
     if (IsValid(Owner))
     {
+        int NumClaimedSlot = FMath::CeilToInt((float)Amount / MaxStack);
+        TArray<UInventorySlot*> ReceivedSlots = ClaimSlot(NumClaimedSlot);
+        if (ReceivedSlots.IsEmpty()) return Amount;
+        int LastReceivedSlot = ReceivedSlots.Num() - 1;
+        for (int i = 0; i < LastReceivedSlot; i++) ReceivedSlots[i]->SetAmount(MaxStack);
+        ReceivedSlots[LastReceivedSlot]->SetAmount();
+
         int OriginStack = Stack;
         int Addable = 0;//Owner->GetAddableAmount(this, Amount);
         if (Addable <= 0) return Amount;
