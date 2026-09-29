@@ -109,12 +109,54 @@ void UItemInstanceBase::OnSlotAdded(TObjectPtr<UInventorySlot> AddedSlot)
 void UItemInstanceBase::OnSlotShifted(TObjectPtr<UInventorySlot> ShiftedSlot)
 {
     if (!IsValid(ShiftedSlot)) return;
-    int OriginIndex = Slots.Find(ShiftedSlot);
-    if (OriginIndex == INDEX_NONE) return;
-    int NewPosition = ShiftedSlot->GetPosition();
 
-    int NewIndex;
-    Slots.Insert(ShiftedSlot, NewIndex);
+    int NumSlot = Slots.Num();
+    if (NumSlot <= 0)
+    {
+        Slots.Add(ShiftedSlot);
+        return;
+    }
+    int LastIndex = NumSlot - 1;
+    int OriginIndex = Slots.Find(ShiftedSlot);
+    if (OriginIndex == INDEX_NONE)
+    {
+        OnSlotAdded(ShiftedSlot);
+        return;
+    }
+
+    int NewIndex = INDEX_NONE;
+    if (OriginIndex > 0)
+    {
+        for (int i = OriginIndex - 1; i >= 0; --i)
+        {
+            int CompareResult = ShiftedSlot->ComparePosition(Slots[i]);
+            if (CompareResult >= 0)
+            {
+                int CalculatedIndex = i + 1;
+                if (CalculatedIndex < OriginIndex) NewIndex = CalculatedIndex;
+                break;
+            }
+        }
+    }
+
+    if (NewIndex != INDEX_NONE && OriginIndex < LastIndex)
+    {
+        for (int i = OriginIndex + 1; i < NumSlot; ++i)
+        {
+            int CompareResult = ShiftedSlot->ComparePosition(Slots[i]);
+            if (CompareResult < 0)
+            {
+                int CalculatedIndex = i - 1;
+                if (CalculatedIndex > OriginIndex) NewIndex = CalculatedIndex;
+                break;
+            }
+        }
+    }
+
+    if (NewIndex == INDEX_NONE) return;
+    Slots.RemoveAt(OriginIndex);
+    if (NewIndex >= LastIndex) Slots.Add(ShiftedSlot);
+    else Slots.Insert(ShiftedSlot, NewIndex);
 }
 
 
