@@ -48,6 +48,7 @@ protected:
     int PopFromExistSlots(int Amount);
 
     void OnSlotAdded(TObjectPtr<UInventorySlot> AddedSlot);
+    void OnSlotShifted(TObjectPtr<UInventorySlot> ShiftedSlot);
     void OnSlotRemoved(TObjectPtr<UInventorySlot> RemovedSlot);
 
 public:
@@ -74,9 +75,6 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Item")
     bool GetIsSameItem(const UItemInstanceBase* Other) const;
-
-    //UFUNCTION(BlueprintPure, Category = "Item")
-    //int GetMaxStackEachSlot() const { return Base ? Base->GetMaxStackEachSlot() : 0; }
 
     const TArray<TWeakObjectPtr<UInventorySlot>>& GetSlots() const { return Slots; }
 };

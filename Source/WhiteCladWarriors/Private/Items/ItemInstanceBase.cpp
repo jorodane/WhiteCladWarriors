@@ -7,10 +7,12 @@ TArray<UInventorySlot*> UItemInstanceBase::ClaimSlot(int Number)
 {
     return TArray<UInventorySlot*>();
 }
+
 void UItemInstanceBase::FreeSlot(UInventorySlot* TargetSlot)
 {
 
 }
+
 void UItemInstanceBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
 {
     if (TargetSlots.IsEmpty()) return;
@@ -45,22 +47,27 @@ int UItemInstanceBase::PushToClaimSlots(int Amount, const int& MaxStack)
         int NumClaimedSlot = FMath::CeilToInt((float)Amount / MaxStack);
         TArray<UInventorySlot*> ReceivedSlots = ClaimSlot(NumClaimedSlot);
         if (ReceivedSlots.IsEmpty()) return Amount;
-        int LastReceivedSlot = ReceivedSlots.Num() - 1;
-        for (int i = 0; i < LastReceivedSlot; i++) ReceivedSlots[i]->SetAmount(MaxStack);
-        ReceivedSlots[LastReceivedSlot]->SetAmount();
-
-        int OriginStack = Stack;
-        int Addable = 0;//Owner->GetAddableAmount(this, Amount);
+        int NumReceivedSlot = ReceivedSlots.Num();
+        int Addable;
+        if (NumClaimedSlot <= NumReceivedSlot)
+        {
+            int LastReceivedSlotIndex = NumReceivedSlot - 1;
+            int FullyAdded = MaxStack * LastReceivedSlotIndex;
+            for (int i = 0; i < LastReceivedSlotIndex; i++) ReceivedSlots[i]->SetAmount(MaxStack);
+            ReceivedSlots[LastReceivedSlotIndex]->SetAmount(Amount - FullyAdded);
+            Addable = Amount;
+        }
+        else if(NumReceivedSlot > 0)
+        {
+            for (int i = 0; i < NumReceivedSlot; i++) ReceivedSlots[i]->SetAmount(MaxStack);
+            Addable = NumReceivedSlot * MaxStack;
+        }
         if (Addable <= 0) return Amount;
-        Stack += Addable;
-        OnStackChanged.Broadcast(OriginStack, Stack);
+
         return Amount - Addable;
     }
-    else
-    {
-        Stack += Amount;
-        return 0;
-    }
+
+    return Amount;
 }
 
 int UItemInstanceBase::PopFromExistSlots(int Amount)
@@ -98,6 +105,18 @@ void UItemInstanceBase::OnSlotAdded(TObjectPtr<UInventorySlot> AddedSlot)
     if (NewIndex == INDEX_NONE) Slots.Add(AddedSlot);
     else Slots.Insert(AddedSlot, NewIndex);
 }
+
+void UItemInstanceBase::OnSlotShifted(TObjectPtr<UInventorySlot> ShiftedSlot)
+{
+    if (!IsValid(ShiftedSlot)) return;
+    int OriginIndex = Slots.Find(ShiftedSlot);
+    if (OriginIndex == INDEX_NONE) return;
+    int NewPosition = ShiftedSlot->GetPosition();
+
+    int NewIndex;
+    Slots.Insert(ShiftedSlot, NewIndex);
+}
+
 
 void UItemInstanceBase::OnSlotRemoved(TObjectPtr<UInventorySlot> RemovedSlot)
 {
