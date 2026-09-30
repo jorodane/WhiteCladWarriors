@@ -45,3 +45,15 @@ int UInventorySlot::RemoveAmount(int Value, bool& OutIsEmpty)
 		return Value;
 	}
 }
+
+int UInventorySlot::ComparePosition(const UInventorySlot* Other) const
+{
+	if (Other == nullptr) return 0;
+	return Position > Other->Position ? 1 : -1;
+}
+
+int UInventorySlot::ComparePosition(const TWeakObjectPtr<UInventorySlot> Other) const
+{
+	if(Other.IsValid()) return ComparePosition(Other.Get());
+	return 0;
+}

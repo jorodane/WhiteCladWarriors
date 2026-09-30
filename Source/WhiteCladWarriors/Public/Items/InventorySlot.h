@@ -58,6 +58,6 @@ public:
     UFUNCTION(BlueprintPure, Category = "Item")
     int RemoveAmount(int Value, bool& OutIsEmpty);
 
-    int ComparePosition(UInventorySlot* Other);
-    int ComparePosition(TWeakObjectPtr<UInventorySlot> Other);
+    int ComparePosition(const UInventorySlot* Other) const;
+    int ComparePosition(const TWeakObjectPtr<UInventorySlot> Other) const;
 };

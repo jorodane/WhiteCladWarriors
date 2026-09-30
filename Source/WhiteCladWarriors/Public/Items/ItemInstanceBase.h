@@ -38,7 +38,7 @@ private:
     int Stack = 0;
 
 public:
-    TArray<UInventorySlot*> ClaimSlot(int Number = 1);
+    TArray<UInventorySlot*> ClaimAllocateSlot(int Number = 1);
 
     void ClaimFreeSlot(TObjectPtr<UInventorySlot> TargetSlot);
     void ClaimFreeSlot(TArray<UInventorySlot*> TargetSlots);

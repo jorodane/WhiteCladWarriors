@@ -1,11 +1,57 @@
 #include "Items/InventoryBase.h"
 //#include "Items/InventoryLayoutMath.h"
-//#include "Items/InventorySlot.h"
+#include "Items/InventorySlot.h"
 //#include "Items/ItemBase.h"
 //#include "Items/ItemInstanceBase.h"
 //#include "UObject/StrongObjectPtr.h"
 //#include "UObject/UObjectGlobals.h"
 // 
+
+UInventorySlot* UInventoryBase::AllocateSlot(UItemInstanceBase* Claimer, int Position)
+{
+	UInventorySlot* NewSlot = NewObject<UInventorySlot>(this);
+	NewSlot->SetInventory(this);
+	NewSlot->SetItem(Claimer);
+	NewSlot->SetPosition(Position);
+	return NewSlot;
+}
+
+TArray<UInventorySlot*> UInventoryBase::ClaimAllocateSlot(UItemInstanceBase* Claimer, int Number)
+{
+	TArray<UInventorySlot*> Result;
+
+	int SlotNum = Slots.Num();
+	int Left = FMath::Min(Number, MaxSlotNum - Slots.Num());
+	if(Left <= 0) return Result;
+
+	int CurrentPosition = INDEX_NONE;
+	int CurrentIndex = 0;
+
+	while (Left > 0)
+	{
+		if (CurrentIndex >= SlotNum)
+		{
+			for (int i = 0; i < Left; ++i) Slots.Add(AllocateSlot(Claimer, ++CurrentPosition));
+			break;
+		}
+		else
+		{
+			UInventorySlot* CurrentSlot = Slots[CurrentIndex];
+			if (!IsValid(CurrentSlot))
+			{
+				++CurrentIndex;
+				continue;
+			}
+			else
+			{
+
+			}
+		}
+	}
+
+	return Result;
+}
+
 void UInventoryBase::FreeSlot(TObjectPtr<UInventorySlot> TargetSlot)
 {
 
@@ -16,10 +62,7 @@ void UInventoryBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
 
 }
 
-TArray<UInventorySlot*> UInventoryBase::ClaimSlot(int Number)
-{
-	if (Number <= 0) return TArray<UInventorySlot*>();
-}
+
 //
 //// One game-thread edit; no listener observes a half-updated graph.
 //// Reentrant writes to this inventory fail until every notification has completed.

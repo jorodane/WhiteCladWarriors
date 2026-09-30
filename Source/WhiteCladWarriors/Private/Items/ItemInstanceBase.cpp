@@ -3,10 +3,10 @@
 #include "Items/InventoryBase.h"
 #include "Items/InventorySlot.h"
 
-TArray<UInventorySlot*> UItemInstanceBase::ClaimSlot(int Number)
+TArray<UInventorySlot*> UItemInstanceBase::ClaimAllocateSlot(int Number)
 {
     if (Number <= 0 || !InventoryFrom.IsValid()) return TArray<UInventorySlot*>();
-    return InventoryFrom->ClaimSlot(Number);
+    return InventoryFrom->ClaimAllocateSlot(this, Number);
 }
 
 void UItemInstanceBase::ClaimFreeSlot(TObjectPtr<UInventorySlot> TargetSlot)
@@ -49,7 +49,7 @@ int UItemInstanceBase::PushToClaimSlots(int Amount, const int& MaxStack)
     if (IsValid(Owner))
     {
         int NumClaimedSlot = FMath::CeilToInt((float)Amount / MaxStack);
-        TArray<UInventorySlot*> ReceivedSlots = ClaimSlot(NumClaimedSlot);
+        TArray<UInventorySlot*> ReceivedSlots = ClaimAllocateSlot(NumClaimedSlot);
         if (ReceivedSlots.IsEmpty()) return Amount;
         int NumReceivedSlot = ReceivedSlots.Num();
         int Addable;

@@ -15,10 +15,16 @@ class WHITECLADWARRIORS_API UInventoryBase : public UActorComponent
 {
     GENERATED_BODY()
 
+protected:
+    TArray<TObjectPtr<UInventorySlot>> Slots;
+    TArray<TObjectPtr<UItemInstanceBase>> Instances;
+    int MaxSlotNum;
+
 public:
+    UInventorySlot* AllocateSlot(UItemInstanceBase* Claimer, int Position);
+    TArray<UInventorySlot*> ClaimAllocateSlot(UItemInstanceBase* Claimer, int Number = 1);
     void FreeSlot(TObjectPtr<UInventorySlot> TargetSlot);
     void FreeSlot(TArray<UInventorySlot*> TargetSlots);
-    TArray<UInventorySlot*> ClaimSlot(int Number = 1);
 
 //public:
 //    UInventoryBase();
