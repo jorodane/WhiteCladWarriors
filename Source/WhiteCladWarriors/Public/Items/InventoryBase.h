@@ -14,6 +14,12 @@ UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class WHITECLADWARRIORS_API UInventoryBase : public UActorComponent
 {
     GENERATED_BODY()
+
+public:
+    void FreeSlot(TObjectPtr<UInventorySlot> TargetSlot);
+    void FreeSlot(TArray<UInventorySlot*> TargetSlots);
+    TArray<UInventorySlot*> ClaimSlot(int Number = 1);
+
 //public:
 //    UInventoryBase();
 //

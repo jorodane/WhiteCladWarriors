@@ -5,21 +5,25 @@
 
 TArray<UInventorySlot*> UItemInstanceBase::ClaimSlot(int Number)
 {
-    return TArray<UInventorySlot*>();
+    if (Number <= 0 || !InventoryFrom.IsValid()) return TArray<UInventorySlot*>();
+    return InventoryFrom->ClaimSlot(Number);
 }
 
-void UItemInstanceBase::FreeSlot(UInventorySlot* TargetSlot)
+void UItemInstanceBase::ClaimFreeSlot(TObjectPtr<UInventorySlot> TargetSlot)
 {
-
+    if (!IsValid(TargetSlot)) return;
+    if (!InventoryFrom.IsValid()) return;
+    InventoryFrom->FreeSlot(TargetSlot);
+    Slots.Remove(TargetSlot);
 }
 
-void UItemInstanceBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
+void UItemInstanceBase::ClaimFreeSlot(TArray<UInventorySlot*> TargetSlots)
 {
     if (TargetSlots.IsEmpty()) return;
-    for (UInventorySlot* CurrentSlot : TargetSlots) FreeSlot(CurrentSlot);
+    if (!InventoryFrom.IsValid()) return;
+    InventoryFrom->FreeSlot(TargetSlots);
+    for (UInventorySlot* CurrentSlot : TargetSlots) Slots.Remove(CurrentSlot);
 }
-
-
 
 int UItemInstanceBase::PushToExistSlots(int Amount, const int& MaxStack)
 {
@@ -82,10 +86,10 @@ int UItemInstanceBase::PopFromExistSlots(int Amount)
             if (!CurrentPtr.IsValid()) continue;
             UInventorySlot* CurrentSlot = CurrentPtr.Get();
             bool bIsEmpty = false;
-            Amount = CurrentSlot->AddAmount(Amount, bIsEmpty);
+            Amount = CurrentSlot->RemoveAmount(Amount, bIsEmpty);
             if (bIsEmpty) RemovedSlot.Add(CurrentSlot);
         }
-        FreeSlot(RemovedSlot);
+        ClaimFreeSlot(RemovedSlot);
     }
 
     return Amount;
@@ -181,7 +185,6 @@ int UItemInstanceBase::IncreaseStack(int Amount)
     if (Left > 0) Left  = PushToClaimSlots(Left, MaxStack);
     int Added = Amount - Left;
     Stack += Added;
-
     return Left;
 }
 
@@ -194,8 +197,6 @@ int UItemInstanceBase::DecreaseStack(int Amount)
     OnStackChanged.Broadcast(OriginStack, Stack);
     return Left;
 }
-
-
 
 bool UItemInstanceBase::GetIsSameItem(const UItemInstanceBase* Other) const
 {

@@ -38,9 +38,10 @@ private:
     int Stack = 0;
 
 public:
-    TArray<UInventorySlot*> ClaimSlot(int Number);
-    void FreeSlot(UInventorySlot* TargetSlot);
-    void FreeSlot(TArray<UInventorySlot*> TargetSlots);
+    TArray<UInventorySlot*> ClaimSlot(int Number = 1);
+
+    void ClaimFreeSlot(TObjectPtr<UInventorySlot> TargetSlot);
+    void ClaimFreeSlot(TArray<UInventorySlot*> TargetSlots);
 
 protected:
     int PushToExistSlots(int Amount, const int& MaxStack);

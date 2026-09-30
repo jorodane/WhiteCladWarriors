@@ -1,10 +1,25 @@
-//#include "Items/InventoryBase.h"
+#include "Items/InventoryBase.h"
 //#include "Items/InventoryLayoutMath.h"
 //#include "Items/InventorySlot.h"
 //#include "Items/ItemBase.h"
 //#include "Items/ItemInstanceBase.h"
 //#include "UObject/StrongObjectPtr.h"
 //#include "UObject/UObjectGlobals.h"
+// 
+void UInventoryBase::FreeSlot(TObjectPtr<UInventorySlot> TargetSlot)
+{
+
+}
+
+void UInventoryBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
+{
+
+}
+
+TArray<UInventorySlot*> UInventoryBase::ClaimSlot(int Number)
+{
+	if (Number <= 0) return TArray<UInventorySlot*>();
+}
 //
 //// One game-thread edit; no listener observes a half-updated graph.
 //// Reentrant writes to this inventory fail until every notification has completed.
