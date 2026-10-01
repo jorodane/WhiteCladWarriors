@@ -17,7 +17,7 @@ class WHITECLADWARRIORS_API UInventoryBase : public UActorComponent
 
 protected:
     TArray<TObjectPtr<UInventorySlot>> Slots;
-    TArray<TObjectPtr<UItemInstanceBase>> Instances;
+    TMap<TObjectPtr<UItemBase>, TObjectPtr<UItemInstanceBase>> Instances;
     int MaxSlotNum;
 
 public:
@@ -25,7 +25,13 @@ public:
     TArray<UInventorySlot*> ClaimAllocateSlot(UItemInstanceBase* Claimer, int Number = 1);
     void FreeSlot(TObjectPtr<UInventorySlot> TargetSlot);
     void FreeSlot(TArray<UInventorySlot*> TargetSlots);
+    void FreeSlot(TArray<TWeakObjectPtr<UInventorySlot>> TargetSlots);
+    void FreeSlot(UItemInstanceBase* SlotOwner);
 
+    int AddItem(UItemBase* TargetItem, int Amount);
+    int RemoveItem(UItemBase* TargetItem, int Amount);
+
+    TObjectPtr<UItemInstanceBase> FindInstance(UItemBase* TargetItem);
 //public:
 //    UInventoryBase();
 //

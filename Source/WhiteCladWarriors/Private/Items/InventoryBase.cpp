@@ -1,8 +1,8 @@
 #include "Items/InventoryBase.h"
 //#include "Items/InventoryLayoutMath.h"
 #include "Items/InventorySlot.h"
-//#include "Items/ItemBase.h"
-//#include "Items/ItemInstanceBase.h"
+#include "Items/ItemBase.h"
+#include "Items/ItemInstanceBase.h"
 //#include "UObject/StrongObjectPtr.h"
 //#include "UObject/UObjectGlobals.h"
 // 
@@ -24,15 +24,20 @@ TArray<UInventorySlot*> UInventoryBase::ClaimAllocateSlot(UItemInstanceBase* Cla
 	int Left = FMath::Min(Number, MaxSlotNum - Slots.Num());
 	if(Left <= 0) return Result;
 
-	int CurrentPosition = INDEX_NONE;
+	int LastPosition = INDEX_NONE;
 	int CurrentIndex = 0;
 
 	while (Left > 0)
 	{
 		if (CurrentIndex >= SlotNum)
 		{
-			for (int i = 0; i < Left; ++i) Slots.Add(AllocateSlot(Claimer, ++CurrentPosition));
-			break;
+			for (int i = 0; i < Left; ++i)
+			{
+				UInventorySlot* NewSlot = AllocateSlot(Claimer, ++LastPosition);
+				Result.Add(NewSlot);
+				Slots.Add(NewSlot);
+			}
+			return Result;
 		}
 		else
 		{
@@ -44,7 +49,24 @@ TArray<UInventorySlot*> UInventoryBase::ClaimAllocateSlot(UItemInstanceBase* Cla
 			}
 			else
 			{
+				int CurrentPosition = CurrentSlot->GetPosition();
+				int PositionGap = (CurrentPosition - LastPosition) - 1;
 
+				if (PositionGap > 0)
+				{
+					int Addable = FMath::Min(PositionGap, Left);
+
+					for (int i = 0; i < Addable; i++)
+					{
+						UInventorySlot* NewSlot = AllocateSlot(Claimer, ++LastPosition);
+						Result.Add(NewSlot);
+						Slots.Insert(NewSlot, LastPosition + i + 1);
+					}
+
+					Left -= Addable;
+				}
+
+				LastPosition = CurrentPosition;
 			}
 		}
 	}
@@ -54,14 +76,51 @@ TArray<UInventorySlot*> UInventoryBase::ClaimAllocateSlot(UItemInstanceBase* Cla
 
 void UInventoryBase::FreeSlot(TObjectPtr<UInventorySlot> TargetSlot)
 {
-
+	if (TargetSlot == nullptr) return;
+	Slots.Remove(TargetSlot);
 }
 
 void UInventoryBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
 {
-
+	if (TargetSlots.IsEmpty()) return;
+	Slots.RemoveAll(TargetSlots);
 }
 
+void UInventoryBase::FreeSlot(TArray<TWeakObjectPtr<UInventorySlot>> TargetSlots)
+{
+	if (TargetSlots.IsEmpty()) return;
+	Slots.RemoveAll(TargetSlots);
+}
+
+void UInventoryBase::FreeSlot(UItemInstanceBase* SlotOwner)
+{
+	if (!IsValid(SlotOwner)) return;
+	Slots.RemoveAll(SlotOwner->GetSlots());
+}
+
+int UInventoryBase::AddItem(UItemBase* TargetItem, int Amount)
+{
+	TObjectPtr<UItemInstanceBase> Instance = FindInstance(TargetItem);
+	if (!IsValid(Instance)) return Amount;
+	return Instance->IncreaseStack(Amount);
+}
+
+int UInventoryBase::RemoveItem(UItemBase* TargetItem, int Amount)
+{
+	TObjectPtr<UItemInstanceBase> Instance = FindInstance(TargetItem);
+	if (!IsValid(Instance)) return Amount;
+	Amount = Instance->DecreaseStack(Amount);
+	if (Instance->GetIsEmpty()) Instances.Remove(TargetItem);
+	return Amount;
+}
+
+TObjectPtr<UItemInstanceBase> UInventoryBase::FindInstance(UItemBase* TargetItem)
+{
+	if (!IsValid(TargetItem)) return nullptr;
+	TObjectPtr<UItemInstanceBase>* Result = Instances.Find(TargetItem);
+	if(Result) return Result->Get();
+	return nullptr;
+}
 
 //
 //// One game-thread edit; no listener observes a half-updated graph.

@@ -42,6 +42,7 @@ public:
 
     void ClaimFreeSlot(TObjectPtr<UInventorySlot> TargetSlot);
     void ClaimFreeSlot(TArray<UInventorySlot*> TargetSlots);
+    void ClaimFreeSlotAll();
 
 protected:
     int PushToExistSlots(int Amount, const int& MaxStack);
@@ -75,7 +76,10 @@ public:
     UInventoryBase* GetInventory() const { return InventoryFrom.Get(); }
 
     UFUNCTION(BlueprintPure, Category = "Item")
-    bool GetIsSameItem(const UItemInstanceBase* Other) const;
+    bool GetIsSameItemInstance(const UItemInstanceBase* Other) const;
+
+    UFUNCTION(BlueprintPure, Category = "Item")
+    bool GetIsSameItem(const UItemBase* Other) const;
 
     const TArray<TWeakObjectPtr<UInventorySlot>>& GetSlots() const { return Slots; }
 };

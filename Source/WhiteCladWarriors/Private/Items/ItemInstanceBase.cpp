@@ -25,6 +25,13 @@ void UItemInstanceBase::ClaimFreeSlot(TArray<UInventorySlot*> TargetSlots)
     for (UInventorySlot* CurrentSlot : TargetSlots) Slots.Remove(CurrentSlot);
 }
 
+void UItemInstanceBase::ClaimFreeSlotAll()
+{
+    if (!InventoryFrom.IsValid()) return;
+    InventoryFrom->FreeSlot(Slots);
+    Slots.Empty();
+}
+
 int UItemInstanceBase::PushToExistSlots(int Amount, const int& MaxStack)
 {
     if (!Slots.IsEmpty())
@@ -76,8 +83,18 @@ int UItemInstanceBase::PushToClaimSlots(int Amount, const int& MaxStack)
 
 int UItemInstanceBase::PopFromExistSlots(int Amount)
 {
+    if (Amount <= 0) return 0;
+
     if (!Slots.IsEmpty())
     {
+        if (Amount >= Stack)
+        {
+            int Left = Amount - Stack;
+            ClaimFreeSlotAll();
+            Stack = 0;
+            return Left;
+        }
+
         TArray<UInventorySlot*> RemovedSlot;
         for (int i = Slots.Num() - 1; i >= 0; --i)
         {
@@ -90,9 +107,15 @@ int UItemInstanceBase::PopFromExistSlots(int Amount)
             if (bIsEmpty) RemovedSlot.Add(CurrentSlot);
         }
         ClaimFreeSlot(RemovedSlot);
+        return Amount;
     }
-
-    return Amount;
+    else if (Stack <= 0) return Amount;
+    else
+    {
+        int Removable = FMath::Min(Stack, Amount);
+        Stack -= Removable;
+        return Amount - Removable;
+    }
 }
 
 void UItemInstanceBase::OnSlotAdded(TObjectPtr<UInventorySlot> AddedSlot)
@@ -198,9 +221,16 @@ int UItemInstanceBase::DecreaseStack(int Amount)
     return Left;
 }
 
-bool UItemInstanceBase::GetIsSameItem(const UItemInstanceBase* Other) const
+bool UItemInstanceBase::GetIsSameItemInstance(const UItemInstanceBase* Other) const
 {
     if (!IsValid(Other)) return false;
-    if (Base == nullptr || Base != Other->Base) return false;
+    if (!GetIsSameItem(Other->Base)) return false;
     return GetClass() == Other->GetClass();
+}
+
+bool UItemInstanceBase::GetIsSameItem(const UItemBase* Other) const
+{
+    if (!IsValid(Other)) return false;
+    if (Base == nullptr || Base != Other) return false;
+    return true;
 }
