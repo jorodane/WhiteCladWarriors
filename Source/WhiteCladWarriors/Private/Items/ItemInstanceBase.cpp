@@ -34,16 +34,17 @@ void UItemInstanceBase::ClaimFreeSlotAll()
 
 int UItemInstanceBase::PushToExistSlots(int Amount, const int& MaxStack)
 {
-    if (!Slots.IsEmpty())
+    if (Amount <= 0 || Slots.IsEmpty()) return Amount;
+    int SlotNum = Slots.Num();
+    if (Stack >= SlotNum * MaxStack) return Amount;
+
+    for (int i = 0; i < SlotNum; ++i)
     {
-        for (int i = 0; i < Slots.Num(); ++i)
-        {
-            if (Amount <= 0) break;
-            TWeakObjectPtr<UInventorySlot> CurrentPtr = Slots[i];
-            if (!CurrentPtr.IsValid()) continue;
-            UInventorySlot* CurrentSlot = CurrentPtr.Get();
-            Amount = CurrentSlot->AddAmount(Amount, MaxStack);
-        }
+        if (Amount <= 0) break;
+        TWeakObjectPtr<UInventorySlot> CurrentPtr = Slots[i];
+        if (!CurrentPtr.IsValid()) continue;
+        UInventorySlot* CurrentSlot = CurrentPtr.Get();
+        Amount = CurrentSlot->AddAmount(Amount, MaxStack);
     }
 
     return Amount;
@@ -213,8 +214,10 @@ int UItemInstanceBase::IncreaseStack(int Amount)
 
 int UItemInstanceBase::DecreaseStack(int Amount)
 {
+    if (Stack <= 0) return Amount;
     int OriginStack = Stack;
     int Left = PopFromExistSlots(Amount);
+    if (Left <= 0) return Amount;
     int Removed = Amount - Left;
     Stack -= Removed;
     OnStackChanged.Broadcast(OriginStack, Stack);

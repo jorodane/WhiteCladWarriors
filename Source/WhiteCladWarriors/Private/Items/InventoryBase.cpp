@@ -149,7 +149,6 @@ int UInventoryBase::RemoveItem(UItemBase* TargetItem, int Amount, int& OutTotalA
 	if (!IsValid(Instance)) return Amount;
 	Amount = Instance->DecreaseStack(Amount);
 	OutTotalAmount = Instance->GetStack();
-	if (Instance->GetIsEmpty()) Instances.Remove(TargetItem);
 	return Amount;
 }
 
