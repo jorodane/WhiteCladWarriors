@@ -100,16 +100,55 @@ void UInventoryBase::FreeSlot(UItemInstanceBase* SlotOwner)
 
 int UInventoryBase::AddItem(UItemBase* TargetItem, int Amount)
 {
+	if (!IsValid(TargetItem)) return 0;
 	TObjectPtr<UItemInstanceBase> Instance = FindInstance(TargetItem);
-	if (!IsValid(Instance)) return Amount;
+	if (!IsValid(Instance))
+	{
+		Instance = CreateInstance(TargetItem);
+		if(!IsValid(Instance)) return Amount;
+	}
 	return Instance->IncreaseStack(Amount);
+}
+
+int UInventoryBase::AddItem(UItemBase* TargetItem, int Amount, int& OutTotalAmount)
+{
+	if (!IsValid(TargetItem))
+	{
+		OutTotalAmount = 0;
+		return 0;
+	}
+	TObjectPtr<UItemInstanceBase> Instance = FindInstance(TargetItem);
+	if (!IsValid(Instance))
+	{
+		Instance = CreateInstance(TargetItem);
+		if (!IsValid(Instance)) return Amount;
+	}
+	int Result = Instance->IncreaseStack(Amount);
+	OutTotalAmount = Instance->GetStack();
+	return Result;
 }
 
 int UInventoryBase::RemoveItem(UItemBase* TargetItem, int Amount)
 {
+	if (!IsValid(TargetItem)) return 0;
 	TObjectPtr<UItemInstanceBase> Instance = FindInstance(TargetItem);
 	if (!IsValid(Instance)) return Amount;
 	Amount = Instance->DecreaseStack(Amount);
+	if (Instance->GetIsEmpty()) Instances.Remove(TargetItem);
+	return Amount;
+}
+
+int UInventoryBase::RemoveItem(UItemBase* TargetItem, int Amount, int& OutTotalAmount)
+{
+	if (!IsValid(TargetItem))
+	{
+		OutTotalAmount = 0;
+		return 0;
+	}
+	TObjectPtr<UItemInstanceBase> Instance = FindInstance(TargetItem);
+	if (!IsValid(Instance)) return Amount;
+	Amount = Instance->DecreaseStack(Amount);
+	OutTotalAmount = Instance->GetStack();
 	if (Instance->GetIsEmpty()) Instances.Remove(TargetItem);
 	return Amount;
 }
@@ -120,6 +159,12 @@ TObjectPtr<UItemInstanceBase> UInventoryBase::FindInstance(UItemBase* TargetItem
 	TObjectPtr<UItemInstanceBase>* Result = Instances.Find(TargetItem);
 	if(Result) return Result->Get();
 	return nullptr;
+}
+
+TObjectPtr<UItemInstanceBase> UInventoryBase::CreateInstance(UItemBase* TargetItem)
+{
+	if (!IsValid(TargetItem)) return nullptr;
+	return TargetItem->CreateItemInstance();
 }
 
 //

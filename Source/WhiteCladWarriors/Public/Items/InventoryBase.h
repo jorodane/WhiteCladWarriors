@@ -29,9 +29,12 @@ public:
     void FreeSlot(UItemInstanceBase* SlotOwner);
 
     int AddItem(UItemBase* TargetItem, int Amount);
+    int AddItem(UItemBase* TargetItem, int Amount, int& OutTotalAmount);
     int RemoveItem(UItemBase* TargetItem, int Amount);
+    int RemoveItem(UItemBase* TargetItem, int Amount, int& OutTotalAmount);
 
     TObjectPtr<UItemInstanceBase> FindInstance(UItemBase* TargetItem);
+    TObjectPtr<UItemInstanceBase> CreateInstance(UItemBase* TargetItem);
 //public:
 //    UInventoryBase();
 //
