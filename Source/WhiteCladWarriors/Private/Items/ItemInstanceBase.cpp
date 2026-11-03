@@ -60,7 +60,7 @@ int UItemInstanceBase::PushToClaimSlots(int Amount, const int& MaxStack)
         TArray<UInventorySlot*> ReceivedSlots = ClaimAllocateSlot(NumClaimedSlot);
         if (ReceivedSlots.IsEmpty()) return Amount;
         int NumReceivedSlot = ReceivedSlots.Num();
-        int Addable;
+        int Addable = 0;
         if (NumClaimedSlot <= NumReceivedSlot)
         {
             int LastReceivedSlotIndex = NumReceivedSlot - 1;

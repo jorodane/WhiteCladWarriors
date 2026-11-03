@@ -83,19 +83,22 @@ void UInventoryBase::FreeSlot(TObjectPtr<UInventorySlot> TargetSlot)
 void UInventoryBase::FreeSlot(TArray<UInventorySlot*> TargetSlots)
 {
 	if (TargetSlots.IsEmpty()) return;
-	Slots.RemoveAll(TargetSlots);
+	for (UInventorySlot* CurrentSlot : TargetSlots) FreeSlot(CurrentSlot);
 }
 
 void UInventoryBase::FreeSlot(TArray<TWeakObjectPtr<UInventorySlot>> TargetSlots)
 {
 	if (TargetSlots.IsEmpty()) return;
-	Slots.RemoveAll(TargetSlots);
+	for (TWeakObjectPtr<UInventorySlot> CurrentSlot : TargetSlots)
+	{
+		if(CurrentSlot.IsValid()) FreeSlot(*CurrentSlot);
+	}
 }
 
 void UInventoryBase::FreeSlot(UItemInstanceBase* SlotOwner)
 {
 	if (!IsValid(SlotOwner)) return;
-	Slots.RemoveAll(SlotOwner->GetSlots());
+	FreeSlot(SlotOwner->GetSlots());
 }
 
 int UInventoryBase::AddItem(UItemBase* TargetItem, int Amount)
